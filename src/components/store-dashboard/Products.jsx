@@ -6,11 +6,17 @@ import { rupiah } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import ImageUpload from '../ui/ImageUpload'
 import { Field, EmptyState, Spinner } from '../ui/Field'
-import ProdukImage from '../ui/ProductImage'
+import { useSubscription } from '../../hooks/useSubscription'
+import UsageNudge from '../subscription/UsageNudge'
+import LimitReachedModal from '../subscription/LimitReachedModal'
+import UpgradeModal from '../subscription/UpgradeModal'
 
 const empty = { name: '', description: '', price: '', cost_price: '', stock: '', category_id: '', image_url: '', is_active: true }
 
-export default function Products({ store }) {
+export default function Products({ store, setStore }) {
+  const { plan, upgrade } = useSubscription(store, setStore)
+  const isFree = plan === 'gratis'
+
   const [products, setProducts] = useState(null)
   const [categories, setCategories] = useState([])
   const [q, setQ] = useState('')
@@ -18,6 +24,8 @@ export default function Products({ store }) {
   const [catOpen, setCatOpen] = useState(false)
   const [newCat, setNewCat] = useState('')
   const [saving, setSaving] = useState(false)
+  const [limitModalOpen, setLimitModalOpen] = useState(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
 
   const load = useCallback(async () => {
     const [p, c] = await Promise.all([
@@ -30,8 +38,23 @@ export default function Products({ store }) {
 
   useEffect(() => { load() }, [load])
 
+  const handleAddClick = () => {
+    // Cek batasan 10 produk untuk paket gratis (Mockup 3)
+    if (isFree && (products?.length || 0) >= 10) {
+      setLimitModalOpen(true)
+      return
+    }
+    setForm({ ...empty })
+  }
+
   const save = async (e) => {
     e.preventDefault()
+    // Cek batasan jika insert produk baru
+    if (!form.id && isFree && (products?.length || 0) >= 10) {
+      setLimitModalOpen(true)
+      return
+    }
+
     setSaving(true)
     const payload = {
       store_id: store.id,
@@ -90,9 +113,18 @@ export default function Products({ store }) {
         </div>
         <div className="flex gap-2">
           <button className="btn-secondary" onClick={() => setCatOpen(true)}><Tags size={16} /> Kategori</button>
-          <button className="btn-primary" onClick={() => setForm({ ...empty })}><Plus size={16} /> Tambah Produk</button>
+          <button className="btn-primary" onClick={handleAddClick}><Plus size={16} /> Tambah Produk</button>
         </div>
       </div>
+
+      {/* Usage Nudge untuk Paket Gratis saat mendekati atau mencapai limit 10 produk (Mockup 3) */}
+      {isFree && products.length >= 7 && (
+        <UsageNudge
+          currentCount={products.length}
+          maxCount={10}
+          onUpgrade={() => setUpgradeOpen(true)}
+        />
+      )}
 
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
@@ -121,7 +153,7 @@ export default function Products({ store }) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                            <ProdukImage src={p.image_url} />
+                          {p.image_url && <img src={p.image_url} alt="" className="h-full w-full object-cover" />}
                         </div>
                         <span className="font-medium text-slate-900">{p.name}</span>
                       </div>
@@ -200,6 +232,23 @@ export default function Products({ store }) {
           {categories.length === 0 && <li className="py-4 text-center text-sm text-slate-400">Belum ada kategori.</li>}
         </ul>
       </Modal>
+
+      {/* Modal Batas 10 Produk Tercapai (Mockup 3) */}
+      <LimitReachedModal
+        open={limitModalOpen}
+        onClose={() => setLimitModalOpen(false)}
+        currentCount={products.length}
+        maxCount={10}
+        onUpgrade={() => setUpgradeOpen(true)}
+      />
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        targetPlan="bisnis"
+        onSuccess={({ targetPlan, period, method, amount }) => upgrade({ targetPlan, period, method, amount })}
+      />
     </div>
   )
 }
