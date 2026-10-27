@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { Store, Check, X } from 'lucide-react'
 import { supabase, PLATFORM_DOMAIN } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { slugify, RESERVED_SLUGS } from '../../lib/utils'
+import { slugify, RESERVED_SLUGS, sanitizePhone } from '../../lib/utils'
 import { defaultSections, SECTION_TYPES } from '../store-front/sectionDefs'
 
 /** Form pembuatan toko pertama — memilih nama & alamat (slug) website */
@@ -91,7 +91,14 @@ export default function CreateStore({ onCreated }) {
 
         <div>
           <label className="label">No. WhatsApp (opsional)</label>
-          <input className="input" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="628123456789" />
+          <input
+            className="input"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(sanitizePhone(e.target.value))}
+            placeholder="628123456789"
+            inputMode="numeric"
+            maxLength={13}
+          />
         </div>
 
         <button className="btn-primary w-full" disabled={busy || !valid}>{busy ? 'Membuat…' : 'Buat Toko'}</button>

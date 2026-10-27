@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react'
 import ImageUpload from '../ui/ImageUpload'
 import { SECTION_TYPES } from '../store-front/sectionDefs'
+import { sanitizePhone } from '../../lib/utils'
 
 /** Panel kustomisasi untuk satu section yang sedang dipilih */
 export default function SectionEditor({ section, onChange }) {
@@ -19,7 +20,15 @@ export default function SectionEditor({ section, onChange }) {
         <div key={f.key}>
           <label className="label">{f.label}</label>
 
-          {f.type === 'text' && <input className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />}
+          {f.type === 'text' && (
+            <input
+              className="input"
+              value={c[f.key] ?? ''}
+              onChange={(e) => set(f.key, f.key === 'phone' ? sanitizePhone(e.target.value) : e.target.value)}
+              inputMode={f.key === 'phone' ? 'numeric' : undefined}
+              maxLength={f.key === 'phone' ? 13 : undefined}
+            />
+          )}
 
           {f.type === 'textarea' && (
             <textarea rows={4} className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />
