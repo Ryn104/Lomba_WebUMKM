@@ -5,15 +5,17 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Save, Globe, ExternalLink, Plus, Monitor, Smartphone, Palette } from 'lucide-react'
+import { ArrowLeft, Save, Globe, ExternalLink, Plus, Monitor, Smartphone, Palette, Sparkles } from 'lucide-react'
 import { supabase, PLATFORM_DOMAIN } from '../lib/supabase'
 import { useMyStore } from '../hooks/useMyStore'
+import { useSubscription } from '../hooks/useSubscription'
 import { Spinner } from '../components/ui/Field'
 import CreateStore from '../components/builder/CreateStore'
 import SortableItem from '../components/builder/SortableItem'
 import SectionEditor from '../components/builder/SectionEditor'
 import SectionRenderer from '../components/store-front/SectionRenderer'
 import { SECTION_TYPES } from '../components/store-front/sectionDefs'
+import UpgradeModal from '../components/subscription/UpgradeModal'
 
 export default function BuilderPage() {
   const { store, setStore, loading, reload } = useMyStore()
@@ -23,6 +25,9 @@ export default function BuilderPage() {
 }
 
 function Builder({ store, setStore }) {
+  const { plan, upgrade } = useSubscription(store, setStore)
+  const isFree = plan === 'gratis'
+
   const [sections, setSections] = useState([])
   const [products, setProducts] = useState([])
   const [discounts, setDiscounts] = useState([])
@@ -31,7 +36,8 @@ function Builder({ store, setStore }) {
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [device, setDevice] = useState('desktop')
-  const [primary, setPrimary] = useState(store.theme?.primary || '#4f46e5')
+  const [primary, setPrimary] = useState(store.theme?.primary || '#047857')
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -75,6 +81,12 @@ function Builder({ store, setStore }) {
   }
 
   const addSection = (type) => {
+    // Batasan 3 section pada paket Gratis (Mockup 1)
+    if (isFree && sections.length >= 3) {
+      setUpgradeOpen(true)
+      return
+    }
+
     const s = {
       id: crypto.randomUUID(),
       type,
@@ -135,28 +147,26 @@ function Builder({ store, setStore }) {
 
   if (loading) return <Spinner full />
 
-  const url = `https://${PLATFORM_DOMAIN}/${store.slug}`
-
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col bg-slate-50">
       {/* Top bar */}
       <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-4 py-2.5">
         <Link to="/dashboard" className="btn-ghost px-2"><ArrowLeft size={18} /></Link>
         <div className="min-w-0">
-          <p className="truncate font-bold leading-tight">{store.name}</p>
-          <a href={`/${store.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-xs text-slate-500 hover:text-brand-600">
+          <p className="truncate font-bold leading-tight text-slate-900">{store.name}</p>
+          <a href={`/${store.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-xs font-medium text-slate-500 hover:text-brand-700">
             {PLATFORM_DOMAIN}/{store.slug} <ExternalLink size={11} />
           </a>
         </div>
-        <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${store.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+        <span className={`ml-2 rounded-full px-2.5 py-0.5 text-xs font-semibold ${store.is_published ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF3C7] text-[#92400E]'}`}>
           {store.is_published ? 'Live' : 'Draft'}
         </span>
-        {dirty && <span className="text-xs text-amber-600">• belum disimpan</span>}
+        {dirty && <span className="text-xs font-medium text-amber-800">• belum disimpan</span>}
 
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden rounded-lg border border-slate-200 p-0.5 sm:flex">
-            <button onClick={() => setDevice('desktop')} className={`rounded p-1.5 ${device === 'desktop' ? 'bg-slate-100' : ''}`}><Monitor size={16} /></button>
-            <button onClick={() => setDevice('mobile')} className={`rounded p-1.5 ${device === 'mobile' ? 'bg-slate-100' : ''}`}><Smartphone size={16} /></button>
+            <button onClick={() => setDevice('desktop')} className={`rounded p-1.5 ${device === 'desktop' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Monitor size={16} /></button>
+            <button onClick={() => setDevice('mobile')} className={`rounded p-1.5 ${device === 'mobile' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Smartphone size={16} /></button>
           </div>
           {store.is_published && (
             <button className="btn-ghost" onClick={unpublish}>Jadikan Draft</button>
@@ -174,10 +184,17 @@ function Builder({ store, setStore }) {
         {/* Kiri: daftar section */}
         <aside className="w-72 shrink-0 space-y-5 overflow-y-auto border-r border-slate-200 bg-slate-50 p-4">
           <div>
-            <p className="label">Susunan halaman (seret untuk mengurutkan)</p>
+            <div className="flex items-center justify-between">
+              <p className="label">Susunan halaman</p>
+              {isFree && (
+                <span className={`text-[11px] font-semibold ${sections.length >= 3 ? 'text-red-600' : 'text-slate-500'}`}>
+                  {sections.length}/3 section
+                </span>
+              )}
+            </div>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-2">
+                <div className="space-y-2 mt-1">
                   {sections.map((s) => (
                     <SortableItem
                       key={s.id}
@@ -195,13 +212,24 @@ function Builder({ store, setStore }) {
           </div>
 
           <div>
-            <p className="label">Tambah section</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center justify-between">
+              <p className="label">Tambah section</p>
+              {isFree && sections.length >= 3 && (
+                <button
+                  type="button"
+                  onClick={() => setUpgradeOpen(true)}
+                  className="text-[11px] font-bold text-brand-700 hover:underline"
+                >
+                  Buka semua section
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-1">
               {Object.entries(SECTION_TYPES).map(([type, def]) => (
                 <button
                   key={type}
                   onClick={() => addSection(type)}
-                  className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-white p-3 text-xs font-medium text-slate-600 hover:border-brand-500 hover:text-brand-600"
+                  className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-white p-3 text-xs font-medium text-slate-700 transition hover:border-brand-600 hover:text-brand-700"
                 >
                   <def.icon size={18} /> {def.label}
                   <Plus size={12} className="text-slate-400" />
@@ -216,14 +244,14 @@ function Builder({ store, setStore }) {
               <input
                 type="color" value={primary}
                 onChange={(e) => { setPrimary(e.target.value); setDirty(true) }}
-                className="h-9 w-12 cursor-pointer rounded border border-slate-300"
+                className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 p-0.5"
               />
               <input className="input font-mono" value={primary} onChange={(e) => { setPrimary(e.target.value); setDirty(true) }} />
             </div>
           </div>
         </aside>
 
-         {/* Tengah: preview real-time */}
+        {/* Tengah: preview real-time */}
         <main className="min-w-0 flex-1 overflow-auto bg-slate-200/80 p-4">
           <div
             className={`mx-auto overflow-hidden rounded-xl bg-white shadow-xl transition-all ${device === 'mobile' ? 'max-w-[390px]' : 'max-w-full'}`}
@@ -261,6 +289,13 @@ function Builder({ store, setStore }) {
           )}
         </aside>
       </div>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        targetPlan="bisnis"
+        onSuccess={({ targetPlan, period, method, amount }) => upgrade({ targetPlan, period, method, amount })}
+      />
     </div>
   )
 }

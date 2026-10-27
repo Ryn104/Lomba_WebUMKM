@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
 /** Layout dashboard dengan sidebar — dipakai Admin & Dashboard Toko */
-export default function DashboardLayout({ title, subtitle, links, children, headerRight }) {
+export default function DashboardLayout({ title, subtitle, links, children, headerRight, sidebarWidget }) {
   const { profile, signOut } = useAuth()
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
@@ -20,7 +20,7 @@ export default function DashboardLayout({ title, subtitle, links, children, head
         <p className="text-lg font-extrabold text-white">{title}</p>
         {subtitle && <p className="truncate text-xs text-slate-400">{subtitle}</p>}
       </div>
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-1 px-3 overflow-y-auto">
         {links.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -37,6 +37,10 @@ export default function DashboardLayout({ title, subtitle, links, children, head
           </NavLink>
         ))}
       </nav>
+
+      {/* Subscription widget di bagian bawah sidebar jika ada */}
+      {sidebarWidget}
+
       <div className="border-t border-slate-800 p-4">
         <p className="truncate text-sm font-semibold text-white">{profile?.full_name || 'Pengguna'}</p>
         <p className="truncate text-xs text-slate-400">{profile?.email}</p>

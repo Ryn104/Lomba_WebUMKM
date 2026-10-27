@@ -1,17 +1,37 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import toast from 'react-hot-toast'
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, PieChart, Pie, Cell } from 'recharts'
-import { Plus, Trash2, TrendingUp, TrendingDown, Scale, Wallet } from 'lucide-react'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts'
+import { Plus, Trash2, TrendingUp, TrendingDown, Scale, Wallet, FileSpreadsheet, Download } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import { Field, StatCard, EmptyState, Spinner } from '../ui/Field'
+import { useSubscription } from '../../hooks/useSubscription'
+import LockedFeatureCard from '../subscription/LockedFeatureCard'
+import UpgradeModal from '../subscription/UpgradeModal'
 
 const INCOME_CATS = ['Penjualan Kasir', 'Penjualan Online', 'Lainnya']
 const EXPENSE_CATS = ['Bahan Baku', 'Gaji', 'Sewa', 'Listrik & Air', 'Transportasi', 'Pemasaran', 'Peralatan', 'Lainnya']
 const PIE = ['#047857', '#10b981', '#059669', '#34d399', '#0d9488', '#0284c7', '#f59e0b', '#64748b']
 
-export default function Finance({ store }) {
+export default function Finance({ store, setStore }) {
+  const { plan, upgrade } = useSubscription(store, setStore)
+  const isPro = plan === 'pro'
+
+  const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'advanced'
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
   const [rows, setRows] = useState(null)
   const [month, setMonth] = useState(todayISO().slice(0, 7)) // YYYY-MM
   const [filter, setFilter] = useState('all')
@@ -86,6 +106,21 @@ export default function Finance({ store }) {
     load()
   }
 
+  const handleExportExcel = () => {
+    const escapeCsv = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`
+    const csv = [
+      ['Tanggal', 'Jenis', 'Kategori', 'Jumlah', 'Catatan'],
+      ...monthRows.map((row) => [row.date, row.type === 'income' ? 'Pemasukan' : 'Pengeluaran', row.category, row.amount, row.note]),
+    ].map((row) => row.map(escapeCsv).join(';')).join('\r\n')
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `laporan-keuangan-${month}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   if (!rows) return <Spinner />
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
 
@@ -109,88 +144,163 @@ export default function Finance({ store }) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={TrendingUp} tone="green" label={`Pemasukan (${month})`} value={rupiah(income)} />
-        <StatCard icon={TrendingDown} tone="red" label={`Pengeluaran (${month})`} value={rupiah(expense)} />
-        <StatCard icon={Scale} tone="brand" label="Laba bersih bulan ini" value={rupiah(income - expense)} />
-        <StatCard icon={Wallet} tone="amber" label="Total transaksi" value={monthRows.length} sub={`${monthRows.filter((r) => r.type === 'income').length} masuk, ${monthRows.filter((r) => r.type === 'expense').length} keluar`} />
+      {/* Tabs: Ringkasan vs Laporan Lanjutan (Mockup 3) */}
+      <div className="flex gap-2 border-b border-slate-200">
+        <button
+          type="button"
+          onClick={() => setActiveTab('overview')}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold transition ${
+            activeTab === 'overview'
+              ? 'border-brand-700 text-brand-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Ringkasan Keuangan
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('advanced')}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold transition flex items-center gap-1.5 ${
+            activeTab === 'advanced'
+              ? 'border-brand-700 text-brand-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <span>Laporan Lanjutan</span>
+          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700 border border-brand-200">
+            Pro
+          </span>
+        </button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="card p-5 lg:col-span-2">
-          <h2 className="mb-4 font-semibold text-slate-900">Tahun {month.slice(0, 4)}</h2>
-          <div className="h-64">
-            <ResponsiveContainer>
-              <BarChart data={yearChart}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="bulan" fontSize={12} />
-                <YAxis fontSize={12} tickFormatter={(v) => (v >= 1e6 ? `${v / 1e6}jt` : v >= 1000 ? `${v / 1000}rb` : v)} />
-                <Tooltip formatter={(v) => rupiah(v)} />
-                <Legend />
-                <Bar dataKey="Pemasukan" fill="#047857" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Pengeluaran" fill="#f87171" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+      {activeTab === 'overview' ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard icon={TrendingUp} tone="green" label={`Pemasukan (${month})`} value={rupiah(income)} />
+            <StatCard icon={TrendingDown} tone="red" label={`Pengeluaran (${month})`} value={rupiah(expense)} />
+            <StatCard icon={Scale} tone="brand" label="Laba bersih bulan ini" value={rupiah(income - expense)} />
+            <StatCard icon={Wallet} tone="amber" label="Total transaksi" value={monthRows.length} sub={`${monthRows.filter((r) => r.type === 'income').length} masuk, ${monthRows.filter((r) => r.type === 'expense').length} keluar`} />
           </div>
-        </div>
-        <div className="card p-5">
-          <h2 className="mb-4 font-semibold text-slate-900">Pengeluaran per kategori</h2>
-          {expenseByCat.length === 0 ? (
-            <p className="py-16 text-center text-sm text-slate-400">Belum ada pengeluaran.</p>
-          ) : (
-            <div className="h-64">
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie data={expenseByCat} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80}>
-                    {expenseByCat.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
-                  </Pie>
-                  <Tooltip formatter={(v) => rupiah(v)} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="card p-5 lg:col-span-2">
+              <h2 className="mb-4 font-semibold text-slate-900">Tahun {month.slice(0, 4)}</h2>
+              <div className="h-64">
+                <ResponsiveContainer>
+                  <BarChart data={yearChart}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="bulan" fontSize={12} />
+                    <YAxis fontSize={12} tickFormatter={(v) => (v >= 1e6 ? `${v / 1e6}jt` : v >= 1000 ? `${v / 1000}rb` : v)} />
+                    <Tooltip formatter={(v) => rupiah(v)} />
+                    <Legend />
+                    <Bar dataKey="Pemasukan" fill="#047857" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Pengeluaran" fill="#f87171" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+            <div className="card p-5">
+              <h2 className="mb-4 font-semibold text-slate-900">Pengeluaran per kategori</h2>
+              {expenseByCat.length === 0 ? (
+                <p className="py-16 text-center text-sm text-slate-400">Belum ada pengeluaran.</p>
+              ) : (
+                <div className="h-64">
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie data={expenseByCat} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80}>
+                        {expenseByCat.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
+                      </Pie>
+                      <Tooltip formatter={(v) => rupiah(v)} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          </div>
 
-      <div className="card overflow-hidden">
-        <div className="flex gap-2 border-b border-slate-100 p-3">
-          {[['all', 'Semua'], ['income', 'Pemasukan'], ['expense', 'Pengeluaran']].map(([v, l]) => (
-            <button
-              key={v}
-              onClick={() => setFilter(v)}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition ${filter === v ? 'bg-brand-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-        {shown.length === 0 ? (
-          <EmptyState icon={Wallet} title="Belum ada catatan" desc="Catat pengeluaran atau pemasukan lain di bulan ini." />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
-              <tr><th className="px-4 py-3">Tanggal</th><th className="px-4 py-3">Kategori</th><th className="px-4 py-3">Catatan</th><th className="px-4 py-3 text-right">Jumlah</th><th /></tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {shown.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
-                  <td className="px-4 py-3 font-medium text-slate-800">{r.category}</td>
-                  <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
-                  <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-brand-700' : 'text-red-700'}`}>
-                    {r.type === 'income' ? '+' : '-'}{rupiah(r.amount)}
-                  </td>
-                  <td className="px-2">
-                    {!r.transaction_id && <button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(r)}><Trash2 size={15} /></button>}
-                  </td>
-                </tr>
+          <div className="card overflow-hidden">
+            <div className="flex gap-2 border-b border-slate-100 p-3">
+              {[['all', 'Semua'], ['income', 'Pemasukan'], ['expense', 'Pengeluaran']].map(([v, l]) => (
+                <button
+                  key={v}
+                  onClick={() => setFilter(v)}
+                  className={`rounded-full px-3 py-1 text-sm font-medium transition ${filter === v ? 'bg-brand-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
+                >
+                  {l}
+                </button>
               ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+            </div>
+            {shown.length === 0 ? (
+              <EmptyState icon={Wallet} title="Belum ada catatan" desc="Catat pengeluaran atau pemasukan lain di bulan ini." />
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+                  <tr><th className="px-4 py-3">Tanggal</th><th className="px-4 py-3">Kategori</th><th className="px-4 py-3">Catatan</th><th className="px-4 py-3 text-right">Jumlah</th><th /></tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {shown.map((r) => (
+                    <tr key={r.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
+                      <td className="px-4 py-3 font-medium text-slate-800">{r.category}</td>
+                      <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
+                      <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-brand-700' : 'text-red-700'}`}>
+                        {r.type === 'income' ? '+' : '-'}{rupiah(r.amount)}
+                      </td>
+                      <td className="px-2">
+                        {!r.transaction_id && <button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(r)}><Trash2 size={15} /></button>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Tab Laporan Lanjutan: Locked Feature Card (Mockup 3) */
+        isPro ? (
+          <div className="card p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="font-bold text-slate-900 text-lg">Ringkasan Laporan Keuangan</h3>
+                <p className="text-xs text-slate-500">Berdasarkan catatan bulan {month} yang tersimpan di toko.</p>
+              </div>
+              <button onClick={handleExportExcel} className="btn-primary text-xs font-bold shadow-sm">
+                <FileSpreadsheet size={16} /> Unduh CSV untuk Excel
+              </button>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">Total pemasukan</p>
+                <p className="mt-1 text-xl font-extrabold text-brand-700">{rupiah(income)}</p>
+                <p className="mt-0.5 text-[11px] text-slate-500">Dari {monthRows.filter((row) => row.type === 'income').length} catatan</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">Total pengeluaran</p>
+                <p className="mt-1 text-xl font-extrabold text-red-700">{rupiah(expense)}</p>
+                <p className="mt-0.5 text-[11px] text-slate-500">Dari {monthRows.filter((row) => row.type === 'expense').length} catatan</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">Laba bersih</p>
+                <p className={`mt-1 text-xl font-extrabold ${income - expense >= 0 ? 'text-brand-700' : 'text-red-700'}`}>{rupiah(income - expense)}</p>
+                <p className="mt-0.5 text-[11px] text-slate-500">Pemasukan dikurangi pengeluaran</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <LockedFeatureCard
+            title="Laporan keuangan lanjutan"
+            desc="Buka ringkasan pemasukan, pengeluaran, laba bersih, dan unduh catatan keuangan untuk Excel dengan Paket Pro."
+            requiredPlan="Pro"
+            onUpgrade={() => {
+              setUpgradeOpen(true)
+            }}
+          />
+        )
+      )}
 
+      {/* Modal Catat Keuangan */}
       <Modal open={!!form} onClose={() => setForm(null)} title="Catat Keuangan" size="sm">
         {form && (
           <form onSubmit={save} className="space-y-4">
@@ -218,6 +328,18 @@ export default function Finance({ store }) {
           </form>
         )}
       </Modal>
+
+      {/* Upgrade to Pro Modal */}
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        targetPlan="pro"
+        onSuccess={async ({ targetPlan, period, method, amount }) => {
+          const activated = await upgrade({ targetPlan, period, method, amount })
+          if (activated) setActiveTab('advanced')
+          return activated
+        }}
+      />
     </div>
   )
 }

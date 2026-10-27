@@ -54,6 +54,12 @@ export default function StoreFront() {
   const { store, sections, products, discounts } = state
   const primary = store.theme?.primary || '#047857'
 
+  // Fitur Watermark: Ditampilkan pada paket Gratis; dihilangkan pada paket Bisnis / Pro / Trial
+  const sub = store.theme?.subscription || {}
+  const hasActiveSubscription = ['active', 'complimentary'].includes(sub.billingMode)
+    && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > Date.now())
+  const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
+
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: store.theme?.font ? `${store.theme.font}, Inter, sans-serif` : undefined }}>
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
@@ -84,7 +90,15 @@ export default function StoreFront() {
       )}
 
       <footer className="bg-slate-900 py-6 text-center text-xs text-slate-400">
-        © {new Date().getFullYear()} {store.name} · Dibuat dengan UMKM Builder
+        © {new Date().getFullYear()} {store.name}
+        {hasWatermark && (
+          <>
+            {' · '}
+            <Link to="/" className="text-slate-400 hover:text-white transition underline underline-offset-2">
+              Dibuat dengan UMKM Builder
+            </Link>
+          </>
+        )}
       </footer>
     </div>
   )
