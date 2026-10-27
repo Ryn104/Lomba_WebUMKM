@@ -20,7 +20,15 @@ export default function SectionEditor({ section, onChange }) {
         <div key={f.key}>
           <label className="label">{f.label}</label>
 
-          {f.type === 'text' && <input className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />}
+          {f.type === 'text' && (
+            <input
+              className="input"
+              value={c[f.key] ?? ''}
+              onChange={(e) => set(f.key, f.key === 'phone' ? sanitizePhone(e.target.value) : e.target.value)}
+              inputMode={f.key === 'phone' ? 'numeric' : undefined}
+              maxLength={f.key === 'phone' ? 13 : undefined}
+            />
+          )}
 
           {f.type === 'textarea' && (
             <textarea rows={4} className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />
