@@ -8,6 +8,15 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const signInWithGoogle = (redirectPath = '/dashboard') =>
+  supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}${redirectPath}`,
+      queryParams: { prompt: 'select_account' }, // selalu tampilkan pilihan akun
+    },
+  })
+
   const loadProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null)
@@ -49,6 +58,7 @@ export function AuthProvider({ children }) {
     profile,
     isAdmin: profile?.role === 'admin',
     loading,
+    signInWithGoogle,
     signUp,
     signIn,
     signOut,

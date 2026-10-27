@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import GoogleButton from '../components/ui/GoogleButton'
 
 export default function RegisterPage() {
   const { signUp } = useAuth()
@@ -49,6 +50,10 @@ export default function RegisterPage() {
           </div>
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Memproses…' : 'Daftar'}</button>
         </form>
+        <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
+          <span className="h-px flex-1 bg-slate-200" /> atau <span className="h-px flex-1 bg-slate-200" />
+        </div>
+        <GoogleButton label="Daftar dengan Google" redirectPath="/dashboard" />
         <p className="mt-5 text-center text-sm text-slate-500">
           Sudah punya akun? <Link to="/login" className="font-semibold text-brand-700 hover:text-brand-800">Masuk</Link>
         </p>
