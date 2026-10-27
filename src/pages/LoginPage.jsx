@@ -20,7 +20,11 @@ export default function LoginPage() {
     const { data, error } = await signIn(email, password)
     if (error) {
       setBusy(false)
-      return toast.error(error.message === 'Invalid login credentials' ? 'Email atau password salah' : error.message)
+      const msg =
+        error.message === 'Invalid login credentials' ? 'Email atau password salah'
+        : error.message === 'Email not confirmed' ? 'Email belum diverifikasi. Daftar ulang atau minta kode baru.'
+        : error.message
+      return toast.error(msg)
     }
     const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle()
     setBusy(false)
@@ -44,6 +48,11 @@ export default function LoginPage() {
           <div>
             <label className="label">Password</label>
             <input className="input" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <div className="text-right">
+            <Link to="/lupa-password" className="text-sm font-medium text-brand-700 hover:text-brand-800">
+              Lupa password?
+            </Link>
           </div>
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Memproses…' : 'Masuk'}</button>
         </form>

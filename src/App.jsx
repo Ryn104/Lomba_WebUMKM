@@ -9,6 +9,8 @@ import BuilderPage from './pages/BuilderPage'
 import StoreDashboard from './pages/StoreDashboard'
 import POSPage from './pages/POSPage'
 import StoreFront from './pages/StoreFront'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 function SetupNotice() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/lupa-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route
           path="/admin"

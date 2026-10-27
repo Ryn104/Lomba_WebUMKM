@@ -51,6 +51,18 @@ export function AuthProvider({ children }) {
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password })
 
   const signOut = () => supabase.auth.signOut()
+  const resetPassword = (email) =>
+  supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+
+  const updatePassword = (password) => supabase.auth.updateUser({ password })
+
+  const verifySignupOtp = (email, token) =>
+  supabase.auth.verifyOtp({ email, token, type: 'signup' })
+
+  const resendSignupOtp = (email) =>
+  supabase.auth.resend({ type: 'signup', email })
 
   const value = {
     session,
@@ -59,6 +71,10 @@ export function AuthProvider({ children }) {
     isAdmin: profile?.role === 'admin',
     loading,
     signInWithGoogle,
+    resetPassword,
+    updatePassword,
+    verifySignupOtp,
+    resendSignupOtp,
     signUp,
     signIn,
     signOut,
