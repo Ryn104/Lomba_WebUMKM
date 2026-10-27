@@ -10,7 +10,7 @@ export const SECTION_TYPES = {
       subtitle: 'Produk berkualitas langsung dari UMKM lokal',
       buttonText: 'Lihat Produk',
       image: '',
-      bg: '#4f46e5',
+      bg: '#047857',
       textColor: '#ffffff',
       align: 'center',
     },
@@ -90,7 +90,7 @@ export const SECTION_TYPES = {
         { name: 'Budi', text: 'Produknya bagus dan pelayanan ramah!' },
         { name: 'Sari', text: 'Pengiriman cepat, pasti beli lagi.' },
       ],
-      bg: '#eef2ff',
+      bg: '#ecfdf5',
       textColor: '#1e293b',
     },
     fields: [
@@ -132,5 +132,4 @@ export const defaultSections = () =>
     type,
     position: i,
     content: { ...SECTION_TYPES[type].defaults },
-    is_visible: true,
   }))

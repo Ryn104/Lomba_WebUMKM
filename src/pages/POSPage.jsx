@@ -124,14 +124,14 @@ function POS({ store }) {
   if (loading) return <Spinner full />
 
   return (
-    <div className="flex h-screen flex-col bg-slate-100 lg:flex-row">
+    <div className="flex h-screen flex-col bg-slate-50 lg:flex-row">
       {/* Kiri: produk */}
       <section className="flex min-h-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
           <Link to="/dashboard" className="btn-ghost px-2"><ArrowLeft size={18} /></Link>
           <div>
-            <p className="font-bold leading-tight">Kasir — {store.name}</p>
-            <p className="text-xs text-slate-400">Penjualan offline</p>
+            <p className="font-bold leading-tight text-slate-900">Kasir — {store.name}</p>
+            <p className="text-xs text-slate-500">Penjualan offline</p>
           </div>
           <div className="relative ml-auto w-full max-w-xs">
             <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
@@ -144,7 +144,7 @@ function POS({ store }) {
             <button
               key={c.id}
               onClick={() => setCat(c.id)}
-              className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium ${cat === c.id ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+              className={`shrink-0 rounded-full px-3.5 py-1 text-sm font-medium transition ${cat === c.id ? 'bg-brand-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
             >
               {c.name}
             </button>
@@ -164,16 +164,16 @@ function POS({ store }) {
                     key={p.id}
                     disabled={out}
                     onClick={() => add(p)}
-                    className="overflow-hidden rounded-xl bg-white text-left shadow-sm transition hover:shadow-md active:scale-[.98] disabled:opacity-50"
+                    className="overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:border-slate-300 hover:shadow-md active:scale-[.98] disabled:opacity-50"
                   >
                     <div className="relative aspect-[4/3] bg-slate-100">
                       {p.image_url && <img src={p.image_url} alt="" className="h-full w-full object-cover" />}
                       <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 text-xs text-white">Stok {p.stock}</span>
-                      {d.discount && <span className="absolute left-1 top-1 rounded bg-red-500 px-1.5 text-xs font-bold text-white">Promo</span>}
+                      {d.discount && <span className="absolute left-1 top-1 rounded bg-red-600 px-1.5 text-xs font-bold text-white">Promo</span>}
                     </div>
                     <div className="p-3">
-                      <p className="line-clamp-2 text-sm font-semibold">{p.name}</p>
-                      <p className="mt-1 text-sm font-bold text-brand-600">{rupiah(d.final)}</p>
+                      <p className="line-clamp-2 text-sm font-semibold text-slate-900">{p.name}</p>
+                      <p className="mt-1 text-sm font-bold text-brand-700">{rupiah(d.final)}</p>
                       {d.discount && <p className="text-xs text-slate-400 line-through">{rupiah(p.price)}</p>}
                     </div>
                   </button>
@@ -187,8 +187,8 @@ function POS({ store }) {
       {/* Kanan: keranjang */}
       <aside className="flex max-h-[55vh] w-full flex-col border-t border-slate-200 bg-white lg:max-h-none lg:w-[400px] lg:border-l lg:border-t-0">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h2 className="flex items-center gap-2 font-bold"><ShoppingCart size={18} /> Keranjang</h2>
-          {cart.length > 0 && <button className="text-xs text-red-500" onClick={() => setCart([])}>Kosongkan</button>}
+          <h2 className="flex items-center gap-2 font-bold text-slate-900"><ShoppingCart size={18} /> Keranjang</h2>
+          {cart.length > 0 && <button className="text-xs text-red-600 hover:text-red-700 hover:underline" onClick={() => setCart([])}>Kosongkan</button>}
         </div>
 
         <div className="flex-1 overflow-y-auto px-4">
@@ -199,19 +199,19 @@ function POS({ store }) {
               {lines.map((l) => (
                 <li key={l.product.id} className="py-3">
                   <div className="flex justify-between gap-2">
-                    <p className="text-sm font-medium">{l.product.name}</p>
-                    <b className="text-sm">{rupiah(l.unit * l.qty)}</b>
+                    <p className="text-sm font-medium text-slate-900">{l.product.name}</p>
+                    <b className="text-sm text-slate-900">{rupiah(l.unit * l.qty)}</b>
                   </div>
                   <div className="mt-1 flex items-center justify-between">
-                    <p className="text-xs text-slate-400">
-                      {rupiah(l.unit)} {l.label && <span className="text-red-500">· {l.label}</span>}
+                    <p className="text-xs text-slate-500">
+                      {rupiah(l.unit)} {l.label && <span className="text-red-600 font-medium">· {l.label}</span>}
                     </p>
                     <div className="flex items-center gap-1">
-                      <button className="rounded border border-slate-200 p-1" onClick={() => setQty(l.product.id, -1)}>
-                        {l.qty === 1 ? <Trash2 size={13} className="text-red-500" /> : <Minus size={13} />}
+                      <button className="rounded border border-slate-200 p-1 hover:bg-slate-50" onClick={() => setQty(l.product.id, -1)}>
+                        {l.qty === 1 ? <Trash2 size={13} className="text-red-600" /> : <Minus size={13} />}
                       </button>
-                      <span className="w-7 text-center text-sm font-semibold">{l.qty}</span>
-                      <button className="rounded border border-slate-200 p-1" onClick={() => setQty(l.product.id, 1)}><Plus size={13} /></button>
+                      <span className="w-7 text-center text-sm font-semibold text-slate-800">{l.qty}</span>
+                      <button className="rounded border border-slate-200 p-1 hover:bg-slate-50" onClick={() => setQty(l.product.id, 1)}><Plus size={13} /></button>
                     </div>
                   </div>
                 </li>
@@ -222,9 +222,9 @@ function POS({ store }) {
 
         <div className="space-y-3 border-t border-slate-200 bg-slate-50 p-4">
           <div className="space-y-1 text-sm">
-            <div className="flex justify-between text-slate-500"><span>Subtotal</span><span>{rupiah(subtotal)}</span></div>
-            {discountTotal > 0 && <div className="flex justify-between text-red-500"><span>Diskon</span><span>-{rupiah(discountTotal)}</span></div>}
-            <div className="flex justify-between text-lg font-extrabold"><span>Total</span><span>{rupiah(total)}</span></div>
+            <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>{rupiah(subtotal)}</span></div>
+            {discountTotal > 0 && <div className="flex justify-between text-red-600 font-medium"><span>Diskon</span><span>-{rupiah(discountTotal)}</span></div>}
+            <div className="flex justify-between text-lg font-extrabold text-slate-900"><span>Total</span><span>{rupiah(total)}</span></div>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -232,7 +232,7 @@ function POS({ store }) {
               <button
                 key={m.id}
                 onClick={() => setMethod(m.id)}
-                className={`flex flex-col items-center gap-1 rounded-lg border py-2 text-xs font-semibold ${method === m.id ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-200 bg-white text-slate-600'}`}
+                className={`flex flex-col items-center gap-1 rounded-lg border py-2 text-xs font-semibold transition ${method === m.id ? 'border-brand-700 bg-brand-50 text-brand-700 ring-1 ring-brand-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
               >
                 <m.icon size={16} /> {m.label}
               </button>
@@ -244,16 +244,16 @@ function POS({ store }) {
               <input type="number" className="input" placeholder="Uang diterima" value={paid} onChange={(e) => setPaid(e.target.value)} />
               <div className="flex flex-wrap gap-1.5">
                 {quick.map((v) => (
-                  <button key={v} onClick={() => setPaid(String(v))} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium">
+                  <button key={v} onClick={() => setPaid(String(v))} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-brand-600 hover:text-brand-700">
                     {v === total ? 'Uang pas' : rupiah(v)}
                   </button>
                 ))}
               </div>
-              <div className="flex justify-between text-sm font-semibold"><span>Kembalian</span><span className="text-emerald-600">{rupiah(change)}</span></div>
+              <div className="flex justify-between text-sm font-semibold text-slate-900"><span>Kembalian</span><span className="text-brand-700">{rupiah(change)}</span></div>
             </>
           )}
 
-          <button className="btn-primary w-full py-3 text-base" disabled={!canPay || busy} onClick={checkout}>
+          <button className="btn-primary w-full py-3 text-base shadow-sm" disabled={!canPay || busy} onClick={checkout}>
             {busy ? 'Memproses…' : `Bayar ${rupiah(total)}`}
           </button>
         </div>
@@ -278,25 +278,25 @@ function ReceiptModal({ receipt, store, onClose }) {
     >
       <div id="receipt" className="space-y-3 text-sm">
         <div className="flex flex-col items-center text-center">
-          <CheckCircle2 className="text-emerald-500" size={36} />
-          <p className="mt-1 font-bold">{store.name}</p>
-          <p className="text-xs text-slate-400">{tx.invoice_no} · {formatDateTime(tx.created_at)}</p>
+          <CheckCircle2 className="text-brand-700" size={36} />
+          <p className="mt-1 font-bold text-slate-900">{store.name}</p>
+          <p className="text-xs text-slate-500">{tx.invoice_no} · {formatDateTime(tx.created_at)}</p>
         </div>
         <ul className="divide-y divide-dashed divide-slate-200 border-y border-dashed border-slate-200">
           {lines.map((l) => (
-            <li key={l.product.id} className="flex justify-between py-2">
+            <li key={l.product.id} className="flex justify-between py-2 text-slate-800">
               <span>{l.qty}× {l.product.name}</span><span>{rupiah(l.unit * l.qty)}</span>
             </li>
           ))}
         </ul>
-        <div className="space-y-1">
-          <div className="flex justify-between"><span>Subtotal</span><span>{rupiah(tx.subtotal)}</span></div>
-          {Number(tx.discount_total) > 0 && <div className="flex justify-between"><span>Diskon</span><span>-{rupiah(tx.discount_total)}</span></div>}
-          <div className="flex justify-between font-bold"><span>Total</span><span>{rupiah(tx.total)}</span></div>
+        <div className="space-y-1 text-slate-800">
+          <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>{rupiah(tx.subtotal)}</span></div>
+          {Number(tx.discount_total) > 0 && <div className="flex justify-between text-red-600 font-medium"><span>Diskon</span><span>-{rupiah(tx.discount_total)}</span></div>}
+          <div className="flex justify-between font-bold text-slate-900"><span>Total</span><span>{rupiah(tx.total)}</span></div>
           <div className="flex justify-between"><span>Bayar ({method.toUpperCase()})</span><span>{rupiah(tx.paid)}</span></div>
           <div className="flex justify-between"><span>Kembali</span><span>{rupiah(tx.change_amount)}</span></div>
         </div>
-        <p className="text-center text-xs text-slate-400">Terima kasih telah berbelanja!</p>
+        <p className="text-center text-xs text-slate-500">Terima kasih telah berbelanja!</p>
       </div>
     </Modal>
   )

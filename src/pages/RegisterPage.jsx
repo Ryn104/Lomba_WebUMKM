@@ -28,12 +28,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-white p-4">
-      <div className="card w-full max-w-md p-8">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-xl font-extrabold">
-          <span className="rounded-lg bg-brand-600 p-1.5 text-white"><Store size={18} /></span> UMKM Builder
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50/50 via-slate-50 to-slate-100 p-4">
+      <div className="card w-full max-w-md p-8 shadow-sm">
+        <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-xl font-extrabold text-slate-900">
+          <span className="rounded-lg bg-brand-700 p-1.5 text-white"><Store size={18} /></span> UMKM Builder
         </Link>
-        <h1 className="text-center text-xl font-bold">Daftar akun UMKM</h1>
+        <h1 className="text-center text-xl font-bold text-slate-900">Daftar akun UMKM</h1>
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
             <label className="label">Nama lengkap</label>
@@ -50,7 +50,7 @@ export default function RegisterPage() {
           <button className="btn-primary w-full" disabled={busy}>{busy ? 'Memproses…' : 'Daftar'}</button>
         </form>
         <p className="mt-5 text-center text-sm text-slate-500">
-          Sudah punya akun? <Link to="/login" className="font-semibold text-brand-600">Masuk</Link>
+          Sudah punya akun? <Link to="/login" className="font-semibold text-brand-700 hover:text-brand-800">Masuk</Link>
         </p>
       </div>
     </div>

@@ -70,7 +70,7 @@ function Content({ stores, users, q, setQ, toggleActive, remove }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard Admin</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard Admin</h1>
         <p className="text-sm text-slate-500">Pantau seluruh toko UMKM yang terdaftar di platform.</p>
       </div>
 
@@ -82,7 +82,7 @@ function Content({ stores, users, q, setQ, toggleActive, remove }) {
 
       <div className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4">
-          <h2 className="font-semibold">Semua toko UMKM</h2>
+          <h2 className="font-semibold text-slate-900">Semua toko UMKM</h2>
           <div className="relative w-full max-w-xs">
             <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
             <input className="input pl-9" placeholder="Cari nama / alamat…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -106,17 +106,17 @@ function Content({ stores, users, q, setQ, toggleActive, remove }) {
                 {list.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3">
-                      <p className="font-semibold">{s.name}</p>
-                      <a href={`/${s.slug}`} target="_blank" rel="noreferrer" className="text-xs text-brand-600 hover:underline">
+                      <p className="font-semibold text-slate-900">{s.name}</p>
+                      <a href={`/${s.slug}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-brand-700 hover:text-brand-800 hover:underline">
                         {PLATFORM_DOMAIN}/{s.slug}
                       </a>
                     </td>
                     <td className="px-4 py-3">
-                      <p>{s.profiles?.full_name || '-'}</p>
+                      <p className="text-slate-800">{s.profiles?.full_name || '-'}</p>
                       <p className="text-xs text-slate-400">{s.profiles?.email}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${!s.is_active ? 'bg-red-100 text-red-600' : s.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${!s.is_active ? 'bg-[#FEE2E2] text-[#991B1B]' : s.is_published ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF3C7] text-[#92400E]'}`}>
                         {!s.is_active ? 'Nonaktif' : s.is_published ? 'Live' : 'Draft'}
                       </span>
                     </td>
@@ -124,9 +124,9 @@ function Content({ stores, users, q, setQ, toggleActive, remove }) {
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
                         <button title={s.is_active ? 'Nonaktifkan' : 'Aktifkan'} className="rounded p-1.5 hover:bg-slate-100" onClick={() => toggleActive(s)}>
-                          <Power size={15} className={s.is_active ? 'text-emerald-600' : 'text-slate-400'} />
+                          <Power size={15} className={s.is_active ? 'text-brand-700' : 'text-slate-400'} />
                         </button>
-                        <button title="Hapus" className="rounded p-1.5 text-red-500 hover:bg-red-50" onClick={() => remove(s)}>
+                        <button title="Hapus" className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(s)}>
                           <Trash2 size={15} />
                         </button>
                       </div>

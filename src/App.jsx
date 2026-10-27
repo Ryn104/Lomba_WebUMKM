@@ -12,7 +12,7 @@ import StoreFront from './pages/StoreFront'
 
 function SetupNotice() {
   return (
-    <div className="bg-amber-100 px-4 py-2 text-center text-sm text-amber-900">
+    <div className="bg-[#FEF3C7] px-4 py-2 text-center text-sm font-medium text-[#92400E]">
       Supabase belum dikonfigurasi. Salin <code className="font-mono">.env.example</code> menjadi{' '}
       <code className="font-mono">.env</code> dan isi <code>VITE_SUPABASE_URL</code> &amp;{' '}
       <code>VITE_SUPABASE_ANON_KEY</code>.

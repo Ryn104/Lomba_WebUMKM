@@ -63,8 +63,8 @@ export default function CreateStore({ onCreated }) {
     <div className="flex min-h-[70vh] items-center justify-center p-4">
       <form onSubmit={submit} className="card w-full max-w-lg space-y-5 p-8">
         <div className="text-center">
-          <span className="inline-flex rounded-xl bg-brand-50 p-3 text-brand-600"><Store size={28} /></span>
-          <h2 className="mt-3 text-xl font-bold">Buat Toko Anda</h2>
+          <span className="inline-flex rounded-xl bg-brand-50 p-3 text-brand-700"><Store size={28} /></span>
+          <h2 className="mt-3 text-xl font-bold text-slate-900">Buat Toko Anda</h2>
           <p className="text-sm text-slate-500">Website toko akan otomatis tersedia di alamat yang Anda pilih.</p>
         </div>
 
@@ -75,18 +75,18 @@ export default function CreateStore({ onCreated }) {
 
         <div>
           <label className="label">Alamat website</label>
-          <div className="flex items-center overflow-hidden rounded-lg border border-slate-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100">
+          <div className="flex items-center overflow-hidden rounded-lg border border-slate-300 bg-white focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-100">
             <span className="bg-slate-100 px-3 py-2 text-sm text-slate-500">{PLATFORM_DOMAIN}/</span>
             <input
-              className="w-full px-2 py-2 text-sm outline-none"
+              className="w-full px-2 py-2 text-sm text-slate-900 outline-none"
               required
               value={slug}
               onChange={(e) => { setSlugTouched(true); setSlug(slugify(e.target.value)) }}
               placeholder="warung-kopi-sari"
             />
-            {slug && (valid ? <Check size={16} className="mr-2 text-emerald-500" /> : <X size={16} className="mr-2 text-red-500" />)}
+            {slug && (valid ? <Check size={16} className="mr-2 text-brand-600" /> : <X size={16} className="mr-2 text-red-600" />)}
           </div>
-          {reserved && <p className="mt-1 text-xs text-red-500">Alamat ini dicadangkan sistem.</p>}
+          {reserved && <p className="mt-1 text-xs text-red-600">Alamat ini dicadangkan sistem.</p>}
         </div>
 
         <div>

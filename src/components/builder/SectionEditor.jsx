@@ -11,9 +11,9 @@ export default function SectionEditor({ section, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="flex items-center gap-2 font-bold text-slate-900">
-        <def.icon size={18} className="text-brand-600" /> {def.label}
+        <def.icon size={18} className="text-brand-700" /> {def.label}
       </h3>
-      {def.note && <p className="rounded-lg bg-brand-50 p-3 text-xs text-brand-700">{def.note}</p>}
+      {def.note && <p className="rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs text-brand-800">{def.note}</p>}
 
       {def.fields.map((f) => (
         <div key={f.key}>
@@ -35,7 +35,7 @@ export default function SectionEditor({ section, onChange }) {
                 type="color"
                 value={c[f.key] || '#ffffff'}
                 onChange={(e) => set(f.key, e.target.value)}
-                className="h-9 w-12 cursor-pointer rounded border border-slate-300"
+                className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 p-0.5"
               />
               <input className="input font-mono" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />
             </div>
@@ -59,11 +59,11 @@ export default function SectionEditor({ section, onChange }) {
             <div className="space-y-2">
               <div className="grid grid-cols-3 gap-2">
                 {(c[f.key] || []).map((src, i) => (
-                  <div key={i} className="group relative aspect-square overflow-hidden rounded-lg">
+                  <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200">
                     <img src={src} alt="" className="h-full w-full object-cover" />
                     <button
                       onClick={() => set(f.key, c[f.key].filter((_, j) => j !== i))}
-                      className="absolute right-1 top-1 rounded bg-red-600 p-1 text-white opacity-0 group-hover:opacity-100"
+                      className="absolute right-1 top-1 rounded bg-red-600 p-1 text-white opacity-0 transition group-hover:opacity-100"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -77,7 +77,7 @@ export default function SectionEditor({ section, onChange }) {
           {f.type === 'testimonials' && (
             <div className="space-y-3">
               {(c[f.key] || []).map((t, i) => (
-                <div key={i} className="space-y-2 rounded-lg border border-slate-200 p-3">
+                <div key={i} className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
                   <input
                     className="input"
                     placeholder="Nama"
@@ -91,7 +91,7 @@ export default function SectionEditor({ section, onChange }) {
                     value={t.text}
                     onChange={(e) => set(f.key, c[f.key].map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))}
                   />
-                  <button className="text-xs text-red-500" onClick={() => set(f.key, c[f.key].filter((_, j) => j !== i))}>
+                  <button className="text-xs text-red-600 hover:text-red-700 hover:underline" onClick={() => set(f.key, c[f.key].filter((_, j) => j !== i))}>
                     Hapus
                   </button>
                 </div>

@@ -9,7 +9,7 @@ import { Field, StatCard, EmptyState, Spinner } from '../ui/Field'
 
 const INCOME_CATS = ['Penjualan Kasir', 'Penjualan Online', 'Lainnya']
 const EXPENSE_CATS = ['Bahan Baku', 'Gaji', 'Sewa', 'Listrik & Air', 'Transportasi', 'Pemasaran', 'Peralatan', 'Lainnya']
-const PIE = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6', '#ec4899', '#64748b']
+const PIE = ['#047857', '#10b981', '#059669', '#34d399', '#0d9488', '#0284c7', '#f59e0b', '#64748b']
 
 export default function Finance({ store }) {
   const [rows, setRows] = useState(null)
@@ -54,43 +54,36 @@ export default function Finance({ store }) {
 
   const expenseByCat = useMemo(() => {
     const m = {}
-    monthRows.filter((r) => r.type === 'expense').forEach((r) => { m[r.category] = (m[r.category] || 0) + Number(r.amount) })
+    monthRows.filter((r) => r.type === 'expense').forEach((r) => {
+      m[r.category] = (m[r.category] || 0) + Number(r.amount)
+    })
     return Object.entries(m).map(([name, value]) => ({ name, value }))
   }, [monthRows])
 
   const save = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const { error } = await supabase.from('finances').insert({
+    const payload = {
       store_id: store.id,
       type: form.type,
       category: form.category,
-      amount: Number(form.amount),
-      note: form.note || null,
+      amount: Number(form.amount) || 0,
       date: form.date,
-    })
+      note: form.note || null,
+    }
+    const { error } = await supabase.from('finances').insert(payload)
     setSaving(false)
     if (error) return toast.error(error.message)
-    toast.success('Catatan disimpan')
+    toast.success('Catatan keuangan disimpan')
     setForm(null)
     load()
   }
 
   const remove = async (r) => {
-    if (r.transaction_id) return toast.error('Pemasukan dari kasir tidak bisa dihapus manual')
     if (!confirm('Hapus catatan ini?')) return
     await supabase.from('finances').delete().eq('id', r.id)
+    toast.success('Catatan dihapus')
     load()
-  }
-
-  const exportCSV = () => {
-    const head = 'Tanggal,Jenis,Kategori,Jumlah,Catatan'
-    const body = shown.map((r) => [r.date, r.type === 'income' ? 'Pemasukan' : 'Pengeluaran', r.category, r.amount, `"${(r.note || '').replace(/"/g, '""')}"`].join(','))
-    const blob = new Blob([[head, ...body].join('\n')], { type: 'text/csv' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `keuangan-${store.slug}-${month}.csv`
-    a.click()
   }
 
   if (!rows) return <Spinner />
@@ -100,27 +93,32 @@ export default function Finance({ store }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Keuangan</h1>
-          <p className="text-sm text-slate-500">Catat pemasukan & pengeluaran toko. Penjualan kasir tercatat otomatis.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Keuangan</h1>
+          <p className="text-sm text-slate-500">Catat pemasukan kasir dan pengeluaran operasional toko.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <input type="month" className="input w-auto" value={month} onChange={(e) => setMonth(e.target.value)} />
-          <button className="btn-secondary" onClick={exportCSV}>Ekspor CSV</button>
-          <button className="btn-primary" onClick={() => setForm({ type: 'expense', category: EXPENSE_CATS[0], amount: '', note: '', date: todayISO() })}>
-            <Plus size={16} /> Catat
+        <div className="flex items-center gap-2">
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="input w-auto font-medium"
+          />
+          <button className="btn-primary" onClick={() => setForm({ type: 'expense', category: EXPENSE_CATS[0], amount: '', date: todayISO(), note: '' })}>
+            <Plus size={16} /> Catat Keuangan
           </button>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={TrendingUp} tone="green" label="Pemasukan" value={rupiah(income)} />
-        <StatCard icon={TrendingDown} tone="red" label="Pengeluaran" value={rupiah(expense)} />
-        <StatCard icon={Scale} tone={income - expense >= 0 ? 'brand' : 'red'} label="Laba / Rugi" value={rupiah(income - expense)} sub={income - expense >= 0 ? 'Untung' : 'Rugi'} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={TrendingUp} tone="green" label={`Pemasukan (${month})`} value={rupiah(income)} />
+        <StatCard icon={TrendingDown} tone="red" label={`Pengeluaran (${month})`} value={rupiah(expense)} />
+        <StatCard icon={Scale} tone="brand" label="Laba bersih bulan ini" value={rupiah(income - expense)} />
+        <StatCard icon={Wallet} tone="amber" label="Total transaksi" value={monthRows.length} sub={`${monthRows.filter((r) => r.type === 'income').length} masuk, ${monthRows.filter((r) => r.type === 'expense').length} keluar`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="card p-5 lg:col-span-2">
-          <h2 className="mb-4 font-semibold">Tahun {month.slice(0, 4)}</h2>
+          <h2 className="mb-4 font-semibold text-slate-900">Tahun {month.slice(0, 4)}</h2>
           <div className="h-64">
             <ResponsiveContainer>
               <BarChart data={yearChart}>
@@ -129,14 +127,14 @@ export default function Finance({ store }) {
                 <YAxis fontSize={12} tickFormatter={(v) => (v >= 1e6 ? `${v / 1e6}jt` : v >= 1000 ? `${v / 1000}rb` : v)} />
                 <Tooltip formatter={(v) => rupiah(v)} />
                 <Legend />
-                <Bar dataKey="Pemasukan" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Pemasukan" fill="#047857" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Pengeluaran" fill="#f87171" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         <div className="card p-5">
-          <h2 className="mb-4 font-semibold">Pengeluaran per kategori</h2>
+          <h2 className="mb-4 font-semibold text-slate-900">Pengeluaran per kategori</h2>
           {expenseByCat.length === 0 ? (
             <p className="py-16 text-center text-sm text-slate-400">Belum ada pengeluaran.</p>
           ) : (
@@ -158,7 +156,13 @@ export default function Finance({ store }) {
       <div className="card overflow-hidden">
         <div className="flex gap-2 border-b border-slate-100 p-3">
           {[['all', 'Semua'], ['income', 'Pemasukan'], ['expense', 'Pengeluaran']].map(([v, l]) => (
-            <button key={v} onClick={() => setFilter(v)} className={`rounded-full px-3 py-1 text-sm font-medium ${filter === v ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{l}</button>
+            <button
+              key={v}
+              onClick={() => setFilter(v)}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition ${filter === v ? 'bg-brand-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
+            >
+              {l}
+            </button>
           ))}
         </div>
         {shown.length === 0 ? (
@@ -172,13 +176,13 @@ export default function Finance({ store }) {
               {shown.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
-                  <td className="px-4 py-3">{r.category}</td>
+                  <td className="px-4 py-3 font-medium text-slate-800">{r.category}</td>
                   <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
-                  <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
+                  <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-brand-700' : 'text-red-700'}`}>
                     {r.type === 'income' ? '+' : '-'}{rupiah(r.amount)}
                   </td>
                   <td className="px-2">
-                    {!r.transaction_id && <button className="rounded p-1.5 text-red-500 hover:bg-red-50" onClick={() => remove(r)}><Trash2 size={15} /></button>}
+                    {!r.transaction_id && <button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(r)}><Trash2 size={15} /></button>}
                   </td>
                 </tr>
               ))}
@@ -195,7 +199,7 @@ export default function Finance({ store }) {
                 <button
                   type="button" key={v}
                   onClick={() => setForm({ ...form, type: v, category: (v === 'income' ? INCOME_CATS : EXPENSE_CATS)[0] })}
-                  className={`rounded-lg border px-3 py-2 text-sm font-semibold ${form.type === v ? (v === 'income' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-red-500 bg-red-50 text-red-700') : 'border-slate-200'}`}
+                  className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${form.type === v ? (v === 'income' ? 'border-brand-700 bg-brand-50 text-brand-700 ring-1 ring-brand-700' : 'border-red-600 bg-red-50 text-red-700 ring-1 ring-red-600') : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
                 >{l}</button>
               ))}
             </div>
