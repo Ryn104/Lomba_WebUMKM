@@ -48,13 +48,13 @@ export default function Overview({ store }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Halo, selamat datang 👋</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Halo, selamat datang 👋</h1>
         <p className="text-sm text-slate-500">Ringkasan toko {store.name} bulan ini.</p>
       </div>
 
       {!store.is_published && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm text-amber-900">Website toko Anda masih <b>draft</b>. Desain lalu publikasikan agar bisa diakses pelanggan.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-[#FEF3C7] p-4">
+          <p className="text-sm text-[#92400E]">Website toko Anda masih <b>draft</b>. Desain lalu publikasikan agar bisa diakses pelanggan.</p>
           <Link to="/builder" className="btn-primary">Buka Web Builder</Link>
         </div>
       )}
@@ -68,7 +68,7 @@ export default function Overview({ store }) {
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="card p-5 xl:col-span-2">
-          <h2 className="mb-4 font-semibold">Arus kas 7 hari terakhir</h2>
+          <h2 className="mb-4 font-semibold text-slate-900">Arus kas 7 hari terakhir</h2>
           <div className="h-64">
             <ResponsiveContainer>
               <BarChart data={chart}>
@@ -76,7 +76,7 @@ export default function Overview({ store }) {
                 <XAxis dataKey="hari" fontSize={12} />
                 <YAxis fontSize={12} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}rb` : v)} />
                 <Tooltip formatter={(v) => rupiah(v)} />
-                <Bar dataKey="Pemasukan" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Pemasukan" fill="#047857" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Pengeluaran" fill="#f87171" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -85,16 +85,16 @@ export default function Overview({ store }) {
 
         <div className="space-y-6">
           <div className="card p-5">
-            <h2 className="mb-3 font-semibold">Transaksi kasir terbaru</h2>
+            <h2 className="mb-3 font-semibold text-slate-900">Transaksi kasir terbaru</h2>
             {recent.length === 0 ? (
               <p className="text-sm text-slate-400">Belum ada transaksi.</p>
             ) : (
               <ul className="divide-y divide-slate-100 text-sm">
                 {recent.map((t) => (
-                  <li key={t.id} className="flex items-center justify-between py-2">
+                  <li key={t.id} className="flex items-center justify-between py-2 text-slate-800">
                     <div>
-                      <p className="font-medium">{t.invoice_no}</p>
-                      <p className="text-xs text-slate-400">{formatDateTime(t.created_at)}</p>
+                      <p className="font-medium text-slate-900">{t.invoice_no}</p>
+                      <p className="text-xs text-slate-500">{formatDateTime(t.created_at)}</p>
                     </div>
                     <b>{rupiah(t.total)}</b>
                   </li>
@@ -105,10 +105,10 @@ export default function Overview({ store }) {
 
           {lowStock.length > 0 && (
             <div className="card p-5">
-              <h2 className="mb-3 flex items-center gap-2 font-semibold"><AlertTriangle size={16} className="text-amber-500" /> Stok menipis</h2>
+              <h2 className="mb-3 flex items-center gap-2 font-semibold text-slate-900"><AlertTriangle size={16} className="text-amber-600" /> Stok menipis</h2>
               <ul className="space-y-1 text-sm">
                 {lowStock.slice(0, 5).map((p) => (
-                  <li key={p.id} className="flex justify-between"><span>{p.name}</span><b className={p.stock === 0 ? 'text-red-600' : 'text-amber-600'}>{p.stock}</b></li>
+                  <li key={p.id} className="flex justify-between text-slate-800"><span>{p.name}</span><b className={p.stock === 0 ? 'text-red-700' : 'text-amber-800'}>{p.stock}</b></li>
                 ))}
               </ul>
             </div>

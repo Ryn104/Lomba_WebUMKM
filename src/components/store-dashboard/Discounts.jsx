@@ -68,17 +68,17 @@ export default function Discounts({ store }) {
   const today = todayISO()
 
   const status = (d) => {
-    if (!d.is_active) return ['Nonaktif', 'bg-slate-100 text-slate-500']
-    if (d.start_date && d.start_date > today) return ['Terjadwal', 'bg-blue-100 text-blue-700']
-    if (d.end_date && d.end_date < today) return ['Berakhir', 'bg-red-100 text-red-600']
-    return ['Berjalan', 'bg-emerald-100 text-emerald-700']
+    if (!d.is_active) return ['Nonaktif', 'bg-[#F1F5F9] text-[#334155]']
+    if (d.start_date && d.start_date > today) return ['Terjadwal', 'bg-[#DBEAFE] text-[#1D4ED8]']
+    if (d.end_date && d.end_date < today) return ['Berakhir', 'bg-[#FEE2E2] text-[#991B1B]']
+    return ['Berjalan', 'bg-[#DCFCE7] text-[#166534]']
   }
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Diskon</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Diskon</h1>
           <p className="text-sm text-slate-500">Diskon otomatis berlaku di website dan di kasir.</p>
         </div>
         <button className="btn-primary" onClick={() => setForm({ ...empty })}><Plus size={16} /> Buat Diskon</button>
@@ -105,21 +105,21 @@ export default function Discounts({ store }) {
                   const [label, cls] = status(d)
                   return (
                     <tr key={d.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium">{d.name}</td>
-                      <td className="px-4 py-3 font-semibold">{d.type === 'percent' ? `${Number(d.value)}%` : rupiah(d.value)}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900">{d.name}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">{d.type === 'percent' ? `${Number(d.value)}%` : rupiah(d.value)}</td>
                       <td className="px-4 py-3 text-slate-500">{d.products?.name || 'Semua produk'}</td>
                       <td className="px-4 py-3 text-slate-500">
                         {d.start_date || d.end_date ? `${formatDate(d.start_date)} – ${formatDate(d.end_date)}` : 'Tanpa batas'}
                       </td>
                       <td className="px-4 py-3">
-                        <button onClick={() => toggle(d)} className={`rounded-full px-2 py-0.5 text-xs font-semibold ${cls}`} title="Klik untuk aktif/nonaktif">
+                        <button onClick={() => toggle(d)} className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${cls}`} title="Klik untuk aktif/nonaktif">
                           {label}
                         </button>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
                           <button className="rounded p-1.5 hover:bg-slate-100" onClick={() => setForm({ ...d, product_id: d.product_id || '', start_date: d.start_date || '', end_date: d.end_date || '' })}><Pencil size={15} /></button>
-                          <button className="rounded p-1.5 text-red-500 hover:bg-red-50" onClick={() => remove(d)}><Trash2 size={15} /></button>
+                          <button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(d)}><Trash2 size={15} /></button>
                         </div>
                       </td>
                     </tr>
@@ -156,8 +156,8 @@ export default function Discounts({ store }) {
               <Field label="Mulai (opsional)"><input type="date" className="input" value={form.start_date} onChange={set('start_date')} /></Field>
               <Field label="Berakhir (opsional)"><input type="date" className="input" value={form.end_date} onChange={set('end_date')} /></Field>
             </div>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> Aktif
+            <label className="flex items-center gap-2 text-sm text-slate-800">
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> Aktif
             </label>
             <div className="flex justify-end gap-2">
               <button type="button" className="btn-secondary" onClick={() => setForm(null)}>Batal</button>

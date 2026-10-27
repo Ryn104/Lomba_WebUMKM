@@ -9,7 +9,7 @@ import Modal from '../ui/Modal'
  */
 export default function SectionRenderer({ section, store, products = [], discounts = [], primary }) {
   const c = section.content || {}
-  const color = primary || store?.theme?.primary || '#4f46e5'
+  const color = primary || store?.theme?.primary || '#047857'
   const style = { backgroundColor: c.bg, color: c.textColor }
 
   switch (section.type) {
@@ -31,7 +31,7 @@ export default function SectionRenderer({ section, store, products = [], discoun
             {c.buttonText && (
               <a
                 href="#products"
-                className="mt-8 inline-block rounded-lg bg-white px-6 py-3 font-semibold shadow"
+                className="mt-8 inline-block rounded-lg bg-white px-6 py-3 font-semibold shadow transition hover:opacity-90"
                 style={{ color: c.bg && c.bg !== '#ffffff' ? c.bg : color }}
               >
                 {c.buttonText}
@@ -115,7 +115,7 @@ export default function SectionRenderer({ section, store, products = [], discoun
                       href={`https://wa.me/${wa}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-white"
+                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700"
                     >
                       <MessageCircle size={18} /> Chat WhatsApp
                     </a>
@@ -166,7 +166,7 @@ function ProductsSection({ c, style, store, products, discounts, color }) {
                   <div className="relative aspect-square bg-slate-100">
                     {p.image_url && <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />}
                     {d.discount && (
-                      <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                      <span className="absolute left-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
                         {d.discount.type === 'percent' ? `-${Number(d.discount.value)}%` : 'Diskon'}
                       </span>
                     )}
@@ -175,7 +175,7 @@ function ProductsSection({ c, style, store, products, discounts, color }) {
                     )}
                   </div>
                   <div className="p-4">
-                    <p className="font-semibold">{p.name}</p>
+                    <p className="font-semibold text-slate-900">{p.name}</p>
                     <div className="mt-1 flex items-baseline gap-2">
                       <span className="font-bold" style={{ color }}>{rupiah(d.final)}</span>
                       {d.discount && <span className="text-sm text-slate-400 line-through">{rupiah(p.price)}</span>}
@@ -207,7 +207,7 @@ function ProductsSection({ c, style, store, products, discounts, color }) {
                 href={waLink(selected)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-white"
+                className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700"
               >
                 <MessageCircle size={18} /> Pesan via WhatsApp
               </a>

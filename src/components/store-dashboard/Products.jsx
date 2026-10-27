@@ -84,7 +84,7 @@ export default function Products({ store }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Produk</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Produk</h1>
           <p className="text-sm text-slate-500">Produk yang aktif otomatis tampil di section Produk website Anda.</p>
         </div>
         <div className="flex gap-2">
@@ -119,17 +119,17 @@ export default function Products({ store }) {
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-slate-100">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                           {p.image_url && <img src={p.image_url} alt="" className="h-full w-full object-cover" />}
                         </div>
-                        <span className="font-medium">{p.name}</span>
+                        <span className="font-medium text-slate-900">{p.name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-slate-500">{p.categories?.name || '-'}</td>
-                    <td className="px-4 py-3 text-right font-semibold">{rupiah(p.price)}</td>
-                    <td className={`px-4 py-3 text-right ${p.stock <= 5 ? 'font-bold text-red-600' : ''}`}>{p.stock}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-900">{rupiah(p.price)}</td>
+                    <td className={`px-4 py-3 text-right font-medium ${p.stock <= 5 ? 'font-bold text-red-600' : 'text-slate-800'}`}>{p.stock}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${p.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.is_active ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F1F5F9] text-[#334155]'}`}>
                         {p.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
@@ -138,7 +138,7 @@ export default function Products({ store }) {
                         <button className="rounded p-1.5 hover:bg-slate-100" onClick={() => setForm({ ...p, category_id: p.category_id || '', description: p.description || '', image_url: p.image_url || '' })}>
                           <Pencil size={15} />
                         </button>
-                        <button className="rounded p-1.5 text-red-500 hover:bg-red-50" onClick={() => remove(p)}>
+                        <button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(p)}>
                           <Trash2 size={15} />
                         </button>
                       </div>
@@ -171,8 +171,8 @@ export default function Products({ store }) {
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+            <label className="flex items-center gap-2 text-sm text-slate-800">
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
               Tampilkan di website & kasir
             </label>
             <div className="flex justify-end gap-2 pt-2">
@@ -191,9 +191,9 @@ export default function Products({ store }) {
         </form>
         <ul className="mt-4 divide-y divide-slate-100">
           {categories.map((c) => (
-            <li key={c.id} className="flex items-center justify-between py-2 text-sm">
+            <li key={c.id} className="flex items-center justify-between py-2 text-sm text-slate-800">
               {c.name}
-              <button className="text-red-500" onClick={() => removeCategory(c.id)}><Trash2 size={15} /></button>
+              <button className="text-red-600 hover:text-red-700" onClick={() => removeCategory(c.id)}><Trash2 size={15} /></button>
             </li>
           ))}
           {categories.length === 0 && <li className="py-4 text-center text-sm text-slate-400">Belum ada kategori.</li>}

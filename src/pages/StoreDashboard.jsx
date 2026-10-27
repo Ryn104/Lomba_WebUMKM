@@ -41,7 +41,7 @@ export default function StoreDashboard() {
         >
           <ExternalLink size={16} />
           <span className="hidden sm:inline">Lihat Website</span>
-          {!store.is_published && <span className="rounded bg-amber-100 px-1.5 text-xs text-amber-700">Draft</span>}
+          {!store.is_published && <span className="rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-semibold text-[#92400E]">Draft</span>}
         </a>
       }
     >

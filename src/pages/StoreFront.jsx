@@ -43,7 +43,7 @@ export default function StoreFront() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 p-6 text-center">
         <StoreIcon size={48} className="text-slate-300" />
-        <h1 className="text-2xl font-bold">Toko tidak ditemukan</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Toko tidak ditemukan</h1>
         <p className="text-slate-500">
           Toko “{slug}” belum ada atau belum dipublikasikan.
         </p>
@@ -52,7 +52,7 @@ export default function StoreFront() {
     )
 
   const { store, sections, products, discounts } = state
-  const primary = store.theme?.primary || '#4f46e5'
+  const primary = store.theme?.primary || '#047857'
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: store.theme?.font ? `${store.theme.font}, Inter, sans-serif` : undefined }}>
@@ -67,10 +67,10 @@ export default function StoreFront() {
             {store.name}
           </div>
           <nav className="hidden gap-5 text-sm font-medium text-slate-600 sm:flex">
-            {sections.some((s) => s.type === 'about') && <a href="#about">Tentang</a>}
-            {sections.some((s) => s.type === 'products') && <a href="#products">Produk</a>}
-            {sections.some((s) => s.type === 'gallery') && <a href="#gallery">Galeri</a>}
-            {sections.some((s) => s.type === 'contact') && <a href="#contact">Kontak</a>}
+            {sections.some((s) => s.type === 'about') && <a href="#about" className="hover:text-slate-900">Tentang</a>}
+            {sections.some((s) => s.type === 'products') && <a href="#products" className="hover:text-slate-900">Produk</a>}
+            {sections.some((s) => s.type === 'gallery') && <a href="#gallery" className="hover:text-slate-900">Galeri</a>}
+            {sections.some((s) => s.type === 'contact') && <a href="#contact" className="hover:text-slate-900">Kontak</a>}
           </nav>
         </div>
       </header>
