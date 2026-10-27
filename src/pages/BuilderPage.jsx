@@ -31,7 +31,7 @@ function Builder({ store, setStore }) {
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [device, setDevice] = useState('desktop')
-  const [primary, setPrimary] = useState(store.theme?.primary || '#047857')
+  const [primary, setPrimary] = useState(store.theme?.primary || '#4f46e5')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -135,26 +135,28 @@ function Builder({ store, setStore }) {
 
   if (loading) return <Spinner full />
 
+  const url = `https://${PLATFORM_DOMAIN}/${store.slug}`
+
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
+    <div className="flex h-screen flex-col">
       {/* Top bar */}
       <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-4 py-2.5">
         <Link to="/dashboard" className="btn-ghost px-2"><ArrowLeft size={18} /></Link>
         <div className="min-w-0">
-          <p className="truncate font-bold leading-tight text-slate-900">{store.name}</p>
-          <a href={`/${store.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-xs font-medium text-slate-500 hover:text-brand-700">
+          <p className="truncate font-bold leading-tight">{store.name}</p>
+          <a href={`/${store.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-xs text-slate-500 hover:text-brand-600">
             {PLATFORM_DOMAIN}/{store.slug} <ExternalLink size={11} />
           </a>
         </div>
-        <span className={`ml-2 rounded-full px-2.5 py-0.5 text-xs font-semibold ${store.is_published ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEF3C7] text-[#92400E]'}`}>
+        <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${store.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
           {store.is_published ? 'Live' : 'Draft'}
         </span>
-        {dirty && <span className="text-xs font-medium text-amber-800">• belum disimpan</span>}
+        {dirty && <span className="text-xs text-amber-600">• belum disimpan</span>}
 
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden rounded-lg border border-slate-200 p-0.5 sm:flex">
-            <button onClick={() => setDevice('desktop')} className={`rounded p-1.5 ${device === 'desktop' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Monitor size={16} /></button>
-            <button onClick={() => setDevice('mobile')} className={`rounded p-1.5 ${device === 'mobile' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Smartphone size={16} /></button>
+            <button onClick={() => setDevice('desktop')} className={`rounded p-1.5 ${device === 'desktop' ? 'bg-slate-100' : ''}`}><Monitor size={16} /></button>
+            <button onClick={() => setDevice('mobile')} className={`rounded p-1.5 ${device === 'mobile' ? 'bg-slate-100' : ''}`}><Smartphone size={16} /></button>
           </div>
           {store.is_published && (
             <button className="btn-ghost" onClick={unpublish}>Jadikan Draft</button>
@@ -199,7 +201,7 @@ function Builder({ store, setStore }) {
                 <button
                   key={type}
                   onClick={() => addSection(type)}
-                  className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-white p-3 text-xs font-medium text-slate-700 transition hover:border-brand-600 hover:text-brand-700"
+                  className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-slate-300 bg-white p-3 text-xs font-medium text-slate-600 hover:border-brand-500 hover:text-brand-600"
                 >
                   <def.icon size={18} /> {def.label}
                   <Plus size={12} className="text-slate-400" />
@@ -214,14 +216,14 @@ function Builder({ store, setStore }) {
               <input
                 type="color" value={primary}
                 onChange={(e) => { setPrimary(e.target.value); setDirty(true) }}
-                className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 p-0.5"
+                className="h-9 w-12 cursor-pointer rounded border border-slate-300"
               />
               <input className="input font-mono" value={primary} onChange={(e) => { setPrimary(e.target.value); setDirty(true) }} />
             </div>
           </div>
         </aside>
 
-        {/* Tengah: preview real-time */}
+         {/* Tengah: preview real-time */}
         <main className="min-w-0 flex-1 overflow-auto bg-slate-200/80 p-4">
           <div
             className={`mx-auto overflow-hidden rounded-xl bg-white shadow-xl transition-all ${device === 'mobile' ? 'max-w-[390px]' : 'max-w-full'}`}

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 /** Ambil toko milik user yang sedang login (1 user = 1 toko) */
 export function useMyStore() {
   const { user } = useAuth()
+  const userId = user?.id
   const [store, setStore] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -14,7 +15,6 @@ export function useMyStore() {
       setLoading(false)
       return
     }
-    setLoading(true)
     const { data } = await supabase
       .from('stores')
       .select('*')
@@ -24,7 +24,7 @@ export function useMyStore() {
       .maybeSingle()
     setStore(data)
     setLoading(false)
-  }, [user])
+  }, [userId])
 
   useEffect(() => {
     reload()

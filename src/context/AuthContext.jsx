@@ -8,6 +8,15 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const signInWithGoogle = (redirectPath = '/dashboard') =>
+  supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}${redirectPath}`,
+      queryParams: { prompt: 'select_account' }, // selalu tampilkan pilihan akun
+    },
+  })
+
   const loadProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null)
@@ -42,6 +51,18 @@ export function AuthProvider({ children }) {
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password })
 
   const signOut = () => supabase.auth.signOut()
+  const resetPassword = (email) =>
+  supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+
+  const updatePassword = (password) => supabase.auth.updateUser({ password })
+
+  const verifySignupOtp = (email, token) =>
+  supabase.auth.verifyOtp({ email, token, type: 'signup' })
+
+  const resendSignupOtp = (email) =>
+  supabase.auth.resend({ type: 'signup', email })
 
   const value = {
     session,
@@ -49,6 +70,11 @@ export function AuthProvider({ children }) {
     profile,
     isAdmin: profile?.role === 'admin',
     loading,
+    signInWithGoogle,
+    resetPassword,
+    updatePassword,
+    verifySignupOtp,
+    resendSignupOtp,
     signUp,
     signIn,
     signOut,
