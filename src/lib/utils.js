@@ -34,6 +34,9 @@ export const cn = (...c) => c.filter(Boolean).join(' ')
 
 export const todayISO = () => new Date().toISOString().slice(0, 10)
 
+/** Strip non-digits and limit to 13 characters. */
+export const sanitizePhone = (value) => (value || '').replace(/\D/g, '').slice(0, 13)
+
 /** Hitung harga setelah diskon. discounts = diskon aktif milik toko */
 export function getDiscountedPrice(product, discounts = []) {
   const today = todayISO()
