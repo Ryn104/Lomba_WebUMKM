@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { supabase, PLATFORM_DOMAIN } from '../../lib/supabase'
+import { sanitizePhone } from '../../lib/utils'
 import ImageUpload from '../ui/ImageUpload'
 import { Field } from '../ui/Field'
 
@@ -45,7 +46,13 @@ export default function StoreSettings({ store, setStore }) {
         </Field>
         <Field label="Deskripsi singkat"><textarea rows={3} className="input" value={form.description} onChange={set('description')} /></Field>
         <Field label="No. WhatsApp" hint="Dipakai untuk tombol pesan di halaman produk. Format: 628123456789">
-          <input className="input" value={form.whatsapp} onChange={set('whatsapp')} />
+          <input
+            className="input"
+            value={form.whatsapp}
+            onChange={(e) => setForm({ ...form, whatsapp: sanitizePhone(e.target.value) })}
+            inputMode="numeric"
+            maxLength={13}
+          />
         </Field>
         <button className="btn-primary" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan'}</button>
       </form>

@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react'
 import ImageUpload from '../ui/ImageUpload'
 import { SECTION_TYPES } from '../store-front/sectionDefs'
+import { sanitizePhone } from '../../lib/utils'
 
 /** Panel kustomisasi untuk satu section yang sedang dipilih */
 export default function SectionEditor({ section, onChange }) {
