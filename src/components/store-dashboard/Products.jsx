@@ -6,6 +6,7 @@ import { rupiah } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import ImageUpload from '../ui/ImageUpload'
 import { Field, EmptyState, Spinner } from '../ui/Field'
+import ProdukImage from '../ui/ProductImage'
 
 const empty = { name: '', description: '', price: '', cost_price: '', stock: '', category_id: '', image_url: '', is_active: true }
 
@@ -120,7 +121,7 @@ export default function Products({ store }) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                          {p.image_url && <img src={p.image_url} alt="" className="h-full w-full object-cover" />}
+                            <ProdukImage src={p.image_url} />
                         </div>
                         <span className="font-medium text-slate-900">{p.name}</span>
                       </div>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MapPin, Phone, Mail, Clock, MessageCircle, Quote } from 'lucide-react'
 import { rupiah, getDiscountedPrice } from '../../lib/utils'
 import Modal from '../ui/Modal'
+import ProductImage from '../ui/ProductImage'
 
 /**
  * Merender satu section. Dipakai di preview builder DAN halaman toko publik,
@@ -164,7 +165,7 @@ function ProductsSection({ c, style, store, products, discounts, color }) {
                   className="overflow-hidden rounded-xl bg-white text-left text-slate-800 shadow-sm transition hover:shadow-lg"
                 >
                   <div className="relative aspect-square bg-slate-100">
-                    {p.image_url && <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />}
+                    <ProductImage src={p.image_url} alt={p.name} />
                     {d.discount && (
                       <span className="absolute left-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
                         {d.discount.type === 'percent' ? `-${Number(d.discount.value)}%` : 'Diskon'}
@@ -191,7 +192,7 @@ function ProductsSection({ c, style, store, products, discounts, color }) {
       <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.name}>
         {selected && (
           <div className="space-y-4 text-slate-800">
-            {selected.image_url && <img src={selected.image_url} alt="" className="max-h-72 w-full rounded-lg object-cover" />}
+            <ProductImage src={selected.image_url} alt={selected.name} className="max-h-72 w-full rounded-lg object-cover" />
             <div>
               <span className="text-2xl font-bold" style={{ color }}>
                 {rupiah(getDiscountedPrice(selected, discounts).final)}

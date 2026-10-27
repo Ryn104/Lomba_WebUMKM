@@ -8,6 +8,7 @@ import { rupiah, getDiscountedPrice, formatDateTime } from '../lib/utils'
 import { Spinner, EmptyState } from '../components/ui/Field'
 import Modal from '../components/ui/Modal'
 import CreateStore from '../components/builder/CreateStore'
+import ProductImage from '../components/ui/ProductImage'
 
 export default function POSPage() {
   const { store, loading, reload } = useMyStore()
@@ -167,7 +168,7 @@ function POS({ store }) {
                     className="overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:border-slate-300 hover:shadow-md active:scale-[.98] disabled:opacity-50"
                   >
                     <div className="relative aspect-[4/3] bg-slate-100">
-                      {p.image_url && <img src={p.image_url} alt="" className="h-full w-full object-cover" />}
+                      <ProductImage src={p.image_url} />
                       <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 text-xs text-white">Stok {p.stock}</span>
                       {d.discount && <span className="absolute left-1 top-1 rounded bg-red-600 px-1.5 text-xs font-bold text-white">Promo</span>}
                     </div>
