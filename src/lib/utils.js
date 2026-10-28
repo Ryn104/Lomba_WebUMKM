@@ -1,3 +1,10 @@
+/** Format digits for a money input without currency prefix; empty stays empty. */
+export const normalizeMoneyDigits = (value) => String(value ?? '').replace(/\D/g, '')
+export const formatMoneyInput = (value) => {
+  const digits = normalizeMoneyDigits(value)
+  return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+}
+
 export const rupiah = (n) =>
   new Intl.NumberFormat('id-ID', {
     style: 'currency',

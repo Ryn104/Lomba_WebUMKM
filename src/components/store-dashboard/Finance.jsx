@@ -18,6 +18,7 @@ import { supabase } from '../../lib/supabase'
 import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import { Field, StatCard, EmptyState, Spinner } from '../ui/Field'
+import MoneyInput from '../ui/MoneyInput'
 import { useSubscription } from '../../hooks/useSubscription'
 import LockedFeatureCard from '../subscription/LockedFeatureCard'
 import UpgradeModal from '../subscription/UpgradeModal'
@@ -318,9 +319,9 @@ export default function Finance({ store, setStore }) {
                 {(form.type === 'income' ? INCOME_CATS : EXPENSE_CATS).map((c) => <option key={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Jumlah (Rp)"><input type="number" min="1" required className="input" value={form.amount} onChange={set('amount')} /></Field>
+            <Field label="Jumlah (Rp)"><MoneyInput min="1" required value={form.amount} onChange={(value) => setForm({ ...form, amount: value })} placeholder="Contoh: 500.000" /></Field>
             <Field label="Tanggal"><input type="date" required className="input" value={form.date} onChange={set('date')} /></Field>
-            <Field label="Catatan"><input className="input" value={form.note} onChange={set('note')} /></Field>
+            <Field label="Catatan"><input className="input" value={form.note} onChange={set('note')} placeholder="Contoh: Pembelian bahan baku" /></Field>
             <div className="flex justify-end gap-2">
               <button type="button" className="btn-secondary" onClick={() => setForm(null)}>Batal</button>
               <button className="btn-primary" disabled={saving}>Simpan</button>

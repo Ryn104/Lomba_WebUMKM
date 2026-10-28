@@ -40,11 +40,11 @@ export default function StoreSettings({ store, setStore }) {
       <h1 className="text-2xl font-bold text-slate-900">Pengaturan Toko</h1>
       <form onSubmit={save} className="card space-y-4 p-6">
         <Field label="Logo"><ImageUpload value={form.logo_url} onChange={(v) => setForm({ ...form, logo_url: v })} folder={`logos/${store.id}`} className="h-24 w-24" /></Field>
-        <Field label="Nama toko"><input className="input" required value={form.name} onChange={set('name')} /></Field>
+        <Field label="Nama toko"><input className="input" required value={form.name} onChange={set('name')} placeholder="Contoh: Toko Berkah" /></Field>
         <Field label="Alamat website" hint="Alamat tidak dapat diubah setelah dibuat.">
           <input className="input cursor-not-allowed bg-slate-100 text-slate-600" disabled value={`${PLATFORM_DOMAIN}/${store.slug}`} />
         </Field>
-        <Field label="Deskripsi singkat"><textarea rows={3} className="input" value={form.description} onChange={set('description')} /></Field>
+        <Field label="Deskripsi singkat"><textarea rows={3} className="input" value={form.description} onChange={set('description')} placeholder="Ceritakan produk dan keunggulan toko Anda..." /></Field>
         <Field label="No. WhatsApp" hint="Dipakai untuk tombol pesan di halaman produk. Format: 628123456789">
           <input
             className="input"
@@ -52,6 +52,7 @@ export default function StoreSettings({ store, setStore }) {
             onChange={(e) => setForm({ ...form, whatsapp: sanitizePhone(e.target.value) })}
             inputMode="numeric"
             maxLength={13}
+            placeholder="Contoh: 628123456789"
           />
         </Field>
         <button className="btn-primary" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan'}</button>

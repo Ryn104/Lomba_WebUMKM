@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [unsavedChanges, setUnsavedChanges] = useState(false)
 
   const signInWithGoogle = (redirectPath = '/dashboard') =>
   supabase.auth.signInWithOAuth({
@@ -20,22 +21,28 @@ export function AuthProvider({ children }) {
   const loadProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null)
-      return
+      return null
     }
     const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
     setProfile(data)
+    return data
   }, [])
 
   useEffect(() => {
     let mounted = true
+    let currentUserId = null
     supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return
+      currentUserId = data.session?.user?.id || null
       setSession(data.session)
       await loadProfile(data.session?.user)
       setLoading(false)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      const nextUserId = s?.user?.id || null
       setSession(s)
+      if (currentUserId !== nextUserId) setUnsavedChanges(false)
+      currentUserId = nextUserId
       // hindari deadlock: jalankan query di luar callback
       setTimeout(() => loadProfile(s?.user), 0)
     })
@@ -68,6 +75,8 @@ export function AuthProvider({ children }) {
     session,
     user: session?.user ?? null,
     profile,
+    unsavedChanges,
+    setUnsavedChanges,
     isAdmin: profile?.role === 'admin',
     loading,
     signInWithGoogle,

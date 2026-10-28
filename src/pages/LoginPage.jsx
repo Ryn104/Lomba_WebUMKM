@@ -43,11 +43,11 @@ export default function LoginPage() {
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
             <label className="label">Email</label>
-            <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="input" type="email" required placeholder="nama@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
             <label className="label">Password</label>
-            <input className="input" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input className="input" type="password" required placeholder="Masukkan kata sandi" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <div className="text-right">
             <Link to="/lupa-password" className="text-sm font-medium text-brand-700 hover:text-brand-800">

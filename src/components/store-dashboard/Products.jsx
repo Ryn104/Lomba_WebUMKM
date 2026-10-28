@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { rupiah } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import ImageUpload from '../ui/ImageUpload'
+import MoneyInput from '../ui/MoneyInput'
 import { Field, EmptyState, Spinner } from '../ui/Field'
 import { useSubscription } from '../../hooks/useSubscription'
 import UsageNudge from '../subscription/UsageNudge'
@@ -191,12 +192,12 @@ export default function Products({ store, setStore }) {
             <Field label="Foto produk">
               <ImageUpload value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} folder={`products/${store.id}`} />
             </Field>
-            <Field label="Nama produk"><input className="input" required value={form.name} onChange={set('name')} /></Field>
-            <Field label="Deskripsi"><textarea rows={3} className="input" value={form.description} onChange={set('description')} /></Field>
+            <Field label="Nama produk"><input className="input" required value={form.name} onChange={set('name')} placeholder="Contoh: Kopi Susu Gula Aren" /></Field>
+            <Field label="Deskripsi"><textarea rows={3} className="input" value={form.description} onChange={set('description')} placeholder="Masukkan deskripsi produk..." /></Field>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Harga jual (Rp)"><input type="number" min="0" required className="input" value={form.price} onChange={set('price')} /></Field>
-              <Field label="Harga modal (Rp)"><input type="number" min="0" className="input" value={form.cost_price} onChange={set('cost_price')} /></Field>
-              <Field label="Stok"><input type="number" min="0" required className="input" value={form.stock} onChange={set('stock')} /></Field>
+              <Field label="Harga jual (Rp)"><MoneyInput required min="0" value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" /></Field>
+              <Field label="Harga modal (Rp)"><MoneyInput min="0" value={form.cost_price} onChange={(value) => setForm({ ...form, cost_price: value })} placeholder="Contoh: 30.000" /></Field>
+              <Field label="Stok"><input type="number" min="0" required className="input" placeholder="Contoh: 100" value={form.stock} onChange={set('stock')} /></Field>
             </div>
             <Field label="Kategori">
               <select className="input" value={form.category_id} onChange={set('category_id')}>

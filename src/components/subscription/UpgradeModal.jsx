@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, CreditCard, Landmark, QrCode, Smartphone, X } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
+import ModalLayer from '../ui/ModalLayer'
 
 const paymentMethods = [
   { id: 'qris', label: 'QRIS', detail: 'Pindai melalui aplikasi bank atau e-wallet', icon: QrCode },
@@ -50,9 +51,8 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="upgrade-title">
-      <button type="button" aria-label="Tutup" disabled={processing} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm disabled:cursor-wait" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    <ModalLayer open={open} onClose={onClose} labelledBy="upgrade-title" label="Berlangganan" canClose={!processing}>
+      <div className="relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div>
             <h2 id="upgrade-title" className="text-xl font-bold text-slate-900">Berlangganan {planName}</h2>
@@ -64,7 +64,7 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
         </div>
 
         {step === 'checkout' ? (
-        <div className="space-y-6 p-6">
+        <div className="hide-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto overflow-x-hidden overscroll-contain p-6">
           <section>
             <h3 className="text-sm font-semibold text-slate-800">Periode langganan</h3>
             <div className="mt-3 grid grid-cols-2 gap-3">
@@ -120,7 +120,7 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
           <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500"><Check size={14} className="text-emerald-700" /> Akses paket dimulai setelah konfirmasi.</p>
         </div>
         ) : (
-          <div className="p-8 text-center">
+          <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain p-8 text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><Check size={28} /></span>
             <h3 className="mt-4 text-xl font-bold text-slate-900">Langganan berhasil</h3>
             <p className="mt-2 text-sm text-slate-600">{planName} sekarang aktif untuk toko Anda.</p>
@@ -129,6 +129,6 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
           </div>
         )}
       </div>
-    </div>
+    </ModalLayer>
   )
 }

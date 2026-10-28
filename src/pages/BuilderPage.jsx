@@ -246,7 +246,7 @@ function Builder({ store, setStore }) {
                 onChange={(e) => { setPrimary(e.target.value); setDirty(true) }}
                 className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 p-0.5"
               />
-              <input className="input font-mono" value={primary} onChange={(e) => { setPrimary(e.target.value); setDirty(true) }} />
+              <input className="input font-mono" placeholder="#047857" value={primary} onChange={(e) => { setPrimary(e.target.value); setDirty(true) }} />
             </div>
           </div>
         </aside>

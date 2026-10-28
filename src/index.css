@@ -63,6 +63,20 @@
   }
 }
 
+@layer utilities {
+  /* Keep sidebar and modal content scrollable without visible scrollbar chrome. */
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 @layer components {
   /* Base button */
   .btn {

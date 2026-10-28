@@ -24,6 +24,8 @@ import Finance from '../components/store-dashboard/Finance'
 import StoreSettings from '../components/store-dashboard/StoreSettings'
 import SubscriptionPage from './SubscriptionPage'
 import UpgradeModal from '../components/subscription/UpgradeModal'
+import AccountProfilePage from './AccountProfilePage'
+import AccountSecurityPage from './AccountSecurityPage'
 
 const links = [
   { to: '/dashboard', label: 'Ringkasan', icon: LayoutDashboard, end: true },
@@ -59,7 +61,17 @@ export default function StoreDashboard() {
   }, [store?.id])
 
   if (loading) return <Spinner full />
-  if (!store) return <CreateStore onCreated={reload} />
+  if (!store) {
+    return (
+      <DashboardLayout title="UMKM Builder" links={links}>
+        <Routes>
+          <Route path="profil" element={<AccountProfilePage />} />
+          <Route path="pengaturan-akun" element={<AccountSecurityPage />} />
+          <Route path="*" element={<CreateStore onCreated={reload} />} />
+        </Routes>
+      </DashboardLayout>
+    )
+  }
 
   const isFree = plan === 'gratis'
 
@@ -148,6 +160,8 @@ export default function StoreDashboard() {
           <Route path="keuangan" element={<Finance store={store} setStore={setStore} />} />
           <Route path="langganan" element={<SubscriptionPage store={store} setStore={setStore} />} />
           <Route path="pengaturan" element={<StoreSettings store={store} setStore={setStore} />} />
+          <Route path="profil" element={<AccountProfilePage />} />
+          <Route path="pengaturan-akun" element={<AccountSecurityPage />} />
         </Routes>
       </DashboardLayout>
 

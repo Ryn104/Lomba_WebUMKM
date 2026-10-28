@@ -24,6 +24,7 @@ export default function SectionEditor({ section, onChange }) {
             <input
               className="input"
               value={c[f.key] ?? ''}
+              placeholder={f.key === 'phone' ? 'Contoh: 628123456789' : f.key === 'email' ? 'nama@email.com' : f.key === 'mapUrl' ? 'https://maps.google.com/...' : `Masukkan ${f.label.toLowerCase()}`}
               onChange={(e) => set(f.key, f.key === 'phone' ? sanitizePhone(e.target.value) : e.target.value)}
               inputMode={f.key === 'phone' ? 'numeric' : undefined}
               maxLength={f.key === 'phone' ? 13 : undefined}
@@ -31,11 +32,11 @@ export default function SectionEditor({ section, onChange }) {
           )}
 
           {f.type === 'textarea' && (
-            <textarea rows={4} className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />
+            <textarea rows={4} className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} placeholder={`Masukkan ${f.label.toLowerCase()}...`} />
           )}
 
           {f.type === 'number' && (
-            <input type="number" min={1} className="input" value={c[f.key] ?? ''} onChange={(e) => set(f.key, Number(e.target.value))} />
+            <input type="number" min={1} className="input" placeholder="Contoh: 8" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value === '' ? '' : Number(e.target.value))} />
           )}
 
           {f.type === 'color' && (
@@ -46,7 +47,7 @@ export default function SectionEditor({ section, onChange }) {
                 onChange={(e) => set(f.key, e.target.value)}
                 className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 p-0.5"
               />
-              <input className="input font-mono" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />
+              <input className="input font-mono" placeholder="#047857" value={c[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} />
             </div>
           )}
 
@@ -89,14 +90,14 @@ export default function SectionEditor({ section, onChange }) {
                 <div key={i} className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
                   <input
                     className="input"
-                    placeholder="Nama"
+                    placeholder="Nama pelanggan"
                     value={t.name}
                     onChange={(e) => set(f.key, c[f.key].map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
                   />
                   <textarea
                     rows={2}
                     className="input"
-                    placeholder="Isi testimoni"
+                    placeholder="Ceritakan pengalaman pelanggan..."
                     value={t.text}
                     onChange={(e) => set(f.key, c[f.key].map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))}
                   />
