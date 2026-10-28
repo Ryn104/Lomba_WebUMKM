@@ -38,6 +38,7 @@ export default function Finance({ store, setStore }) {
   const [filter, setFilter] = useState('all')
   const [form, setForm] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [receiptMap, setReceiptMap] = useState({})
 
   const load = useCallback(async () => {
     const year = month.slice(0, 4)
@@ -50,6 +51,18 @@ export default function Finance({ store, setStore }) {
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
     setRows(data || [])
+
+    // Fetch invoice_no for transactions
+    const txIds = [...new Set((data || []).map(r => r.transaction_id).filter(Boolean))]
+    if (txIds.length > 0) {
+      const { data: txns } = await supabase
+        .from('transactions')
+        .select('id,invoice_no')
+        .in('id', txIds)
+      setReceiptMap(Object.fromEntries(txns?.map(t => [t.id, t.invoice_no]) || []))
+    } else {
+      setReceiptMap({})
+    }
   }, [store.id, month])
 
   useEffect(() => { load() }, [load])
@@ -253,7 +266,7 @@ export default function Finance({ store, setStore }) {
                       <td className="px-4 py-3 font-medium text-slate-800">{r.category}</td>
                       {shown.some(row => row.transaction_id) && (
                         <td className="px-4 py-3 text-slate-500">
-                          {r.transaction_id ? `INV-${r.transaction_id}` : '-'}
+                          {r.transaction_id ? (receiptMap[r.transaction_id] || '…') : '-'}
                         </td>
                       )}
                       <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
