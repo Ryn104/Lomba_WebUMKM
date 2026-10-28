@@ -197,7 +197,14 @@ export default function Products({ store, setStore }) {
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Harga jual (Rp)"><MoneyInput required min="0" value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" /></Field>
               <Field label="Harga modal (Rp)"><MoneyInput min="0" value={form.cost_price} onChange={(value) => setForm({ ...form, cost_price: value })} placeholder="Contoh: 30.000" /></Field>
-              <Field label="Stok"><input type="number" min="0" required className="input" placeholder="Contoh: 100" value={form.stock} onChange={set('stock')} /></Field>
+              <Field label="Stok">
+                <input type="tel"
+                  inputMode="numeric" maxLength={9} required className="input" placeholder="Contoh: 100"
+                  value={form.stock} onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '').slice(0, 9);
+                    setForm({ ...form, stock: v });
+                  }} />
+              </Field>
             </div>
             <Field label="Kategori">
               <select className="input" value={form.category_id} onChange={set('category_id')}>
