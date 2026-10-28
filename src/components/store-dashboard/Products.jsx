@@ -195,8 +195,8 @@ export default function Products({ store, setStore }) {
             <Field label="Nama produk"><input className="input" required value={form.name} onChange={set('name')} placeholder="Contoh: Kopi Susu Gula Aren" /></Field>
             <Field label="Deskripsi"><textarea rows={3} className="input" value={form.description} onChange={set('description')} placeholder="Masukkan deskripsi produk..." /></Field>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Harga jual (Rp)"><MoneyInput required min="0" value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" /></Field>
-              <Field label="Harga modal (Rp)"><MoneyInput min="0" value={form.cost_price} onChange={(value) => setForm({ ...form, cost_price: value })} placeholder="Contoh: 30.000" /></Field>
+              <Field label="Harga jual (Rp)"><MoneyInput required min="0" maxLength={15} value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" /></Field>
+              <Field label="Harga modal (Rp)"><MoneyInput min="0" maxLength={15} value={form.cost_price} onChange={(value) => setForm({ ...form, cost_price: value })} placeholder="Contoh: 30.000" /></Field>
               <Field label="Stok">
                 <input type="tel"
                   inputMode="numeric" maxLength={9} required className="input" placeholder="Contoh: 100"
