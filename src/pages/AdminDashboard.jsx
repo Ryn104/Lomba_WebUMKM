@@ -6,6 +6,7 @@ import { supabase, PLATFORM_DOMAIN } from '../lib/supabase'
 import DashboardLayout from '../components/ui/Sidebar'
 import { StatCard, Spinner, EmptyState } from '../components/ui/Field'
 import { formatDate } from '../lib/utils'
+import ModalLayer from '../components/ui/ModalLayer'
 
 const links = [
   { to: '/admin', label: 'Ringkasan', icon: LayoutDashboard },
@@ -113,10 +114,9 @@ function SubscriptionAdminModal({ store, saving, onClose, onSave }) {
   const isPaid = plan !== 'gratis'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="admin-subscription-title">
-      <button type="button" aria-label="Tutup" disabled={saving} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm disabled:cursor-wait" onClick={onClose} />
+    <ModalLayer open onClose={onClose} labelledBy="admin-subscription-title" label="Kelola langganan" canClose={!saving}>
       <form
-        className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
         onSubmit={(event) => {
           event.preventDefault()
           onSave({ plan, renewalDate })
@@ -166,7 +166,7 @@ function SubscriptionAdminModal({ store, saving, onClose, onSave }) {
           </button>
         </div>
       </form>
-    </div>
+    </ModalLayer>
   )
 }
 

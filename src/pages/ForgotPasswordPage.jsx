@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
             </p>
             <div>
               <label className="label">Email</label>
-              <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className="input" type="email" required placeholder="nama@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <button className="btn-primary w-full" disabled={busy}>{busy ? 'Mengirim…' : 'Kirim tautan reset'}</button>
           </form>

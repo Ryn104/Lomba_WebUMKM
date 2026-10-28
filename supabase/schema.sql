@@ -10,6 +10,9 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
   email text,
+  phone text,
+  avatar_url text,
+  avatar_path text,
   role text not null default 'umkm' check (role in ('admin','umkm')),
   created_at timestamptz not null default now()
 );
@@ -237,6 +240,10 @@ begin
   if new.role is distinct from old.role and not public.is_admin() and auth.uid() is not null then
     new.role := old.role;
   end if;
+  -- Auth remains the source of truth for email; changing profiles.email alone is not allowed.
+  if new.email is distinct from old.email then
+    new.email := old.email;
+  end if;
   return new;
 end; $$;
 drop trigger if exists protect_role on public.profiles;
@@ -300,8 +307,15 @@ on conflict (id) do nothing;
 
 create policy "assets: publik baca" on storage.objects for select
   using (bucket_id = 'store-assets');
-create policy "assets: user login upload" on storage.objects for insert
-  with check (bucket_id = 'store-assets' and auth.role() = 'authenticated');
+create policy "assets: user upload own avatar or store asset" on storage.objects for insert
+  with check (
+    bucket_id = 'store-assets'
+    and auth.role() = 'authenticated'
+    and (
+      (storage.foldername(name))[1] <> 'avatars'
+      or (storage.foldername(name))[2] = auth.uid()::text
+    )
+  );
 create policy "assets: pemilik ubah/hapus" on storage.objects for update
   using (bucket_id = 'store-assets' and owner = auth.uid());
 create policy "assets: pemilik hapus" on storage.objects for delete

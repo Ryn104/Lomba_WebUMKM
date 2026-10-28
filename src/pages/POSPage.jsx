@@ -9,6 +9,7 @@ import { Spinner, EmptyState } from '../components/ui/Field'
 import Modal from '../components/ui/Modal'
 import CreateStore from '../components/builder/CreateStore'
 import ProductImage from '../components/ui/ProductImage'
+import MoneyInput from '../components/ui/MoneyInput'
 
 export default function POSPage() {
   const { store, loading, reload } = useMyStore()
@@ -242,7 +243,7 @@ function POS({ store }) {
 
           {method === 'cash' && (
             <>
-              <input type="number" className="input" placeholder="Uang diterima" value={paid} onChange={(e) => setPaid(e.target.value)} />
+              <MoneyInput className="input" placeholder="Uang diterima, contoh: 50.000" aria-label="Uang diterima" value={paid} onChange={setPaid} />
               <div className="flex flex-wrap gap-1.5">
                 {quick.map((v) => (
                   <button key={v} onClick={() => setPaid(String(v))} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-brand-600 hover:text-brand-700">

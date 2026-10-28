@@ -1,13 +1,13 @@
 import { Printer, Download, CheckCircle2, X } from 'lucide-react'
 import { rupiah, formatDate } from '../../lib/utils'
+import ModalLayer from '../ui/ModalLayer'
 
 export default function InvoiceReceiptModal({ invoice, store, onClose }) {
   if (!invoice) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+    <ModalLayer open onClose={onClose} label="Bukti Tagihan">
+      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Bukti Tagihan</span>
           <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
@@ -65,6 +65,6 @@ export default function InvoiceReceiptModal({ invoice, store, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </ModalLayer>
   )
 }

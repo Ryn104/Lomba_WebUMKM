@@ -1,4 +1,5 @@
-import { AlertTriangle, X } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
+import ModalLayer from '../ui/ModalLayer'
 
 export default function LimitReachedModal({
   open,
@@ -10,9 +11,8 @@ export default function LimitReachedModal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl text-center">
+    <ModalLayer open onClose={onClose} label={`Batas ${maxCount} produk tercapai`}>
+      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl">
         {/* Warning Icon */}
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FEF3C7] text-[#92400E] border border-amber-200">
           <AlertTriangle size={28} />
@@ -55,6 +55,6 @@ export default function LimitReachedModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalLayer>
   )
 }

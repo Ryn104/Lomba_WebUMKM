@@ -11,6 +11,8 @@ import POSPage from './pages/POSPage'
 import StoreFront from './pages/StoreFront'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import AccountProfilePage from './pages/AccountProfilePage'
+import AccountSecurityPage from './pages/AccountSecurityPage'
 
 function SetupNotice() {
   return (

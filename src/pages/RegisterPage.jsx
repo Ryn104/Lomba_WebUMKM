@@ -81,15 +81,15 @@ export default function RegisterPage() {
             <form onSubmit={submit} className="mt-6 space-y-4">
               <div>
                 <label className="label">Nama lengkap</label>
-                <input className="input" required value={form.name} onChange={set('name')} />
+                <input className="input" required placeholder="Masukkan nama lengkap" value={form.name} onChange={set('name')} />
               </div>
               <div>
                 <label className="label">Email</label>
-                <input className="input" type="email" required value={form.email} onChange={set('email')} />
+                <input className="input" type="email" required placeholder="nama@email.com" value={form.email} onChange={set('email')} />
               </div>
               <div>
                 <label className="label">Password</label>
-                <input className="input" type="password" required minLength={6} value={form.password} onChange={set('password')} />
+                <input className="input" type="password" required minLength={6} placeholder="Buat kata sandi (min. 6 karakter)" value={form.password} onChange={set('password')} />
               </div>
               <button className="btn-primary w-full" disabled={busy}>{busy ? 'Memproses…' : 'Daftar'}</button>
             </form>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={OTP_LENGTH}
-                placeholder="••••••"
+                placeholder="••••••••"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                 autoFocus

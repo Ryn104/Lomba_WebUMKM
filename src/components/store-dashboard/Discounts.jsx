@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import { Field, EmptyState, Spinner } from '../ui/Field'
+import MoneyInput from '../ui/MoneyInput'
 
 const empty = { name: '', type: 'percent', value: '', product_id: '', start_date: '', end_date: '', is_active: true }
 
@@ -143,7 +144,11 @@ export default function Discounts({ store }) {
                 </select>
               </Field>
               <Field label={form.type === 'percent' ? 'Besar (%)' : 'Besar (Rp)'}>
-                <input type="number" min="1" required className="input" value={form.value} onChange={set('value')} />
+                {form.type === 'nominal' ? (
+                  <MoneyInput min="1" required value={form.value} onChange={(value) => setForm({ ...form, value })} placeholder="Contoh: 10.000" />
+                ) : (
+                  <input type="number" min="1" max="100" required className="input" value={form.value} onChange={set('value')} placeholder="Contoh: 10" />
+                )}
               </Field>
             </div>
             <Field label="Berlaku untuk">

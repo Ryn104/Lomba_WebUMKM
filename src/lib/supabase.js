@@ -7,7 +7,8 @@ export const isSupabaseConfigured = Boolean(url && key)
 
 export const supabase = createClient(
   url || 'https://placeholder.supabase.co',
-  key || 'placeholder-key'
+  key || 'placeholder-key',
+  { auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true } }
 )
 
 export const PLATFORM_DOMAIN =
