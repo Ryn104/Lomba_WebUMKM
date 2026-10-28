@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import GoogleButton from '../components/ui/GoogleButton'
+import Logo from '../components/ui/Logo'
 
 const OTP_LENGTH = 8
 const RESEND_SECONDS = 60
@@ -71,10 +72,7 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50/50 via-slate-50 to-slate-100 p-4">
       <div className="card w-full max-w-md p-8 shadow-sm">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-xl font-extrabold text-slate-900">
-          <span className="rounded-lg bg-brand-700 p-1.5 text-white"><Store size={18} /></span> UMKM Builder
-        </Link>
-
+        <Link to="/" className="mb-6 flex justify-center"><Logo size="lg" /></Link>
         {step === 'form' ? (
           <>
             <h1 className="text-center text-xl font-bold text-slate-900">Daftar akun UMKM</h1>
