@@ -237,13 +237,25 @@ export default function Finance({ store, setStore }) {
             ) : (
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
-                  <tr><th className="px-4 py-3">Tanggal</th><th className="px-4 py-3">Kategori</th><th className="px-4 py-3">Catatan</th><th className="px-4 py-3 text-right">Jumlah</th><th /></tr>
+                  <tr>
+                    <th className="px-4 py-3">Tanggal</th>
+                    <th className="px-4 py-3">Kategori</th>
+                    {shown.some(r => r.transaction_id) && <th className="px-4 py-3">Transaksi</th>}
+                    <th className="px-4 py-3">Catatan</th>
+                    <th className="px-4 py-3 text-right">Jumlah</th>
+                    <th />
+                  </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {shown.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{r.category}</td>
+                      {shown.some(row => row.transaction_id) && (
+                        <td className="px-4 py-3 text-slate-500">
+                          {r.transaction_id ? `INV-${r.transaction_id}` : '-'}
+                        </td>
+                      )}
                       <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
                       <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-brand-700' : 'text-red-700'}`}>
                         {r.type === 'income' ? '+' : '-'}{rupiah(r.amount)}
