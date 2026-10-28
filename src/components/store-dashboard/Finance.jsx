@@ -38,6 +38,7 @@ export default function Finance({ store, setStore }) {
   const [filter, setFilter] = useState('all')
   const [form, setForm] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [receiptMap, setReceiptMap] = useState({})
 
   const load = useCallback(async () => {
     const year = month.slice(0, 4)
@@ -50,6 +51,18 @@ export default function Finance({ store, setStore }) {
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
     setRows(data || [])
+
+    // Fetch invoice_no for transactions
+    const txIds = [...new Set((data || []).map(r => r.transaction_id).filter(Boolean))]
+    if (txIds.length > 0) {
+      const { data: txns } = await supabase
+        .from('transactions')
+        .select('id,invoice_no')
+        .in('id', txIds)
+      setReceiptMap(Object.fromEntries(txns?.map(t => [t.id, t.invoice_no]) || []))
+    } else {
+      setReceiptMap({})
+    }
   }, [store.id, month])
 
   useEffect(() => { load() }, [load])
@@ -150,22 +163,20 @@ export default function Finance({ store, setStore }) {
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
-          className={`border-b-2 px-4 py-2 text-sm font-semibold transition ${
-            activeTab === 'overview'
-              ? 'border-brand-700 text-brand-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === 'overview'
+            ? 'border-brand-700 text-brand-700'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
         >
           Ringkasan Keuangan
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('advanced')}
-          className={`border-b-2 px-4 py-2 text-sm font-semibold transition flex items-center gap-1.5 ${
-            activeTab === 'advanced'
-              ? 'border-brand-700 text-brand-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold transition flex items-center gap-1.5 ${activeTab === 'advanced'
+            ? 'border-brand-700 text-brand-700'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
         >
           <span>Laporan Lanjutan</span>
           <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700 border border-brand-200">
@@ -237,14 +248,26 @@ export default function Finance({ store, setStore }) {
             ) : (
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
-                  <tr><th className="px-4 py-3">Tanggal</th><th className="px-4 py-3">Kategori</th><th className="px-4 py-3">Catatan</th><th className="px-4 py-3 text-right">Jumlah</th><th /></tr>
+                  <tr>
+                    <th className="px-4 py-3">Tanggal</th>
+                    <th className="px-4 py-3">Kategori</th>
+                    {shown.some(r => r.transaction_id) && <th className="px-4 py-3">Transaksi</th>}
+                    <th className="px-4 py-3">Catatan</th>
+                    <th className="px-4 py-3 text-right">Jumlah</th>
+                    <th />
+                  </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {shown.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{r.category}</td>
-                      <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
+                      {shown.some(row => row.transaction_id) && (
+                        <td className="px-4 py-3 text-slate-500">
+                          {r.transaction_id ? (receiptMap[r.transaction_id] || '…') : '-'}
+                        </td>
+                      )}
+                      <td className="px-4 py-3 text-slate-500">{r.transaction_id ? '-' : (r.note || '-')}</td>
                       <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-brand-700' : 'text-red-700'}`}>
                         {r.type === 'income' ? '+' : '-'}{rupiah(r.amount)}
                       </td>
