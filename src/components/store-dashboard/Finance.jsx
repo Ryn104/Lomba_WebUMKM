@@ -163,22 +163,20 @@ export default function Finance({ store, setStore }) {
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
-          className={`border-b-2 px-4 py-2 text-sm font-semibold transition ${
-            activeTab === 'overview'
-              ? 'border-brand-700 text-brand-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === 'overview'
+            ? 'border-brand-700 text-brand-700'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
         >
           Ringkasan Keuangan
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('advanced')}
-          className={`border-b-2 px-4 py-2 text-sm font-semibold transition flex items-center gap-1.5 ${
-            activeTab === 'advanced'
-              ? 'border-brand-700 text-brand-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold transition flex items-center gap-1.5 ${activeTab === 'advanced'
+            ? 'border-brand-700 text-brand-700'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
         >
           <span>Laporan Lanjutan</span>
           <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700 border border-brand-200">
@@ -269,7 +267,7 @@ export default function Finance({ store, setStore }) {
                           {r.transaction_id ? (receiptMap[r.transaction_id] || '…') : '-'}
                         </td>
                       )}
-                      <td className="px-4 py-3 text-slate-500">{r.note || '-'}</td>
+                      <td className="px-4 py-3 text-slate-500">{r.transaction_id ? '-' : (r.note || '-')}</td>
                       <td className={`px-4 py-3 text-right font-semibold ${r.type === 'income' ? 'text-brand-700' : 'text-red-700'}`}>
                         {r.type === 'income' ? '+' : '-'}{rupiah(r.amount)}
                       </td>
