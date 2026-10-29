@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import GoogleButton from '../components/ui/GoogleButton'
 import Logo from '../components/ui/Logo'
 
-const OTP_LENGTH = 8
+const OTP_LENGTH = 6
 const RESEND_SECONDS = 60
 
 export default function RegisterPage() {
