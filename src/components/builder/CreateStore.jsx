@@ -49,8 +49,8 @@ export default function CreateStore({ onCreated }) {
         s.type === 'hero'
           ? { ...SECTION_TYPES.hero.defaults, title: `Selamat Datang di ${name}` }
           : s.type === 'contact'
-          ? { ...SECTION_TYPES.contact.defaults, phone: whatsapp }
-          : s.content,
+            ? { ...SECTION_TYPES.contact.defaults, phone: whatsapp }
+            : s.content,
     }))
     await supabase.from('store_sections').insert(rows)
 
@@ -70,7 +70,7 @@ export default function CreateStore({ onCreated }) {
 
         <div>
           <label className="label">Nama toko</label>
-          <input className="input" required value={name} onChange={(e) => onName(e.target.value)} placeholder="Contoh: Warung Kopi Sari" />
+          <input className="input" value={name} onChange={(e) => onName(e.target.value)} placeholder="Contoh: Warung Kopi Sari" />
         </div>
 
         <div>
@@ -80,6 +80,7 @@ export default function CreateStore({ onCreated }) {
             <input
               className="w-full px-2 py-2 text-sm text-slate-900 outline-none"
               required
+              disabled
               value={slug}
               onChange={(e) => { setSlugTouched(true); setSlug(slugify(e.target.value)) }}
               placeholder="warung-kopi-sari"
