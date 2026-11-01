@@ -32,15 +32,15 @@ export default function SubscriptionPage({ store, setStore }) {
   useEffect(() => {
     if (!store?.id) return
     let alive = true
-    ;(async () => {
-      const [p, s] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
-        supabase.from('store_sections').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
-      ])
-      if (!alive) return
-      if (typeof p.count === 'number') setProductsCount(p.count)
-      if (typeof s.count === 'number') setSectionsCount(s.count)
-    })()
+      ; (async () => {
+        const [p, s] = await Promise.all([
+          supabase.from('products').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
+          supabase.from('store_sections').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
+        ])
+        if (!alive) return
+        if (typeof p.count === 'number') setProductsCount(p.count)
+        if (typeof s.count === 'number') setSectionsCount(s.count)
+      })()
     return () => { alive = false }
   }, [store?.id])
 
@@ -178,9 +178,8 @@ export default function SubscriptionPage({ store, setStore }) {
           <div>
             {/* Header Status */}
             <div className="flex items-start gap-3.5">
-              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
-                isPaid ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'bg-slate-100 text-slate-700 border border-slate-200'
-              }`}>
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${isPaid ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'bg-slate-100 text-slate-700 border border-slate-200'
+                }`}>
                 {isPaid ? <Crown size={24} /> : <CreditCard size={24} />}
               </span>
               <div className="min-w-0 flex-1">
@@ -188,11 +187,10 @@ export default function SubscriptionPage({ store, setStore }) {
                   <h2 className="text-xl font-bold text-slate-900">
                     {plan === 'pro' ? 'Paket Pro' : plan === 'bisnis' ? 'Paket Bisnis' : 'Paket Gratis'}
                   </h2>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    isPaid
-                      ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
-                      : 'border border-slate-200 bg-slate-100 text-slate-700'
-                  }`}>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${isPaid
+                    ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : 'border border-slate-200 bg-slate-100 text-slate-700'
+                    }`}>
                     Aktif
                   </span>
                 </div>
@@ -323,9 +321,8 @@ export default function SubscriptionPage({ store, setStore }) {
                   </div>
                   <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        productsCount >= 10 ? 'bg-red-600' : 'bg-brand-600'
-                      }`}
+                      className={`h-full rounded-full transition-all duration-300 ${productsCount >= 10 ? 'bg-red-600' : 'bg-brand-600'
+                        }`}
                       style={{ width: `${Math.min((productsCount / 10) * 100, 100)}%` }}
                     />
                   </div>
@@ -347,15 +344,14 @@ export default function SubscriptionPage({ store, setStore }) {
                 <div>
                   <div className="flex justify-between text-xs font-semibold">
                     <span className="text-slate-700">Section Web Builder</span>
-                    <span className={sectionsCount >= 3 ? 'text-red-600' : 'text-slate-900'}>
-                      {sectionsCount}/3 section
+                    <span className={sectionsCount >= 4 ? 'text-red-600' : 'text-slate-900'}>
+                      {sectionsCount}/4 section
                     </span>
                   </div>
                   <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        sectionsCount >= 3 ? 'bg-red-600' : 'bg-brand-600'
-                      }`}
+                      className={`h-full rounded-full transition-all duration-300 ${sectionsCount >= 4 ? 'bg-red-600' : 'bg-brand-600'
+                        }`}
                       style={{ width: `${Math.min((sectionsCount / 3) * 100, 100)}%` }}
                     />
                   </div>
