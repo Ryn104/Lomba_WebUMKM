@@ -6,11 +6,13 @@ import { useAuth } from '../context/AuthContext'
 import GoogleButton from '../components/ui/GoogleButton'
 import Logo from '../components/ui/Logo'
 
+
 const OTP_LENGTH = 6
 const RESEND_SECONDS = 60
 
 export default function RegisterPage() {
-  const { signUp, verifySignupOtp, resendSignupOtp } = useAuth()
+  const { isEmailRegistered, sendSignupOtp, verifySignupOtp, completeSignup, signUp } = useAuth()
+  const [verified, setVerified] = useState(false)
   const nav = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [step, setStep] = useState('form') // 'form' | 'otp'
@@ -55,9 +57,14 @@ export default function RegisterPage() {
     e.preventDefault()
     if (otp.length !== OTP_LENGTH) return toast.error(`Kode harus ${OTP_LENGTH} digit`)
     setBusy(true)
-    const { error } = await verifySignupOtp(form.email, otp)
+    if (!verified) {
+      const { error } = await verifySignupOtp(form.email, otp)
+      if (error) { setBusy(false); return toast.error('Kode salah atau sudah kedaluwarsa') }
+      setVerified(true)
+    }
+    const { error: saveErr } = await completeSignup({ password: form.password, full_name: form.name })
+    if (saveErr) return toast.error('Email terverifikasi, tetapi data akun gagal disimpan. Coba lagi.')
     setBusy(false)
-    if (error) return toast.error('Kode salah atau sudah kedaluwarsa')
     toast.success('Email terverifikasi! Silakan buat toko Anda.')
     nav('/dashboard', { replace: true })
   }

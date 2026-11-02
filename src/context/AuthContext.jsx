@@ -18,6 +18,11 @@ export function AuthProvider({ children }) {
     },
   })
 
+  const isEmailRegistered = async (email) => {
+    const { data, error } = await supabase.rpc('is_email_registered', { p_email: email })
+    return { registered: Boolean(data), error }
+  }
+
   const loadProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null)
@@ -52,8 +57,9 @@ export function AuthProvider({ children }) {
     }
   }, [loadProfile])
 
-  const signUp = (email, password, full_name) =>
-    supabase.auth.signUp({ email, password, options: { data: { full_name } } })
+  const signUp = (email, password, full_name) => supabase.auth.signUp({ email, password, options: { data: { full_name } } })
+
+  const sendSignupOtp = (email) => supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
 
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password })
 
@@ -66,7 +72,15 @@ export function AuthProvider({ children }) {
   const updatePassword = (password) => supabase.auth.updateUser({ password })
 
   const verifySignupOtp = (email, token) =>
-  supabase.auth.verifyOtp({ email, token, type: 'signup' })
+  supabase.auth.verifyOtp({ email, token, type: 'email' })
+
+  const completeSignup = async ({ password, full_name }) => {
+    const { data, error } = await supabase.auth.updateUser({ password, data: { full_name } })
+    if (error) return { error }
+    const { error: pErr } = await supabase.from('profiles').update({ full_name }).eq('id', data.user.id)
+    if (pErr) return { error: pErr }
+    return { error: null }
+  }
 
   const resendSignupOtp = (email) =>
   supabase.auth.resend({ type: 'signup', email })
