@@ -18,11 +18,6 @@ export function AuthProvider({ children }) {
     },
   })
 
-  const isEmailRegistered = async (email) => {
-    const { data, error } = await supabase.rpc('is_email_registered', { p_email: email })
-    return { registered: Boolean(data), error }
-  }
-
   const loadProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null)
@@ -57,10 +52,6 @@ export function AuthProvider({ children }) {
     }
   }, [loadProfile])
 
-  const signUp = (email, password, full_name) => supabase.auth.signUp({ email, password, options: { data: { full_name } } })
-
-  const sendSignupOtp = (email) => supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
-
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password })
 
   const signOut = () => supabase.auth.signOut()
@@ -71,19 +62,28 @@ export function AuthProvider({ children }) {
 
   const updatePassword = (password) => supabase.auth.updateUser({ password })
 
-  const verifySignupOtp = (email, token) =>
-  supabase.auth.verifyOtp({ email, token, type: 'email' })
+  // Registrasi: kirim kode OTP saja. Nama & password TIDAK dikirim ke server
+  // sampai kode benar (lihat completeSignup).
+  const isEmailRegistered = async (email) => {
+    const { data, error } = await supabase.rpc('is_email_registered', { p_email: email })
+    return { registered: Boolean(data), error }
+  }
 
+  const sendSignupOtp = (email) =>
+    supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
+
+  const verifySignupOtp = (email, token) =>
+    supabase.auth.verifyOtp({ email, token, type: 'email' })
+
+  // Dipanggil setelah OTP benar: simpan password + nama lengkap.
   const completeSignup = async ({ password, full_name }) => {
     const { data, error } = await supabase.auth.updateUser({ password, data: { full_name } })
     if (error) return { error }
-    const { error: pErr } = await supabase.from('profiles').update({ full_name }).eq('id', data.user.id)
+    const { error: pErr } = await supabase
+      .from('profiles').update({ full_name }).eq('id', data.user.id)
     if (pErr) return { error: pErr }
     return { error: null }
   }
-
-  const resendSignupOtp = (email) =>
-  supabase.auth.resend({ type: 'signup', email })
 
   const value = {
     session,
@@ -96,9 +96,10 @@ export function AuthProvider({ children }) {
     signInWithGoogle,
     resetPassword,
     updatePassword,
+    isEmailRegistered,
+    sendSignupOtp,
     verifySignupOtp,
-    resendSignupOtp,
-    signUp,
+    completeSignup,
     signIn,
     signOut,
     refreshProfile: () => loadProfile(session?.user),
