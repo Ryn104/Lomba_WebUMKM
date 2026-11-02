@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MapPin, Phone, Mail, Clock, MessageCircle, Quote } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, MessageCircle, Quote, ExternalLink } from 'lucide-react'
 import { rupiah, getDiscountedPrice } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import ProductImage from '../ui/ProductImage'
@@ -123,9 +123,40 @@ export default function SectionRenderer({ section, store, products = [], discoun
                   </li>
                 )}
               </ul>
-              {c.mapUrl && (
-                <iframe title="Peta" src={c.mapUrl} className="h-64 w-full rounded-xl border-0" loading="lazy" />
-              )}
+              {(() => {
+                if (c.lat != null && c.lng != null) {
+                  // Titik lokasi dipilih langsung di peta (builder) → paling presisi
+                  const src = `https://www.google.com/maps?q=${c.lat},${c.lng}&z=16&output=embed`
+                  return <iframe title="Peta" src={src} className="h-64 w-full rounded-xl border-0" loading="lazy" />
+                }
+                if (c.mapUrl && /maps\/embed/.test(c.mapUrl)) {
+                  // URL Embed resmi dari Google ("Bagikan > Sematkan peta")
+                  return <iframe title="Peta" src={c.mapUrl} className="h-64 w-full rounded-xl border-0" loading="lazy" />
+                }
+                // if (c.address) {
+                  // Tanpa perlu link khusus: peta otomatis dibuat dari teks Alamat di atas.
+                //   const src = `https://www.google.com/maps?q=${encodeURIComponent(c.address)}&output=embed`
+                //   return <iframe title="Peta" src={src} className="h-64 w-full rounded-xl border-0" loading="lazy" />
+                // }
+                if (c.mapUrl) {
+                  // Tidak ada Alamat, hanya link share (mis. maps.app.goo.gl) yang tidak bisa
+                  // ditampilkan langsung (dibatasi Google) → tombol buka di tab baru.
+                  return (
+                    <a
+                      href={c.mapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex h-64 w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-white/20 bg-white/5 text-center transition hover:bg-white/10"
+                    >
+                      <MapPin size={32} />
+                      <span className="flex items-center gap-1.5 font-semibold">
+                        Buka Lokasi di Google Maps <ExternalLink size={16} />
+                      </span>
+                    </a>
+                  )
+                }
+                return null
+              })()}
             </div>
           </div>
         </section>

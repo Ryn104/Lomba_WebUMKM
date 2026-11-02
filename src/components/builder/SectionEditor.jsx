@@ -1,13 +1,16 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import ImageUpload from '../ui/ImageUpload'
 import { SECTION_TYPES } from '../store-front/sectionDefs'
 import { sanitizePhone } from '../../lib/utils'
+import { Plus, Trash2, MapPin, X } from 'lucide-react'
+import LocationPicker from './LocationPicker'
 
 /** Panel kustomisasi untuk satu section yang sedang dipilih */
 export default function SectionEditor({ section, onChange }) {
   const def = SECTION_TYPES[section.type]
   const c = section.content
   const set = (key, val) => onChange({ ...c, [key]: val })
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   return (
     <div className="space-y-4">
@@ -111,8 +114,41 @@ export default function SectionEditor({ section, onChange }) {
               </button>
             </div>
           )}
+
+          {f.type === 'location' && (
+            <div className="space-y-2">
+              {c.lat != null && c.lng != null ? (
+                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                  <span className="flex items-center gap-1.5 font-mono text-xs text-slate-600">
+                    <MapPin size={14} className="text-brand-600" /> {c.lat.toFixed(6)}, {c.lng.toFixed(6)}
+                  </span>
+                  <div className="flex gap-1">
+                    <button type="button" className="text-xs font-semibold text-brand-600" onClick={() => setPickerOpen(true)}>Ubah</button>
+                    <button type="button" className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-500" onClick={() => onChange({ ...c, lat: null, lng: null })}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" className="btn-secondary w-full" onClick={() => setPickerOpen(true)}>
+                  <MapPin size={14} /> Pilih Lokasi di Peta
+                </button>
+              )}
+            </div>
+          )}
+
+          {f.hint && <p className="mt-1 text-xs text-slate-400">{f.hint}</p>}
         </div>
       ))}
+      <LocationPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        initial={c.lat != null && c.lng != null ? [c.lat, c.lng] : null}
+        onSave={(pos) => {
+          onChange({ ...c, lat: pos[0], lng: pos[1] })
+          setPickerOpen(false)
+        }}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, Link } from 'react-router-dom'
 import {
+  Home,
   LayoutDashboard,
   Package,
   Percent,
@@ -135,6 +136,11 @@ export default function StoreDashboard() {
             >
               {plan === 'pro' ? 'Pro' : plan === 'bisnis' ? 'Bisnis' : 'Gratis'}
             </span>
+
+            <Link to="/" className="btn-secondary">
+              <Home size={16} />
+              <span className="hidden sm:inline">Beranda</span>
+            </Link>
 
             <a
               href={`/${store.slug}`}
