@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext'
 import { Spinner } from '../components/ui/Field'
 import Avatar from '../components/ui/Avatar'
 import { supabase, BUCKET } from '../lib/supabase'
-import { formatDate } from '../lib/utils'
+import { formatDate, sanitizePhone } from '../lib/utils'
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024
+
 export default function AccountProfilePage() {
   const { user, profile, refreshProfile, setUnsavedChanges } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -20,28 +21,28 @@ export default function AccountProfilePage() {
   const [deletingAvatar, setDeletingAvatar] = useState(false)
   const [previewUrl, setPreviewUrl] = useState('')
   const [savedValues, setSavedValues] = useState({ name: '', phone: '', avatarPath: '' })
+  const [form, setForm] = useState({ name: '', phone: '' })
+  const [saved, setSaved] = useState({ name: '', phone: '' })
+  const [avatar, setAvatar] = useState({ path: '', url: '', file: null, preview: '' })
   const fileInputRef = useRef(null)
-  const dirty = Boolean(user && (name !== savedValues.name || phone !== savedValues.phone || avatarFile))
+  const dirty = Boolean(user && (form.name !== saved.name || form.phone !== saved.phone || avatar.file))
 
   useEffect(() => {
     let alive = true
     const load = async () => {
-      setLoading(true)
       const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (!alive) return
       if (error) {
         toast.error(`Profil tidak dapat dimuat: ${error.message}`)
       } else {
         const fresh = data || profile || {}
-        const currentName = fresh.full_name || user.user_metadata?.full_name || ''
-        const currentPhone = fresh.phone || ''
+        // normalize legacy phone (e.g. "+62 812…") so it passes digits-only validation
+        const nextForm = { name: fresh.full_name || user.user_metadata?.full_name || '', phone: sanitizePhone(fresh.phone || '') }
         const path = fresh.avatar_path || ''
-        setName(currentName)
-        setPhone(currentPhone)
-        setAvatarPath(path)
-        setSavedValues({ name: currentName, phone: currentPhone, avatarPath: path })
-        const profileAvatar = fresh.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || ''
-        setAvatarUrl(path ? supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl : profileAvatar)
+        const fallback = fresh.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || ''
+        setForm(nextForm)
+        setSaved(nextForm)
+        setAvatar({ path, url: path ? supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl : fallback, file: null, preview: '' })
       }
       setLoading(false)
     }
@@ -78,14 +79,14 @@ export default function AccountProfilePage() {
   }, [dirty, setUnsavedChanges])
 
   useEffect(() => {
-    if (!avatarFile) {
-      setPreviewUrl('')
+    if (!avatar.file) {
+      setAvatar((a) => (a.preview ? { ...a, preview: '' } : a))
       return undefined
     }
-    const url = URL.createObjectURL(avatarFile)
-    setPreviewUrl(url)
+    const url = URL.createObjectURL(avatar.file)
+    setAvatar((a) => ({ ...a, preview: url }))
     return () => URL.revokeObjectURL(url)
-  }, [avatarFile])
+  }, [avatar.file])
 
   const updateAvatar = (event) => {
     const file = event.target.files?.[0]
@@ -105,15 +106,13 @@ export default function AccountProfilePage() {
     }
     isSupportedImage().then((contentType) => {
       if (!contentType) return toast.error('File bukan gambar JPEG, PNG, atau WebP yang valid.')
-      setAvatarFile(new File([file], file.name, { type: contentType, lastModified: file.lastModified }))
+      setAvatar((a) => ({ ...a, file: new File([file], file.name, { type: contentType, lastModified: file.lastModified }) }))
     }).catch(() => toast.error('File gambar tidak dapat dibaca.'))
   }
 
   const cancelChanges = () => {
-    setName(savedValues.name)
-    setPhone(savedValues.phone)
-    setAvatarPath(savedValues.avatarPath)
-    setAvatarFile(null)
+    setForm(saved)
+    setAvatar((a) => ({ ...a, file: null }))
   }
 
   const deleteAvatar = async () => {
@@ -155,22 +154,22 @@ export default function AccountProfilePage() {
 
   const submit = async (event) => {
     event.preventDefault()
-    const cleanName = name.trim()
-    const cleanPhone = phone.trim()
+    const cleanName = form.name.trim()
+    const cleanPhone = form.phone.trim()
     if (cleanName.length < 2 || cleanName.length > 80) return toast.error('Nama harus terdiri dari 2–80 karakter.')
-    if (cleanPhone && !/^\+?[0-9\s()-]{8,20}$/.test(cleanPhone)) return toast.error('Format nomor telepon tidak valid.')
+    if (cleanPhone && !/^\d{8,13}$/.test(cleanPhone)) return toast.error('Format nomor telepon tidak valid.')
     if (!user?.id) return toast.error('Sesi login tidak ditemukan. Silakan masuk kembali.')
 
     setSaving(true)
     let uploadedPath = ''
     try {
-      let nextPath = avatarPath
-      let nextUrl = avatarUrl
-      if (avatarFile) {
-        const extension = avatarFile.type === 'image/png' ? 'png' : avatarFile.type === 'image/webp' ? 'webp' : 'jpg'
+      let nextPath = avatar.path
+      let nextUrl = avatar.url
+      if (avatar.file) {
+        const extension = avatar.file.type === 'image/png' ? 'png' : avatar.file.type === 'image/webp' ? 'webp' : 'jpg'
         uploadedPath = `avatars/${user.id}/avatar-${crypto.randomUUID()}.${extension}`
-        const { error: uploadError } = await supabase.storage.from(BUCKET).upload(uploadedPath, avatarFile, {
-          contentType: avatarFile.type,
+        const { error: uploadError } = await supabase.storage.from(BUCKET).upload(uploadedPath, avatar.file, {
+          contentType: avatar.file.type,
           cacheControl: '3600',
           upsert: false,
         })
@@ -189,13 +188,11 @@ export default function AccountProfilePage() {
       if (profileError) throw profileError
       if (!updatedProfile) throw new Error('Profil akun tidak ditemukan.')
 
-      const oldPath = avatarPath
-      setName(cleanName)
-      setPhone(cleanPhone)
-      setAvatarPath(nextPath || '')
-      setSavedValues({ name: cleanName, phone: cleanPhone, avatarPath: nextPath || '' })
-      setAvatarUrl(nextUrl || '')
-      setAvatarFile(null)
+      const oldPath = avatar.path
+      const nextForm = { name: cleanName, phone: cleanPhone }
+      setForm(nextForm)
+      setSaved(nextForm)
+      setAvatar({ path: nextPath || '', url: nextUrl || '', file: null, preview: '' })
       await refreshProfile()
       if (oldPath && uploadedPath && oldPath !== uploadedPath) {
         const { error: removeError } = await supabase.storage.from(BUCKET).remove([oldPath])
@@ -215,8 +212,8 @@ export default function AccountProfilePage() {
 
   if (loading) return <Spinner />
 
-  const currentAvatar = previewUrl || avatarUrl
-  const displayName = name.trim() || user?.email || 'Pengguna'
+  const currentAvatar = avatar.preview || avatar.url
+  const displayName = form.name.trim() || user?.email || 'Pengguna'
   const roleLabel = profile?.role === 'admin' ? 'Admin' : 'UMKM'
   const joinedAt = profile?.created_at || user?.created_at
 
@@ -242,6 +239,9 @@ export default function AccountProfilePage() {
                 className="h-28 w-28 text-3xl ring-1 ring-slate-200"
                 onError={() => setAvatarUrl('')}
               />
+              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-slate-400">
+                {currentAvatar ? <img src={currentAvatar} alt={`Foto profil ${displayName}`} onError={() => setAvatar((a) => ({ ...a, url: '' }))} className="h-full w-full object-cover" /> : <CircleUserRound size={64} strokeWidth={1.25} />}
+              </div>
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={updateAvatar} className="sr-only" />
               <div className="flex gap-2">
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || deletingAvatar} className="btn-secondary px-3 py-2 text-xs">
@@ -259,12 +259,12 @@ export default function AccountProfilePage() {
             <div className="space-y-4">
               <label className="block">
                 <span className="label">Nama lengkap</span>
-                <input className="input" autoComplete="name" maxLength={80} placeholder="Masukkan nama lengkap" value={name} onChange={(event) => setName(event.target.value)} required />
+                <input className="input" autoComplete="name" maxLength={80} placeholder="Masukkan nama lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               </label>
               <label className="block">
                 <span className="label">Nomor telepon</span>
-                <input className="input" type="tel" autoComplete="tel" inputMode="tel" maxLength={20} placeholder="Contoh: 081234567890" value={phone} onChange={(event) => setPhone(event.target.value)} />
-                <span className="mt-1 block text-xs text-slate-500">Opsional. Digunakan sebagai kontak akun, bukan kontak publik toko.</span>
+                <input className="input" type="tel" autoComplete="tel" inputMode="numeric" maxLength={13} placeholder="Contoh: 628123456789" value={form.phone} onChange={(e) => setForm({ ...form, phone: sanitizePhone(e.target.value) })} />
+                <span className="mt-1 block text-xs text-slate-500">Opsional. Digunakan untuk kontak akun.</span>
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -287,8 +287,6 @@ export default function AccountProfilePage() {
           </div>
         </section>
       </form>
-
-
     </div>
   )
 }
