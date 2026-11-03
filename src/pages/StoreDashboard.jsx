@@ -33,10 +33,14 @@ const links = [
   { to: '/dashboard/produk', label: 'Produk', icon: Package },
   { to: '/dashboard/diskon', label: 'Diskon', icon: Percent },
   { to: '/dashboard/keuangan', label: 'Keuangan', icon: Wallet },
-  { to: '/pos', label: 'Kasir (POS)', icon: ReceiptText },
-  { to: '/builder', label: 'Web Builder', icon: Blocks },
   { to: '/dashboard/langganan', label: 'Langganan', icon: CreditCard },
   { to: '/dashboard/pengaturan', label: 'Pengaturan', icon: Settings },
+]
+
+// Fitur khusus dengan layout halaman sendiri (tanpa sidebar dashboard)
+const specialLinks = [
+  { to: '/pos', label: 'Kasir (POS)', icon: ReceiptText },
+  { to: '/builder', label: 'Web Builder', icon: Blocks },
 ]
 
 export default function StoreDashboard() {
@@ -64,7 +68,7 @@ export default function StoreDashboard() {
   if (loading) return <Spinner full />
   if (!store) {
     return (
-      <DashboardLayout title="UMKM Builder" links={links}>
+      <DashboardLayout title="UMKM Builder" links={links} specialLinks={specialLinks}>
         <Routes>
           <Route path="profil" element={<AccountProfilePage />} />
           <Route path="pengaturan-akun" element={<AccountSecurityPage />} />
@@ -121,6 +125,7 @@ export default function StoreDashboard() {
         title={store.name}
         subtitle={`${PLATFORM_DOMAIN}/${store.slug}`}
         links={links}
+        specialLinks={specialLinks}
         sidebarWidget={sidebarSubscriptionWidget}
         headerRight={
           <div className="flex items-center gap-2">

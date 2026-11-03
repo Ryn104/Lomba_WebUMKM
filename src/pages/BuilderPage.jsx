@@ -5,8 +5,9 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Save, Globe, ExternalLink, Plus, Monitor, Smartphone, Palette, Sparkles } from 'lucide-react'
+import { ArrowLeft, Save, Globe, ExternalLink, Plus, Monitor, Smartphone, Palette, Sparkles, X } from 'lucide-react'
 import { supabase, PLATFORM_DOMAIN } from '../lib/supabase'
+import { findActiveTheme } from '../components/builder/themes'
 import { useMyStore } from '../hooks/useMyStore'
 import { useSubscription } from '../hooks/useSubscription'
 import { Spinner } from '../components/ui/Field'
@@ -27,6 +28,8 @@ export default function BuilderPage() {
 function Builder({ store, setStore }) {
   const { plan, upgrade } = useSubscription(store, setStore)
   const isFree = plan === 'gratis'
+  const activeTheme = findActiveTheme(store)
+  const [onboardDismissed, setOnboardDismissed] = useState(false)
 
   const [sections, setSections] = useState([])
   const [products, setProducts] = useState([])
@@ -162,7 +165,15 @@ function Builder({ store, setStore }) {
         </span>
         {dirty && <span className="text-xs font-medium text-amber-800">• belum disimpan</span>}
 
+        {/* Tema aktif: chip + tombol Ganti Tema */}
+        <span className="hidden items-center gap-1 rounded-lg border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 lg:inline-flex" title="Tema website yang sedang digunakan">
+          <Palette size={13} /> Tema: <b className="font-bold">{activeTheme ? activeTheme.name : 'Kustom'}</b>
+        </span>
+
         <div className="ml-auto flex items-center gap-2">
+          <Link to="/builder/tema" className="btn-secondary shrink-0 text-xs sm:text-sm">
+            <Palette size={16} /> {activeTheme ? 'Ganti Tema' : 'Jelajahi Tema'}
+          </Link>
           <div className="hidden rounded-lg border border-slate-200 p-0.5 sm:flex">
             <button onClick={() => setDevice('desktop')} className={`rounded p-1.5 ${device === 'desktop' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Monitor size={16} /></button>
             <button onClick={() => setDevice('mobile')} className={`rounded p-1.5 ${device === 'mobile' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Smartphone size={16} /></button>
@@ -178,6 +189,23 @@ function Builder({ store, setStore }) {
           </button>
         </div>
       </header>
+
+      {/* Onboarding singkat — non-blokir; semua fitur builder tetap bisa diakses */}
+      {!store.theme?.mode && !onboardDismissed && (
+        <div className="flex flex-wrap items-start gap-2.5 border-b border-brand-100 bg-brand-50/80 px-4 py-2.5">
+          <Sparkles size={16} className="mt-0.5 shrink-0 text-brand-700" />
+          <p className="me-auto text-xs leading-relaxed text-slate-700 sm:text-sm">
+            <b className="font-bold text-slate-900">Pertama kali di Web Builder?</b> Pilih desain website favoritmu di
+            Galeri Tema — <b className="font-bold">bisa diganti kapan saja</b> tanpa menghapus isian tokomu, dan tidak wajib dipilih sekarang.
+          </p>
+          <Link to="/builder/tema" className="btn-primary shrink-0 px-3 py-1.5 text-xs font-bold">
+            <Palette size={13} /> Pilih Tema
+          </Link>
+          <button type="button" onClick={() => setOnboardDismissed(true)} aria-label="Tutup onboarding" className="rounded-lg p-1 text-slate-400 hover:bg-brand-100 hover:text-slate-700">
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       <div className="flex min-h-0 flex-1">
         {/* Kiri: daftar section */}

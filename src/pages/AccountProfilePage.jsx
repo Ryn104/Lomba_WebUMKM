@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { CircleUserRound, ImagePlus, RotateCcw, Save } from 'lucide-react'
+import { ImagePlus, RotateCcw, Save, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { Spinner } from '../components/ui/Field'
+import Avatar from '../components/ui/Avatar'
 import { supabase, BUCKET } from '../lib/supabase'
 import { formatDate } from '../lib/utils'
 
@@ -16,6 +17,7 @@ export default function AccountProfilePage() {
   const [avatarPath, setAvatarPath] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [avatarFile, setAvatarFile] = useState(null)
+  const [deletingAvatar, setDeletingAvatar] = useState(false)
   const [previewUrl, setPreviewUrl] = useState('')
   const [savedValues, setSavedValues] = useState({ name: '', phone: '', avatarPath: '' })
   const fileInputRef = useRef(null)
@@ -114,6 +116,43 @@ export default function AccountProfilePage() {
     setAvatarFile(null)
   }
 
+  const deleteAvatar = async () => {
+    if (deletingAvatar || saving) return
+    if (!user?.id) return toast.error('Sesi login tidak ditemukan. Silakan masuk kembali.')
+    const path = avatarPath
+    if (!path) return
+    if (!window.confirm('Hapus foto profil ini? Tindakan ini tidak dapat dibatalkan.')) return
+    setDeletingAvatar(true)
+    try {
+      // Keamanan: hanya file di folder milik pengguna yang boleh dihapus.
+      if (!path.startsWith(`avatars/${user.id}/`)) throw new Error('Lokasi foto tidak valid.')
+
+      const { error: storageError } = await supabase.storage.from(BUCKET).remove([path])
+      // File yang sudah tidak ada di Storage tetap dianggap terhapus.
+      const storageOk = !storageError || /not found|tidak ditemukan/i.test(storageError.message)
+      if (!storageOk) throw new Error(`File foto gagal dihapus dari Storage: ${storageError.message}`)
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null, avatar_path: null })
+        .eq('id', user.id)
+        .select('id')
+        .single()
+      if (profileError) throw profileError
+
+      setAvatarPath('')
+      setAvatarUrl('')
+      setAvatarFile(null)
+      setSavedValues((current) => ({ ...current, avatarPath: '' }))
+      await refreshProfile()
+      toast.success('Foto profil berhasil dihapus.')
+    } catch (error) {
+      toast.error(`Foto profil gagal dihapus: ${error.message}`)
+    } finally {
+      setDeletingAvatar(false)
+    }
+  }
+
   const submit = async (event) => {
     event.preventDefault()
     const cleanName = name.trim()
@@ -196,13 +235,24 @@ export default function AccountProfilePage() {
           </div>
           <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-[180px_1fr]">
             <div className="flex flex-col items-center gap-3">
-              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-slate-400">
-                {currentAvatar ? <img src={currentAvatar} alt={`Foto profil ${displayName}`} onError={() => setAvatarUrl('')} className="h-full w-full object-cover" /> : <CircleUserRound size={64} strokeWidth={1.25} />}
-              </div>
+              <Avatar
+                name={displayName}
+                src={currentAvatar}
+                alt={`Foto profil ${displayName}`}
+                className="h-28 w-28 text-3xl ring-1 ring-slate-200"
+                onError={() => setAvatarUrl('')}
+              />
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={updateAvatar} className="sr-only" />
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-secondary px-3 py-2 text-xs">
-                <ImagePlus size={15} /> Pilih foto
-              </button>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || deletingAvatar} className="btn-secondary px-3 py-2 text-xs">
+                  <ImagePlus size={15} /> Pilih foto
+                </button>
+                {avatarPath && (
+                  <button type="button" onClick={deleteAvatar} disabled={saving || deletingAvatar} className="btn-ghost px-3 py-2 text-xs text-red-600 hover:text-red-700">
+                    <Trash2 size={15} /> Hapus Foto
+                  </button>
+                )}
+              </div>
               <p className="text-center text-xs text-slate-500">JPEG, PNG, atau WebP · maks. 5 MB</p>
             </div>
 

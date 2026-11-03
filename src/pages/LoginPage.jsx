@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import GoogleButton from '../components/ui/GoogleButton'
 import Logo from '../components/ui/Logo'
+import PasswordInput from '../components/ui/PasswordInput'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -45,7 +46,7 @@ export default function LoginPage() {
           </div>
           <div>
             <label className="label">Password</label>
-            <input className="input" type="password" required placeholder="Masukkan kata sandi" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <PasswordInput required placeholder="Masukkan kata sandi" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <div className="text-right">
             <Link to="/lupa-password" className="text-sm font-medium text-brand-700 hover:text-brand-800">

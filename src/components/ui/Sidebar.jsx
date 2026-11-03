@@ -1,11 +1,33 @@
 import { NavLink, useNavigate, Link } from 'react-router-dom'
 import { LogOut, Menu, X, UserRound, Settings2, ChevronDown } from 'lucide-react'
+import logo from '/logo2.png'
+import logoWordmark from '/logo3.png'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
+import Avatar from './Avatar'
 
 /** Layout dashboard dengan sidebar — dipakai Admin & Dashboard Toko */
-export default function DashboardLayout({ title, subtitle, links, children, headerRight, sidebarWidget }) {
+const NavLinkItem = ({ to, label, icon: Icon, end, onClick }) => (
+  <NavLink
+    to={to}
+    end={end}
+    onClick={onClick}
+    className={({ isActive }) =>
+      `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+        isActive ? 'bg-brand-700 text-white shadow-sm' : 'hover:bg-slate-800 hover:text-white'
+      }`
+    }
+  >
+    <Icon size={18} /> {label}
+  </NavLink>
+)
+
+// Wordmark "UMKITA" dipotong dari aset logo3 yang sama persis dengan halaman login.
+// Koordinat crop dalam pixel sumber (logo3.png berukuran 1986x792), tanpa tagline kecil.
+const WORDMARK = { x: 667, y: 250, w: 1236, h: 240, imgH: 792, hPx: 24 }
+
+export default function DashboardLayout({ title, subtitle, links, specialLinks = [], children, headerRight, sidebarWidget }) {
   const { profile, user, signOut, unsavedChanges } = useAuth()
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
@@ -45,25 +67,44 @@ export default function DashboardLayout({ title, subtitle, links, children, head
   const sidebar = (
     <aside className="flex h-full w-64 shrink-0 flex-col bg-slate-900 text-slate-300">
       <div className="px-5 py-5">
+        <div className="mb-3 flex items-center gap-2.5">
+          <img src={logo} alt="Logo UMKITA - Web Builder untuk UMKM" className="h-10 w-auto shrink-0 object-contain" />
+          <span
+            className="relative inline-block shrink-0 overflow-hidden"
+            style={{ height: WORDMARK.hPx, width: WORDMARK.w * (WORDMARK.hPx / WORDMARK.h) }}
+            aria-hidden="true"
+          >
+            <img
+              src={logoWordmark}
+              alt=""
+              className="absolute max-w-none"
+              style={{
+                height: WORDMARK.imgH * (WORDMARK.hPx / WORDMARK.h),
+                left: -WORDMARK.x * (WORDMARK.hPx / WORDMARK.h),
+                top: -WORDMARK.y * (WORDMARK.hPx / WORDMARK.h),
+              }}
+            />
+          </span>
+        </div>
         <p className="text-lg font-extrabold text-white">{title}</p>
         {subtitle && <p className="truncate text-xs text-slate-400">{subtitle}</p>}
       </div>
       <nav className="hide-scrollbar min-h-0 flex-1 space-y-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3">
         {links.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                isActive ? 'bg-brand-700 text-white shadow-sm' : 'hover:bg-slate-800 hover:text-white'
-              }`
-            }
-          >
-            <Icon size={18} /> {label}
-          </NavLink>
+          <NavLinkItem key={to} to={to} label={label} icon={Icon} end={end} onClick={() => setOpen(false)} />
         ))}
+
+        {/* Section fitur khusus — halaman dengan layout sendiri (mis. /pos, /builder) */}
+        {specialLinks.length > 0 && (
+          <div className="!mt-3 border-t border-slate-800 pt-3">
+            <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500">Fitur Khusus</p>
+            <div className="space-y-1">
+              {specialLinks.map(({ to, label, icon: Icon, end }) => (
+                <NavLinkItem key={to} to={to} label={label} icon={Icon} end={end} onClick={() => setOpen(false)} />
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Subscription widget di bagian bawah sidebar jika ada */}
@@ -84,11 +125,7 @@ export default function DashboardLayout({ title, subtitle, links, children, head
           </div>
         )}
         <button type="button" aria-expanded={accountOpen} aria-haspopup="menu" onClick={() => setAccountOpen(!accountOpen)} className="flex w-full items-center gap-2 rounded-lg p-2 text-left hover:bg-slate-800">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-9 w-9 shrink-0 rounded-full bg-slate-700 object-cover" />
-          ) : (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-700 text-sm font-bold text-white">{displayName.trim().charAt(0).toUpperCase()}</span>
-          )}
+          <Avatar name={displayName} src={avatarUrl} className="h-9 w-9 text-sm" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold text-white">{displayName}</span>
             <span className="block truncate text-xs text-slate-400">{user?.email || profile?.email}</span>

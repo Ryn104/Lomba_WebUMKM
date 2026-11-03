@@ -1,5 +1,6 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import UserAvatar from '../ui/Avatar'
 import { PLAN_COLOR, PLAN_LABEL, STATE_LABEL } from './adminUtils'
 
 const TONES = {
@@ -114,9 +115,5 @@ export function Pagination({ page, pageCount, total, pageSize, onChange }) {
 
 export function Avatar({ profile }) {
   const name = profile?.full_name || profile?.email || '?'
-  return profile?.avatar_url ? (
-    <img src={profile.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full bg-slate-200 object-cover" />
-  ) : (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand-700">{name.trim().charAt(0).toUpperCase()}</span>
-  )
+  return <UserAvatar name={name} src={profile?.avatar_url || ''} variant="soft" className="h-9 w-9 text-sm" />
 }
