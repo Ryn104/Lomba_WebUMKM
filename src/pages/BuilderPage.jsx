@@ -45,7 +45,7 @@ function Builder({ store, setStore }) {
   )
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       const [s, p, d] = await Promise.all([
         supabase.from('store_sections').select('*').eq('store_id', store.id).order('position'),
         supabase.from('products').select('*').eq('store_id', store.id).order('created_at', { ascending: false }),
@@ -81,8 +81,7 @@ function Builder({ store, setStore }) {
   }
 
   const addSection = (type) => {
-    // Batasan 3 section pada paket Gratis (Mockup 1)
-    if (isFree && sections.length >= 3) {
+    if (isFree && sections.length >= 4) {
       setUpgradeOpen(true)
       return
     }
@@ -187,8 +186,8 @@ function Builder({ store, setStore }) {
             <div className="flex items-center justify-between">
               <p className="label">Susunan halaman</p>
               {isFree && (
-                <span className={`text-[11px] font-semibold ${sections.length >= 3 ? 'text-red-600' : 'text-slate-500'}`}>
-                  {sections.length}/3 section
+                <span className={`text-[11px] font-semibold ${sections.length >= 4 ? 'text-red-600' : 'text-slate-500'}`}>
+                  {sections.length}/4 section
                 </span>
               )}
             </div>
@@ -214,7 +213,7 @@ function Builder({ store, setStore }) {
           <div>
             <div className="flex items-center justify-between">
               <p className="label">Tambah section</p>
-              {isFree && sections.length >= 3 && (
+              {isFree && sections.length >= 4 && (
                 <button
                   type="button"
                   onClick={() => setUpgradeOpen(true)}

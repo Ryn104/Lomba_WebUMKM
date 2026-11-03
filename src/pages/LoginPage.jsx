@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import GoogleButton from '../components/ui/GoogleButton'
+import Logo from '../components/ui/Logo'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -36,9 +36,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50/50 via-slate-50 to-slate-100 p-4">
       <div className="card w-full max-w-md p-8 shadow-sm">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-xl font-extrabold text-slate-900">
-          <span className="rounded-lg bg-brand-700 p-1.5 text-white"><Store size={18} /></span> UMKM Builder
-        </Link>
+        <Link to="/" className="mb-6 flex justify-center"><Logo size="lg" /></Link>
         <h1 className="text-center text-xl font-bold text-slate-900">Masuk ke akun Anda</h1>
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>

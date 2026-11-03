@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <ProtectedRoute adminOnly>
               <AdminDashboard />

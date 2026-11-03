@@ -145,9 +145,13 @@ export default function Discounts({ store }) {
               </Field>
               <Field label={form.type === 'percent' ? 'Besar (%)' : 'Besar (Rp)'}>
                 {form.type === 'nominal' ? (
-                  <MoneyInput min="1" required value={form.value} onChange={(value) => setForm({ ...form, value })} placeholder="Contoh: 10.000" />
+                  <MoneyInput min="1" maxLength={15} required value={form.value} onChange={(value) => setForm({ ...form, value })} placeholder="Contoh: 10.000" />
                 ) : (
-                  <input type="number" min="1" max="100" required className="input" value={form.value} onChange={set('value')} placeholder="Contoh: 10" />
+                  <input type="tel" inputMode='numeric' maxLength={3} min="1" max="100" required className="input" value={form.value}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '').slice(0, 9);
+                      setForm({ ...form, value: v > 100 ? '100' : v });
+                    }} placeholder="Contoh: 10" />
                 )}
               </Field>
             </div>

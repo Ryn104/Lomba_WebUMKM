@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Blocks, LayoutDashboard, ReceiptText, Wallet, Globe, MousePointerClick, Store, ArrowRight, Check } from 'lucide-react'
+import { Blocks, LayoutDashboard, ReceiptText, Wallet, Globe, MousePointerClick, ArrowRight, Check } from 'lucide-react'
+import Logo from '../components/ui/Logo'
 import { useAuth } from '../context/AuthContext'
 import { PLATFORM_DOMAIN } from '../lib/supabase'
 
@@ -18,10 +19,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 text-lg font-extrabold text-slate-900">
-            <span className="rounded-lg bg-brand-700 p-1.5 text-white"><Store size={18} /></span>
-            UMKM Builder
-          </Link>
+          <Link to="/" className="text-slate-900"><Logo /></Link>
           <nav className="flex items-center gap-2">
             {user ? (
               <>
