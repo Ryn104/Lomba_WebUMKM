@@ -157,7 +157,7 @@ export default function AccountProfilePage() {
     const cleanName = form.name.trim()
     const cleanPhone = form.phone.trim()
     if (cleanName.length < 2 || cleanName.length > 80) return toast.error('Nama harus terdiri dari 2–80 karakter.')
-    if (cleanPhone && !/^\d{8,13}$/.test(cleanPhone)) return toast.error('Format nomor telepon tidak valid.')
+    if (cleanPhone && !/^\d{10,13}$/.test(cleanPhone)) return toast.error('Format nomor telepon tidak valid.')
     if (!user?.id) return toast.error('Sesi login tidak ditemukan. Silakan masuk kembali.')
 
     setSaving(true)
