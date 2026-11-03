@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AdminDashboard from './pages/AdminDashboard'
 import BuilderPage from './pages/BuilderPage'
+import ThemeGalleryPage from './pages/ThemeGalleryPage'
 import StoreDashboard from './pages/StoreDashboard'
 import POSPage from './pages/POSPage'
 import StoreFront from './pages/StoreFront'
@@ -40,6 +41,14 @@ export default function App() {
           element={
             <ProtectedRoute adminOnly>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/builder/tema"
+          element={
+            <ProtectedRoute>
+              <ThemeGalleryPage />
             </ProtectedRoute>
           }
         />

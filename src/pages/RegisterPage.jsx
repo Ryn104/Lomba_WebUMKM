@@ -5,6 +5,7 @@ import { Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import GoogleButton from '../components/ui/GoogleButton'
 import Logo from '../components/ui/Logo'
+import PasswordInput from '../components/ui/PasswordInput'
 
 const OTP_LENGTH = 6
 const RESEND_SECONDS = 60
@@ -99,7 +100,7 @@ export default function RegisterPage() {
               </div>
               <div>
                 <label className="label">Password</label>
-                <input className="input" type="password" required minLength={6} placeholder="Buat kata sandi (min. 6 karakter)" value={form.password} onChange={set('password')} />
+                <PasswordInput autoComplete="new-password" required minLength={6} placeholder="Buat kata sandi (min. 6 karakter)" value={form.password} onChange={set('password')} />
               </div>
               <button className="btn-primary w-full" disabled={busy}>{busy ? 'Memproses…' : 'Daftar'}</button>
             </form>

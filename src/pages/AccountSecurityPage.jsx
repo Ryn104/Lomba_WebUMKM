@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Eye, EyeOff, KeyRound, MailCheck, ShieldCheck, Link2, ExternalLink } from 'lucide-react'
+import { KeyRound, MailCheck, ShieldCheck, Link2, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import PasswordInput from '../components/ui/PasswordInput'
 
 export default function AccountSecurityPage() {
   const { user, updatePassword } = useAuth()
@@ -16,7 +17,6 @@ export default function AccountSecurityPage() {
   const [unlinkingGoogle, setUnlinkingGoogle] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
-  const [visible, setVisible] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const submit = async (event) => {
@@ -226,17 +226,12 @@ export default function AccountSecurityPage() {
         <form onSubmit={submit} className="max-w-xl space-y-4 p-5 sm:p-6">
           <label className="block">
             <span className="label">Password baru</span>
-            <span className="relative block">
-              <input className="input pr-11" type={visible ? 'text' : 'password'} autoComplete="new-password" minLength={8} placeholder="Masukkan kata sandi baru" value={password} onChange={(event) => setPassword(event.target.value)} required />
-              <button type="button" aria-label={visible ? 'Sembunyikan password' : 'Tampilkan password'} onClick={() => setVisible(!visible)} className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-800">
-                {visible ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </span>
+            <PasswordInput autoComplete="new-password" minLength={8} placeholder="Masukkan kata sandi baru" value={password} onChange={(event) => setPassword(event.target.value)} required />
             <span className="mt-1 block text-xs text-slate-500">Minimal 8 karakter.</span>
           </label>
           <label className="block">
             <span className="label">Konfirmasi password baru</span>
-            <input className="input" type={visible ? 'text' : 'password'} autoComplete="new-password" minLength={8} placeholder="Ulangi kata sandi baru" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required />
+            <PasswordInput autoComplete="new-password" minLength={8} placeholder="Ulangi kata sandi baru" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required />
             {confirmation && password !== confirmation && <span className="mt-1 block text-xs text-red-700">Password belum cocok.</span>}
           </label>
           <button type="submit" disabled={saving || password.length < 8 || password !== confirmation} className="btn-primary min-w-40 justify-center">

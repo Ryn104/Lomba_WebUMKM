@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import ImageUpload from '../ui/ImageUpload'
-import { SECTION_TYPES } from '../store-front/sectionDefs'
+import { LAYOUT_OPTIONS, SECTION_TYPES } from '../store-front/sectionDefs'
+import LayoutPicker from './LayoutPicker'
 import { sanitizePhone } from '../../lib/utils'
 import { Plus, Trash2, MapPin, X } from 'lucide-react'
 import LocationPicker from './LocationPicker'
 
 /** Panel kustomisasi untuk satu section yang sedang dipilih */
-export default function SectionEditor({ section, onChange }) {
+export default function SectionEditor({ section, onChange, themeLayout, themeColor, themeSoft }) {
   const def = SECTION_TYPES[section.type]
   const c = section.content
   const set = (key, val) => onChange({ ...c, [key]: val })
@@ -17,6 +18,17 @@ export default function SectionEditor({ section, onChange }) {
       <h3 className="flex items-center gap-2 font-bold text-slate-900">
         <def.icon size={18} className="text-brand-700" /> {def.label}
       </h3>
+      {def.layoutsSupported !== false && LAYOUT_OPTIONS[section.type] && (
+        <LayoutPicker
+          key={`${section.id}:${section.content?.layout || ''}`}
+          type={section.type}
+          current={section.content?.layout || ''}
+          themeLayout={themeLayout}
+          themeColor={themeColor}
+          themeSoft={themeSoft}
+          onApply={(id) => onChange({ ...c, layout: id })}
+        />
+      )}
       {def.note && <p className="rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs text-brand-800">{def.note}</p>}
 
       {def.fields.map((f) => (

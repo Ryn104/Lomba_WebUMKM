@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { Spinner } from '../components/ui/Field'
+import PasswordInput from '../components/ui/PasswordInput'
 
 export default function ResetPasswordPage() {
   const { session, loading, updatePassword } = useAuth()
@@ -43,11 +44,11 @@ export default function ResetPasswordPage() {
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
               <label className="label">Password baru</label>
-              <input className="input" type="password" required minLength={6} placeholder="Masukkan kata sandi baru" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <PasswordInput autoComplete="new-password" required minLength={6} placeholder="Masukkan kata sandi baru" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div>
               <label className="label">Ulangi password baru</label>
-              <input className="input" type="password" required minLength={6} placeholder="Ulangi kata sandi baru" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <PasswordInput autoComplete="new-password" required minLength={6} placeholder="Ulangi kata sandi baru" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </div>
             <button className="btn-primary w-full" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan password'}</button>
           </form>
