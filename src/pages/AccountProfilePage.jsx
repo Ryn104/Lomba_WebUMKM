@@ -13,17 +13,10 @@ export default function AccountProfilePage() {
   const { user, profile, refreshProfile, setUnsavedChanges } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [avatarPath, setAvatarPath] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
-  const [avatarFile, setAvatarFile] = useState(null)
-  const [deletingAvatar, setDeletingAvatar] = useState(false)
-  const [previewUrl, setPreviewUrl] = useState('')
-  const [savedValues, setSavedValues] = useState({ name: '', phone: '', avatarPath: '' })
   const [form, setForm] = useState({ name: '', phone: '' })
   const [saved, setSaved] = useState({ name: '', phone: '' })
   const [avatar, setAvatar] = useState({ path: '', url: '', file: null, preview: '' })
+  const [deletingAvatar, setDeletingAvatar] = useState(false)
   const fileInputRef = useRef(null)
   const dirty = Boolean(user && (form.name !== saved.name || form.phone !== saved.phone || avatar.file))
 
@@ -36,7 +29,6 @@ export default function AccountProfilePage() {
         toast.error(`Profil tidak dapat dimuat: ${error.message}`)
       } else {
         const fresh = data || profile || {}
-        // normalize legacy phone (e.g. "+62 812…") so it passes digits-only validation
         const nextForm = { name: fresh.full_name || user.user_metadata?.full_name || '', phone: sanitizePhone(fresh.phone || '') }
         const path = fresh.avatar_path || ''
         const fallback = fresh.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || ''
@@ -118,19 +110,15 @@ export default function AccountProfilePage() {
   const deleteAvatar = async () => {
     if (deletingAvatar || saving) return
     if (!user?.id) return toast.error('Sesi login tidak ditemukan. Silakan masuk kembali.')
-    const path = avatarPath
+    const path = avatar.path
     if (!path) return
     if (!window.confirm('Hapus foto profil ini? Tindakan ini tidak dapat dibatalkan.')) return
     setDeletingAvatar(true)
     try {
-      // Keamanan: hanya file di folder milik pengguna yang boleh dihapus.
       if (!path.startsWith(`avatars/${user.id}/`)) throw new Error('Lokasi foto tidak valid.')
-
       const { error: storageError } = await supabase.storage.from(BUCKET).remove([path])
-      // File yang sudah tidak ada di Storage tetap dianggap terhapus.
       const storageOk = !storageError || /not found|tidak ditemukan/i.test(storageError.message)
       if (!storageOk) throw new Error(`File foto gagal dihapus dari Storage: ${storageError.message}`)
-
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ avatar_url: null, avatar_path: null })
@@ -138,11 +126,7 @@ export default function AccountProfilePage() {
         .select('id')
         .single()
       if (profileError) throw profileError
-
-      setAvatarPath('')
-      setAvatarUrl('')
-      setAvatarFile(null)
-      setSavedValues((current) => ({ ...current, avatarPath: '' }))
+      setAvatar({ path: '', url: '', file: null, preview: '' })
       await refreshProfile()
       toast.success('Foto profil berhasil dihapus.')
     } catch (error) {
@@ -237,17 +221,14 @@ export default function AccountProfilePage() {
                 src={currentAvatar}
                 alt={`Foto profil ${displayName}`}
                 className="h-28 w-28 text-3xl ring-1 ring-slate-200"
-                onError={() => setAvatarUrl('')}
+                onError={() => setAvatar((a) => ({ ...a, url: '' }))}
               />
-              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-slate-400">
-                {currentAvatar ? <img src={currentAvatar} alt={`Foto profil ${displayName}`} onError={() => setAvatar((a) => ({ ...a, url: '' }))} className="h-full w-full object-cover" /> : <CircleUserRound size={64} strokeWidth={1.25} />}
-              </div>
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={updateAvatar} className="sr-only" />
               <div className="flex gap-2">
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || deletingAvatar} className="btn-secondary px-3 py-2 text-xs">
                   <ImagePlus size={15} /> Pilih foto
                 </button>
-                {avatarPath && (
+                {avatar.path && (
                   <button type="button" onClick={deleteAvatar} disabled={saving || deletingAvatar} className="btn-ghost px-3 py-2 text-xs text-red-600 hover:text-red-700">
                     <Trash2 size={15} /> Hapus Foto
                   </button>
