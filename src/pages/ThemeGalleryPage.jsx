@@ -7,6 +7,8 @@ import { useMyStore } from '../hooks/useMyStore'
 import { Spinner } from '../components/ui/Field'
 import CreateStore from '../components/builder/CreateStore'
 import SectionRenderer from '../components/store-front/SectionRenderer'
+import LayoutThumb from '../components/store-front/layoutThumbs'
+import { StorefrontFooter, StorefrontHeader } from '../components/store-front/HeaderFooter'
 import { BUILDER_THEMES, findActiveTheme } from '../components/builder/themes'
 
 export default function ThemeGalleryPage() {
@@ -39,20 +41,45 @@ function Gallery({ store, setStore }) {
 
   const activeTheme = useMemo(() => findActiveTheme(store), [store])
 
+  /**
+   * Terapkan tema kategori: set identitas visual (primary/font/mode) DAN
+   * tulis kombinasi layout default tema ke SETIAP section (content.layout).
+   * Konten section digeser dengan spread — tidak ada data yang hilang/dibuat ulang.
+   */
   const applyTheme = async (theme) => {
     if (applying) return
     if (activeTheme && activeTheme.id !== theme.id) {
-      const ok = window.confirm(`Ganti tema menjadi "${theme.name}"? Tema "${activeTheme.name}" akan digantikan. Tetap lanjut?`)
+      const ok = window.confirm(
+        `Ganti tema menjadi "${theme.name}"?\n\nKombinasi layout khas tema ini akan diterapkan pada semua section. ` +
+        'Teks, gambar, dan datamu tetap tersimpan — tampilannya yang disesuaikan. Tetap lanjut?'
+      )
       if (!ok) return
     }
     setApplying(true)
     try {
-      const nextTheme = { ...(store.theme || {}), primary: theme.primary, font: theme.font, mode: theme.id }
-      const { data: updated, error } = await supabase.from('stores').update({ theme: nextTheme }).eq('id', store.id).select().single()
-      if (error) throw error
+      // 1) theme baru + hapus pilihan header/footer kustom (ikut default tema)
+      const { headerLayout: _h, footerLayout: _f, ...restTheme } = store.theme || {}
+      const nextTheme = { ...restTheme, primary: theme.primary, font: theme.font, mode: theme.id }
+      const { data: updated, error: themeError } = await supabase
+        .from('stores').update({ theme: nextTheme }).eq('id', store.id).select().single()
+      if (themeError) throw themeError
       setStore(updated)
+
+      // 2) peta layout tema -> semua section milik pengguna (semua, termasuk yang disembunyikan)
+      const { data: allSections, error: secError } = await supabase
+        .from('store_sections').select('id, content, type').eq('store_id', store.id)
+      if (secError) throw secError
+      await Promise.all(
+        (allSections || []).map((row) =>
+          supabase
+            .from('store_sections')
+            .update({ content: { ...(row.content || {}), layout: theme.layouts[row.type] } })
+            .eq('id', row.id)
+        )
+      )
+
       setPreviewTheme(null)
-      toast.success(`Tema "${theme.name}" diterapkan! Sampai jumpa di tampilan baru.`)
+      toast.success(`Tema "${theme.name}" diterapkan! Layout khas tema sudah dipadukan ke section tokomu.`)
     } catch (err) {
       toast.error('Gagal menerapkan tema: ' + err.message)
     } finally {
@@ -75,8 +102,8 @@ function Gallery({ store, setStore }) {
             </span>
             <h1 className="mt-3 text-2xl font-extrabold text-slate-900 sm:text-3xl">Temukan Tampilan Website Impianmu</h1>
             <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600">
-              Pilih desain website yang paling pas dengan karakter bisnismu. Pratinjau lebih dulu,
-              terapkan kapan saja — tema bisa diganti kapan pun tanpa mengubah konten tokomu.
+              Setiap kategori bisnis punya karakter desain sendiri — struktur section, komposisi layout, dan dalamnya
+              warna &amp; tipografi. Pratinjau dengan datamu sendiri, terapkan kapan saja. Konten tokomu tetap tersimpan.
             </p>
           </header>
 
@@ -96,8 +123,8 @@ function Gallery({ store, setStore }) {
           </div>
 
           <p className="mt-6 text-center text-xs text-slate-500">
-            Semua tema bawaan dapat digunakan secara gratis sesuai hak akses paketmu. Ingin melihat lebih detail?
-            Bandingkan fitur lewat <b>Preview</b> — tidak ada yang tersimpan sebelum kamu menekan "Gunakan Tema".
+            Semua tema bawaan gratis sesuai hak akses paketmu. Setelah tema diterapkan, kamu tetap bebas mengganti layar
+            (layout) tiap section lewat <b>Ubah Layout</b> di editor Web Builder.
           </p>
         </div>
       </div>
@@ -128,9 +155,6 @@ function ThemeCard({ theme, storeName, active, busy, onPreview, onApply }) {
     >
       <div className="relative">
         <ThemeThumb theme={theme} storeName={storeName} />
-        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700 shadow">
-          {theme.badge}
-        </span>
         {active && (
           <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-[10px] font-bold text-white shadow">
             <Check size={11} /> Sedang Digunakan
@@ -138,10 +162,7 @@ function ThemeCard({ theme, storeName, active, busy, onPreview, onApply }) {
         )}
       </div>
       <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-center gap-2">
-          <span className="h-3.5 w-3.5 shrink-0 rounded-full border border-white shadow-sm ring-1 ring-slate-200" style={{ background: theme.primary }} />
-          <h3 className="text-sm font-bold text-slate-900">Tema {theme.name}</h3>
-        </div>
+        <h3 className="text-sm font-bold text-slate-900">{theme.name}</h3>
         <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{theme.desc}</p>
         <p className="mt-auto pt-3 text-[11px] text-slate-500">
           <span className="font-bold text-slate-700">Cocok untuk:</span> {theme.suitedFor}
@@ -164,63 +185,35 @@ function ThemeCard({ theme, storeName, active, busy, onPreview, onApply }) {
   )
 }
 
-/** Thumbnail representatif tema: mock mini-website dengan warna & huruf khas tema. */
+/**
+ * Thumbnail tema: disusun dari LayoutThumb nyata sesuai kombinasi layout karakter
+ * tema (header, hero, produk, galeri, footer) — bukan gambar dekoratif acak.
+ */
 function ThemeThumb({ theme, storeName }) {
+  const { primary, soft, layouts } = theme
+  const fontFamily = `${theme.font}, Inter, sans-serif`
   return (
     <div className="aspect-[4/3] w-full select-none overflow-hidden bg-white">
-      {/* chrome browser */}
-      <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-3 py-2">
-        <span className="h-2 w-2 rounded-full bg-red-300" />
-        <span className="h-2 w-2 rounded-full bg-amber-300" />
-        <span className="h-2 w-2 rounded-full bg-emerald-300" />
-        <span className="ml-2 h-2.5 flex-1 rounded-full bg-slate-200/70" />
+      {/* header sesuai layout header tema */}
+      <div className="border-b border-slate-100">
+        <LayoutThumb type="header" layout={layouts.header} color={primary} soft={soft} text="#475569" className="h-8" />
       </div>
-      {/* mini header toko */}
-      <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center gap-1.5">
-          <span className="h-3.5 w-3.5 shrink-0 rounded" style={{ background: theme.primary }} />
-          <span className="truncate text-[9px] font-bold text-slate-700" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>
-            {storeName.length > 17 ? `${storeName.slice(0, 17)}…` : storeName}
-          </span>
-        </div>
-        <div className="flex gap-1">
-          <span className="h-1.5 w-5 rounded-full bg-slate-200" />
-          <span className="h-1.5 w-5 rounded-full bg-slate-200" />
-          <span className="h-1.5 w-5 rounded-full bg-slate-200" />
-        </div>
+      {/* nama toko + hero sesuai layout hero tema */}
+      <div className="px-3 pt-2">
+        <p className="truncate text-[10px] font-bold text-slate-500" style={{ fontFamily }}>
+          {storeName.length > 22 ? `${storeName.slice(0, 22)}…` : storeName}
+        </p>
       </div>
-      {/* hero bertema */}
-      <div className="relative overflow-hidden px-4 py-5" style={{ background: theme.soft }}>
-        {theme.deco === 'organic' && <span className="absolute -right-5 -top-7 h-16 w-16 rounded-full bg-white/60" />}
-        {theme.deco === 'gold' && <span className="absolute inset-2 rounded-md border" style={{ borderColor: `${theme.primary}55` }} />}
-        {theme.deco === 'burst' && (
-          <>
-            <span className="absolute -bottom-4 right-2 h-10 w-16 rotate-6 rounded-xl bg-white/70" />
-            <span className="absolute -right-3 top-2 h-8 w-8 rounded-full bg-white/70" />
-          </>
-        )}
-        <span className="block h-2.5 w-3/5 rounded-full bg-slate-800/70" />
-        <span className="mt-1.5 block h-2 w-4/5 rounded-full bg-slate-400/60" />
-        <span className="mt-1.5 block h-2 w-2/3 rounded-full bg-slate-400/40" />
-        <span className="mt-3 inline-flex h-5 items-center rounded-md bg-white px-3 shadow-sm">
-          <span className="h-1.5 w-8 rounded-full" style={{ background: theme.primary }} />
-        </span>
-      </div>
-      {/* kartu produk */}
-      <div className="grid grid-cols-3 gap-2 p-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="rounded-lg border border-slate-100 bg-white p-1.5 shadow-sm">
-            <span className="block h-8 rounded-md" style={{ background: theme.soft }} />
-            <span className="mt-1.5 block h-1.5 w-3/4 rounded-full bg-slate-200" />
-            <span className="mt-1 block h-1.5 w-1/2 rounded-full" style={{ background: `${theme.primary}55` }} />
-          </div>
-        ))}
-      </div>
+      <LayoutThumb type="hero" layout={layouts.hero} color={primary} soft={soft} text="#475569" className="mx-3 mt-1.5 h-20 rounded-md border border-slate-100" />
+      {/* produk sesuai layout produk tema */}
+      <LayoutThumb type="products" layout={layouts.products} color={primary} soft={soft} text="#475569" className="mx-3 mt-1.5 h-16 rounded-md border border-slate-100" />
+      {/* footer sesuai layout footer tema */}
+      <LayoutThumb type="footer" layout={layouts.footer} color={primary} soft={soft} text="#94a3b8" className="mt-2 h-8" />
     </div>
   )
 }
 
-/** Preview fullscreen: seluruh website toko dengan tema yang di-preview, tanpa menyimpan apa pun. */
+/** Preview fullscreen: seluruh website dengan kombinasi layout tema, tanpa menyimpan apa pun. */
 function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, applying }) {
   const { sections, products, discounts, loading } = data
 
@@ -230,6 +223,8 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
   const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
 
   const visibleSections = sections.filter((s) => s.is_visible)
+  // Layout efektif: pilihan kustom pengguna (content.layout) menang; selain itu default tema kandidat.
+  const effective = (s) => s.content?.layout || theme.layouts[s.type]
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-slate-200">
@@ -239,7 +234,7 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
           <ArrowLeft size={18} /> Kembali ke Galeri Tema
         </button>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-slate-900">Preview · Tema {theme.name}</p>
+          <p className="truncate text-sm font-bold text-slate-900">Preview · {theme.name}</p>
           <p className="hidden text-[11px] text-slate-500 sm:block">Memakai data tokomu sendiri — tidak mengubah tema aktif maupun konten tersimpan.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -263,25 +258,7 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
             <div className="py-32 text-center text-sm text-slate-400">Memuat pratinjau…</div>
           ) : (
             <>
-              <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
-                <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-                  <div className="flex items-center gap-2 font-bold text-slate-900">
-                    {store.logo_url ? (
-                      <img src={store.logo_url} alt="" className="h-8 w-8 rounded object-cover" />
-                    ) : (
-                      <span className="rounded-lg p-1.5 text-white" style={{ background: theme.primary }}><StoreIcon size={16} /></span>
-                    )}
-                    {store.name}
-                  </div>
-                  <nav className="hidden gap-5 text-sm font-medium text-slate-600 sm:flex">
-                    {sections.some((s) => s.type === 'about') && <a href="#about" className="hover:text-slate-900">Tentang</a>}
-                    {sections.some((s) => s.type === 'products') && <a href="#products" className="hover:text-slate-900">Produk</a>}
-                    {sections.some((s) => s.type === 'gallery') && <a href="#gallery" className="hover:text-slate-900">Galeri</a>}
-                    {sections.some((s) => s.type === 'contact') && <a href="#contact" className="hover:text-slate-900">Kontak</a>}
-                  </nav>
-                </div>
-              </header>
-
+              <StorefrontHeader store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.header} />
               {visibleSections.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
                   <Sparkles size={40} className="text-slate-300" />
@@ -289,19 +266,10 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
                 </div>
               ) : (
                 visibleSections.map((s) => (
-                  <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={theme.primary} />
+                  <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={theme.primary} layout={effective(s)} />
                 ))
               )}
-
-              <footer className="bg-slate-900 py-6 text-center text-xs text-slate-400">
-                © {new Date().getFullYear()} {store.name}
-                {hasWatermark && (
-                  <>
-                    {' · '}
-                    <span className="text-slate-400 underline underline-offset-2">Dibuat dengan UMKM Builder</span>
-                  </>
-                )}
-              </footer>
+              <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
             </>
           )}
         </div>

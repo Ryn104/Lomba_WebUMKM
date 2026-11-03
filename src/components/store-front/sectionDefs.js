@@ -1,5 +1,69 @@
 import { Sparkles, Info, ShoppingBag, Images, MessageSquareQuote, Phone } from 'lucide-react'
 
+/**
+ * Metadata Layout Variant per section (tersimpan di content.layout).
+ * Urutan = urutan tampil di LayoutPicker builder.
+ */
+export const LAYOUT_OPTIONS = {
+  hero: [
+    { id: 'split', label: 'Split Hero' },
+    { id: 'full', label: 'Full Image Hero' },
+    { id: 'center', label: 'Centered Hero' },
+    { id: 'asym', label: 'Asymmetric Hero' },
+  ],
+  about: [
+    { id: 'two', label: 'Two Column' },
+    { id: 'bgimage', label: 'Image Background' },
+    { id: 'editorial', label: 'Editorial Layout' },
+  ],
+  products: [
+    { id: 'grid', label: 'Standard Product Grid' },
+    { id: 'featured', label: 'Featured Product' },
+    { id: 'horizontal', label: 'Horizontal Product List' },
+    { id: 'compact', label: 'Compact Product Cards' },
+  ],
+  gallery: [
+    { id: 'uniform', label: 'Uniform Grid' },
+    { id: 'masonry', label: 'Masonry Grid' },
+    { id: 'collage', label: 'Asymmetric Collage' },
+  ],
+  testimonials: [
+    { id: 'cards', label: 'Testimonial Cards' },
+    { id: 'carousel', label: 'Carousel' },
+    { id: 'featured', label: 'Featured Testimonial' },
+  ],
+  contact: [
+    { id: 'split', label: 'Split Contact Layout' },
+    { id: 'centered', label: 'Centered Contact' },
+    { id: 'cards', label: 'Contact Information Cards' },
+  ],
+  header: [
+    { id: 'split', label: 'Split Navigation' },
+    { id: 'center', label: 'Centered Navigation' },
+    { id: 'minimal', label: 'Minimal Navigation' },
+  ],
+  footer: [
+    { id: 'minimal', label: 'Minimal Footer' },
+    { id: 'multi', label: 'Multi-column' },
+    { id: 'branded', label: 'Branded Footer' },
+  ],
+}
+
+/** Layout default jika section belum punya pilihan (data lama / compatibilitas). */
+export const DEFAULT_LAYOUTS = {
+  hero: 'center',
+  about: 'two',
+  products: 'grid',
+  gallery: 'uniform',
+  testimonials: 'cards',
+  contact: 'split',
+  header: 'split',
+  footer: 'minimal',
+}
+
+export const layoutLabel = (type, id) =>
+  LAYOUT_OPTIONS[type]?.find((l) => l.id === id)?.label || id || 'Default'
+
 /** Definisi semua section yang bisa dipakai di web builder */
 export const SECTION_TYPES = {
   hero: {

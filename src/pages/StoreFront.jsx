@@ -4,6 +4,8 @@ import { Store as StoreIcon } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Spinner } from '../components/ui/Field'
 import SectionRenderer from '../components/store-front/SectionRenderer'
+import { StorefrontFooter, StorefrontHeader } from '../components/store-front/HeaderFooter'
+import { resolveTheme } from '../components/builder/themes'
 
 /** Halaman publik toko: /:slug */
 export default function StoreFront() {
@@ -52,7 +54,8 @@ export default function StoreFront() {
     )
 
   const { store, sections, products, discounts } = state
-  const primary = store.theme?.primary || '#047857'
+  const theme = resolveTheme(store)
+  const primary = theme.primary
 
   // Fitur Watermark: Ditampilkan pada paket Gratis; dihilangkan pada paket Bisnis / Pro / Trial
   const sub = store.theme?.subscription || {}
@@ -61,45 +64,26 @@ export default function StoreFront() {
   const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
 
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: store.theme?.font ? `${store.theme.font}, Inter, sans-serif` : undefined }}>
-      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2 font-bold text-slate-900">
-            {store.logo_url ? (
-              <img src={store.logo_url} alt="" className="h-8 w-8 rounded object-cover" />
-            ) : (
-              <span className="rounded-lg p-1.5 text-white" style={{ background: primary }}><StoreIcon size={16} /></span>
-            )}
-            {store.name}
-          </div>
-          <nav className="hidden gap-5 text-sm font-medium text-slate-600 sm:flex">
-            {sections.some((s) => s.type === 'about') && <a href="#about" className="hover:text-slate-900">Tentang</a>}
-            {sections.some((s) => s.type === 'products') && <a href="#products" className="hover:text-slate-900">Produk</a>}
-            {sections.some((s) => s.type === 'gallery') && <a href="#gallery" className="hover:text-slate-900">Galeri</a>}
-            {sections.some((s) => s.type === 'contact') && <a href="#contact" className="hover:text-slate-900">Kontak</a>}
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>
+      <StorefrontHeader store={store} sections={sections} primary={primary} layout={theme.headerLayout} />
 
       {sections.length === 0 ? (
         <p className="py-24 text-center text-slate-400">Website toko ini belum diisi.</p>
       ) : (
         sections.map((s) => (
-          <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={primary} />
+          <SectionRenderer
+            key={s.id}
+            section={s}
+            store={store}
+            products={products}
+            discounts={discounts}
+            primary={primary}
+            layout={theme.layouts[s.type]}
+          />
         ))
       )}
 
-      <footer className="bg-slate-900 py-6 text-center text-xs text-slate-400">
-        © {new Date().getFullYear()} {store.name}
-        {hasWatermark && (
-          <>
-            {' · '}
-            <Link to="/" className="text-slate-400 hover:text-white transition underline underline-offset-2">
-              Dibuat dengan UMKM Builder
-            </Link>
-          </>
-        )}
-      </footer>
+      <StorefrontFooter store={store} sections={sections} primary={primary} layout={theme.footerLayout} hasWatermark={hasWatermark} />
     </div>
   )
 }
