@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { supabase, PLATFORM_DOMAIN } from '../../lib/supabase'
 import ImageUpload from '../ui/ImageUpload'
@@ -43,13 +42,6 @@ export default function StoreSettings({ store, setStore }) {
           <input className="input cursor-not-allowed bg-slate-100 text-slate-600" disabled value={`${PLATFORM_DOMAIN}/${store.slug}`} />
         </Field>
         <Field label="Deskripsi singkat"><textarea rows={3} className="input" value={form.description} onChange={set('description')} placeholder="Ceritakan produk dan keunggulan toko Anda..." /></Field>
-        <Field label="No. WhatsApp" hint="Nomor WhatsApp toko dipakai untuk tombol pesan di halaman produk.">
-          <input className="input cursor-not-allowed bg-slate-100 text-slate-600" disabled value={store.whatsapp || 'Belum diatur'} />
-          <p className="mt-1 text-xs text-slate-500">
-            Nomor ini sama dengan nomor telepon akun Anda.{' '}
-            <Link to="/account/profile" className="font-semibold text-brand-700 hover:underline">Ubah di Profil Saya</Link>
-          </p>
-        </Field>
         <button className="btn-primary" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan'}</button>
       </form>
     </div>
