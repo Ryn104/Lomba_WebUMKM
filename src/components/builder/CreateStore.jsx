@@ -26,11 +26,12 @@ export default function CreateStore({ onCreated }) {
   const submit = async (e) => {
     e.preventDefault()
     if (!valid) return toast.error('Alamat toko tidak valid')
+    if (!/^\d{10,13}$/.test(whatsapp)) return toast.error('Format nomor telepon tidak valid.')
     setBusy(true)
 
     const { data: store, error } = await supabase
       .from('stores')
-      .insert({ owner_id: user.id, name, slug, whatsapp: whatsapp.replace(/\D/g, '') || null })
+      .insert({ owner_id: user.id, name, slug, whatsapp })
       .select()
       .single()
 
@@ -48,11 +49,12 @@ export default function CreateStore({ onCreated }) {
       content:
         s.type === 'hero'
           ? { ...SECTION_TYPES.hero.defaults, title: `Selamat Datang di ${name}` }
-          : s.type === 'contact'
-            ? { ...SECTION_TYPES.contact.defaults, phone: whatsapp }
-            : s.content,
+          : s.content,
     }))
     await supabase.from('store_sections').insert(rows)
+
+    // Nomor WhatsApp toko = nomor telepon akun (single source of truth)
+    await supabase.from('profiles').update({ phone: whatsapp }).eq('id', user.id)
 
     setBusy(false)
     toast.success('Toko berhasil dibuat!')
@@ -102,6 +104,7 @@ export default function CreateStore({ onCreated }) {
             inputMode="numeric"
             maxLength={13}
           />
+
         </div>
 
         <button className="btn-primary w-full" disabled={busy || !valid}>{busy ? 'Membuat…' : 'Buat Toko'}</button>

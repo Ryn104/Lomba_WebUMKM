@@ -538,10 +538,10 @@ function TestimonialsSection({ c, style, color, layout }) {
 /* ============================ CONTACT ============================ */
 
 function ContactSection({ c, style, store, color, layout }) {
-  const wa = (c.phone || store?.whatsapp || '').replace(/\D/g, '')
+  const wa = (store?.whatsapp || '').replace(/\D/g, '')
   const infos = [
     { icon: MapPin, label: 'Alamat', value: c.address },
-    { icon: Phone, label: 'Telepon / WA', value: c.phone },
+    { icon: Phone, label: 'Telepon / WA', value: store?.whatsapp },
     { icon: Mail, label: 'Email', value: c.email },
     { icon: Clock, label: 'Jam buka', value: c.hours },
   ].filter((x) => x.value)
@@ -635,7 +635,7 @@ function ContactSection({ c, style, store, color, layout }) {
         <div className="mt-8 grid gap-8 md:grid-cols-2">
           <ul className="space-y-4">
             {c.address && <li className="flex gap-3"><MapPin className="shrink-0" size={20} /> {c.address}</li>}
-            {c.phone && <li className="flex gap-3"><Phone className="shrink-0" size={20} /> {c.phone}</li>}
+            {store?.whatsapp && <li className="flex gap-3"><Phone className="shrink-0" size={20} /> {store.whatsapp}</li>}
             {c.email && <li className="flex gap-3"><Mail className="shrink-0" size={20} /> {c.email}</li>}
             {c.hours && <li className="flex gap-3"><Clock className="shrink-0" size={20} /> {c.hours}</li>}
             {wa && (
