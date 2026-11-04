@@ -91,9 +91,11 @@ export default function CreateStore({ onCreated }) {
         </div>
 
         <div>
-          <label className="label">No. WhatsApp (opsional)</label>
+          <label className="label">No. WhatsApp (untuk menghubungi toko anda)</label>
           <input
+            type='tel'
             className="input"
+            required
             value={whatsapp}
             onChange={(e) => setWhatsapp(sanitizePhone(e.target.value))}
             placeholder="628123456789"
