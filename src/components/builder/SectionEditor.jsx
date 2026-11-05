@@ -39,7 +39,7 @@ export default function SectionEditor({ section, onChange, store, themeLayout, t
             <>
               <p className="mb-1 text-xs text-slate-500">
                 Nomor ini diambil dari profil akun Anda.{' '}
-                <Link to="/account/profile" className="font-semibold text-brand-700 hover:underline">Ubah di Profil Saya</Link>
+                <Link to="/dashboard/profil" className="font-semibold text-brand-700 hover:underline">Ubah di Profil Saya</Link>
               </p>
               <input className="input cursor-not-allowed bg-slate-100 text-slate-600" disabled value={store?.whatsapp || 'Belum diatur'} />
             </>

@@ -14,8 +14,7 @@ const NavLinkItem = ({ to, label, icon: Icon, end, onClick }) => (
     end={end}
     onClick={onClick}
     className={({ isActive }) =>
-      `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-        isActive ? 'bg-brand-700 text-white shadow-sm' : 'hover:bg-slate-800 hover:text-white'
+      `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive ? 'bg-brand-700 text-white shadow-sm' : 'hover:bg-slate-800 hover:text-white'
       }`
     }
   >
@@ -116,8 +115,8 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
             <Link to="/dashboard/profil" onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
               <UserRound size={16} /> Profil Saya
             </Link>
-            <Link to="/dashboard/pengaturan-akun" onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
-              <Settings2 size={16} /> Pengaturan Akun
+            <Link to="/dashboard/pengaturan" onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
+              <Settings2 size={16} /> Pengaturan
             </Link>
             <button type="button" disabled={loggingOut} onClick={logout} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-700 hover:text-white disabled:opacity-60">
               <LogOut size={16} /> {loggingOut ? 'Keluar…' : 'Keluar'}
