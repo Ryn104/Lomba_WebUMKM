@@ -34,7 +34,6 @@ const links = [
   { to: '/dashboard/diskon', label: 'Diskon', icon: Percent },
   { to: '/dashboard/keuangan', label: 'Keuangan', icon: Wallet },
   { to: '/dashboard/langganan', label: 'Langganan', icon: CreditCard },
-  { to: '/dashboard/pengaturan', label: 'Pengaturan', icon: Settings },
 ]
 
 // Fitur khusus dengan layout halaman sendiri (tanpa sidebar dashboard)
@@ -53,15 +52,15 @@ export default function StoreDashboard() {
   useEffect(() => {
     if (!store?.id) return
     let alive = true
-    ;(async () => {
-      const { count } = await supabase
-        .from('products')
-        .select('id', { count: 'exact', head: true })
-        .eq('store_id', store.id)
-      if (alive && typeof count === 'number') {
-        setProductsCount(count)
-      }
-    })()
+      ; (async () => {
+        const { count } = await supabase
+          .from('products')
+          .select('id', { count: 'exact', head: true })
+          .eq('store_id', store.id)
+        if (alive && typeof count === 'number') {
+          setProductsCount(count)
+        }
+      })()
     return () => { alive = false }
   }, [store?.id])
 
@@ -71,7 +70,7 @@ export default function StoreDashboard() {
       <DashboardLayout title="UMKM Builder" links={links} specialLinks={specialLinks}>
         <Routes>
           <Route path="profil" element={<AccountProfilePage />} />
-          <Route path="pengaturan-akun" element={<AccountSecurityPage />} />
+          <Route path="pengaturan" element={<AccountSecurityPage store={store} setStore={setStore} />} />
           <Route path="*" element={<CreateStore onCreated={reload} />} />
         </Routes>
       </DashboardLayout>
@@ -94,11 +93,10 @@ export default function StoreDashboard() {
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-700">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${
-              isFree && productsCount >= 10
-                ? 'bg-red-500'
-                : 'bg-brand-500'
-            }`}
+            className={`h-full rounded-full transition-all duration-300 ${isFree && productsCount >= 10
+              ? 'bg-red-500'
+              : 'bg-brand-500'
+              }`}
             style={{
               width: isFree
                 ? `${Math.min((productsCount / 10) * 100, 100)}%`
@@ -131,13 +129,12 @@ export default function StoreDashboard() {
           <div className="flex items-center gap-2">
             {/* Badge status paket (Mockup 3) */}
             <span
-              className={`hidden sm:inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                plan === 'pro'
-                  ? 'bg-brand-100 text-brand-900 border border-brand-200'
-                  : plan === 'bisnis'
+              className={`hidden sm:inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${plan === 'pro'
+                ? 'bg-brand-100 text-brand-900 border border-brand-200'
+                : plan === 'bisnis'
                   ? 'bg-amber-50 text-amber-900 border border-amber-200'
                   : 'bg-slate-100 text-slate-700 border border-slate-200'
-              }`}
+                }`}
             >
               {plan === 'pro' ? 'Pro' : plan === 'bisnis' ? 'Bisnis' : 'Gratis'}
             </span>
@@ -170,9 +167,8 @@ export default function StoreDashboard() {
           <Route path="diskon" element={<Discounts store={store} />} />
           <Route path="keuangan" element={<Finance store={store} setStore={setStore} />} />
           <Route path="langganan" element={<SubscriptionPage store={store} setStore={setStore} />} />
-          <Route path="pengaturan" element={<StoreSettings store={store} setStore={setStore} />} />
           <Route path="profil" element={<AccountProfilePage />} />
-          <Route path="pengaturan-akun" element={<AccountSecurityPage />} />
+          <Route path="pengaturan" element={<AccountSecurityPage store={store} setStore={setStore} />} />
         </Routes>
       </DashboardLayout>
 

@@ -19,6 +19,7 @@ export default function AccountProfilePage() {
   const [deletingAvatar, setDeletingAvatar] = useState(false)
   const fileInputRef = useRef(null)
   const dirty = Boolean(user && (form.name !== saved.name || form.phone !== saved.phone || avatar.file))
+  const phoneValid = /^\d{10,13}$/.test(form.phone)
 
   useEffect(() => {
     let alive = true
@@ -141,7 +142,7 @@ export default function AccountProfilePage() {
     const cleanName = form.name.trim()
     const cleanPhone = form.phone.trim()
     if (cleanName.length < 2 || cleanName.length > 80) return toast.error('Nama harus terdiri dari 2–80 karakter.')
-    if (cleanPhone && !/^\d{10,13}$/.test(cleanPhone)) return toast.error('Format nomor telepon tidak valid.')
+    if (!/^\d{10,13}$/.test(cleanPhone)) return toast.error('Format nomor telepon tidak valid.')
     if (!user?.id) return toast.error('Sesi login tidak ditemukan. Silakan masuk kembali.')
 
     setSaving(true)
@@ -165,12 +166,15 @@ export default function AccountProfilePage() {
 
       const { data: updatedProfile, error: profileError } = await supabase
         .from('profiles')
-        .update({ full_name: cleanName, phone: cleanPhone || null, avatar_path: nextPath || null, avatar_url: nextUrl || null })
+        .update({ full_name: cleanName, phone: cleanPhone, avatar_path: nextPath || null, avatar_url: nextUrl || null })
         .eq('id', user.id)
         .select('id')
         .single()
       if (profileError) throw profileError
       if (!updatedProfile) throw new Error('Profil akun tidak ditemukan.')
+
+      // samakan WhatsApp semua toko milik user dengan nomor telepon akun
+      await supabase.from('stores').update({ whatsapp: cleanPhone }).eq('owner_id', user.id)
 
       const oldPath = avatar.path
       const nextForm = { name: cleanName, phone: cleanPhone }
@@ -245,7 +249,7 @@ export default function AccountProfilePage() {
               <label className="block">
                 <span className="label">Nomor telepon</span>
                 <input className="input" type="tel" autoComplete="tel" inputMode="numeric" maxLength={13} placeholder="Contoh: 628123456789" value={form.phone} onChange={(e) => setForm({ ...form, phone: sanitizePhone(e.target.value) })} />
-                <span className="mt-1 block text-xs text-slate-500">Opsional. Digunakan untuk kontak akun.</span>
+                <span className={`mt-1 block text-xs ${form.phone && !phoneValid ? 'text-red-600' : 'text-slate-500'}`}>Wajib. Dipakai sebagai kontak WhatsApp toko Anda (10–13 digit, awali dengan kode negara 62).</span>
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -262,7 +266,7 @@ export default function AccountProfilePage() {
           </div>
           <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6">
             <button type="button" disabled={!dirty || saving} onClick={cancelChanges} className="btn-secondary"><RotateCcw size={16} /> Batal</button>
-            <button type="submit" disabled={!dirty || saving} className="btn-primary min-w-40 justify-center">
+            <button type="submit" disabled={!dirty || saving || !phoneValid} className="btn-primary min-w-40 justify-center">
               {saving ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Menyimpan…</> : <><Save size={16} /> Simpan Perubahan</>}
             </button>
           </div>

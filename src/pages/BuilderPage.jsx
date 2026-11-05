@@ -343,6 +343,7 @@ function Builder({ store, setStore }) {
             <SectionEditor
               key={selected.id}
               section={selected}
+              store={store}
               themeLayout={theme.layouts[selected.type]}
               themeColor={theme.preset?.primary || primary}
               themeSoft={theme.preset?.soft || '#ECFDF5'}
