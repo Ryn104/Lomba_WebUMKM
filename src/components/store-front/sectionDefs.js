@@ -182,7 +182,7 @@ export const SECTION_TYPES = {
     fields: [
       { key: 'title', label: 'Judul', type: 'text' },
       { key: 'address', label: 'Alamat', type: 'textarea' },
-      { key: 'phone', label: 'No. WhatsApp (628xxx)', type: 'text' },
+      { key: 'phone', label: 'No. WhatsApp', type: 'text' },
       { key: 'email', label: 'Email', type: 'text' },
       { key: 'hours', label: 'Jam buka', type: 'text' },
       {

@@ -1,13 +1,13 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import ImageUpload from '../ui/ImageUpload'
 import { LAYOUT_OPTIONS, SECTION_TYPES } from '../store-front/sectionDefs'
 import LayoutPicker from './LayoutPicker'
-import { sanitizePhone } from '../../lib/utils'
 import { Plus, Trash2, MapPin, X } from 'lucide-react'
 import LocationPicker from './LocationPicker'
 
 /** Panel kustomisasi untuk satu section yang sedang dipilih */
-export default function SectionEditor({ section, onChange, themeLayout, themeColor, themeSoft }) {
+export default function SectionEditor({ section, onChange, store, themeLayout, themeColor, themeSoft }) {
   const def = SECTION_TYPES[section.type]
   const c = section.content
   const set = (key, val) => onChange({ ...c, [key]: val })
@@ -35,14 +35,22 @@ export default function SectionEditor({ section, onChange, themeLayout, themeCol
         <div key={f.key}>
           <label className="label">{f.label}</label>
 
-          {f.type === 'text' && (
+          {f.type === 'text' && f.key === 'phone' && (
+            <>
+              <p className="mb-1 text-xs text-slate-500">
+                Nomor ini diambil dari profil akun Anda.{' '}
+                <Link to="/dashboard/profil" className="font-semibold text-brand-700 hover:underline">Ubah di Profil Saya</Link>
+              </p>
+              <input className="input cursor-not-allowed bg-slate-100 text-slate-600" disabled value={store?.whatsapp || 'Belum diatur'} />
+            </>
+          )}
+
+          {f.type === 'text' && f.key !== 'phone' && (
             <input
               className="input"
               value={c[f.key] ?? ''}
-              placeholder={f.key === 'phone' ? 'Contoh: 628123456789' : f.key === 'email' ? 'nama@email.com' : f.key === 'mapUrl' ? 'https://maps.google.com/...' : `Masukkan ${f.label.toLowerCase()}`}
-              onChange={(e) => set(f.key, f.key === 'phone' ? sanitizePhone(e.target.value) : e.target.value)}
-              inputMode={f.key === 'phone' ? 'numeric' : undefined}
-              maxLength={f.key === 'phone' ? 13 : undefined}
+              placeholder={f.key === 'email' ? 'nama@email.com' : f.key === 'mapUrl' ? 'https://maps.google.com/...' : `Masukkan ${f.label.toLowerCase()}`}
+              onChange={(e) => set(f.key, e.target.value)}
             />
           )}
 
