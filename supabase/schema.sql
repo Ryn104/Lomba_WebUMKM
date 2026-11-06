@@ -325,3 +325,59 @@ create policy "assets: pemilik hapus" on storage.objects for delete
 -- JADIKAN AKUN ANDA ADMIN PLATFORM (jalankan setelah register):
 --   update public.profiles set role = 'admin' where email = 'email-anda@gmail.com';
 -- =====================================================================
+
+-- Admin boleh menghapus file di bucket store-assets
+drop policy if exists "assets: admin hapus" on storage.objects;
+create policy "assets: admin hapus" on storage.objects for delete
+  using (bucket_id = 'store-assets' and public.is_admin());
+
+-- Daftar file milik akun (sekaligus validasi akun boleh dihapus)
+create or replace function public.admin_list_user_files(target uuid)
+returns setof text
+language plpgsql security definer set search_path = public, storage as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Hanya admin platform yang dapat menghapus akun' using errcode = '42501';
+  end if;
+  if target = auth.uid() then
+    raise exception 'Anda tidak dapat menghapus akun Anda sendiri';
+  end if;
+  if not exists (select 1 from public.profiles where id = target) then
+    raise exception 'Akun tidak ditemukan';
+  end if;
+  if exists (select 1 from public.profiles where id = target and role = 'admin') then
+    raise exception 'Cabut akses admin akun ini terlebih dahulu sebelum menghapusnya';
+  end if;
+
+  return query
+    select o.name::text
+    from storage.objects o
+    where o.bucket_id = 'store-assets'
+      and (o.owner = target or o.name like 'avatars/' || target::text || '/%');
+end; $$;
+
+-- Hapus akun login (profil, toko, dan seluruh datanya ikut terhapus via cascade)
+create or replace function public.admin_delete_user(target uuid)
+returns void
+language plpgsql security definer set search_path = public, auth as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Hanya admin platform yang dapat menghapus akun' using errcode = '42501';
+  end if;
+  if target = auth.uid() then
+    raise exception 'Anda tidak dapat menghapus akun Anda sendiri';
+  end if;
+  if exists (select 1 from public.profiles where id = target and role = 'admin') then
+    raise exception 'Cabut akses admin akun ini terlebih dahulu sebelum menghapusnya';
+  end if;
+
+  delete from auth.users where id = target;
+  if not found then
+    raise exception 'Akun tidak ditemukan';
+  end if;
+end; $$;
+
+revoke all on function public.admin_list_user_files(uuid) from public, anon;
+revoke all on function public.admin_delete_user(uuid) from public, anon;
+grant execute on function public.admin_list_user_files(uuid) to authenticated;
+grant execute on function public.admin_delete_user(uuid) to authenticated;

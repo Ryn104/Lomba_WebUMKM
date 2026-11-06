@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { LayoutDashboard, Users, Home, Crown, Receipt, TrendingUp } from 'lucide-react'
-import { supabase, PLATFORM_DOMAIN } from '../lib/supabase'
+import { supabase, PLATFORM_DOMAIN, BUCKET } from '../lib/supabase'
 import DashboardLayout from '../components/ui/Sidebar'
 import { Spinner } from '../components/ui/Field'
 import AdminOverview from '../components/admin/AdminOverview'
@@ -11,6 +11,7 @@ import AdminSubscriptions from '../components/admin/AdminSubscriptions'
 import AdminPurchases from '../components/admin/AdminPurchases'
 import AdminGrowth from '../components/admin/AdminGrowth'
 import SubscriptionAdminModal from '../components/admin/SubscriptionAdminModal'
+import DeleteAccountModal from '../components/admin/DeleteAccountModal'
 
 const links = [
   { to: '/admin', label: 'Ringkasan', icon: LayoutDashboard, end: true },
@@ -26,6 +27,8 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([])
   const [selectedStore, setSelectedStore] = useState(null)
   const [savingSubscription, setSavingSubscription] = useState(false)
+  const [accountToDelete, setAccountToDelete] = useState(null)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   const load = useCallback(async () => {
     const [s, u] = await Promise.all([
@@ -65,6 +68,39 @@ export default function AdminDashboard() {
     if (error) return toast.error(error.message)
     setUsers((current) => current.map((item) => (item.id === profile.id ? { ...item, role: nextRole } : item)))
     toast.success(nextRole === 'admin' ? 'Pengguna dijadikan admin' : 'Akses admin dicabut')
+  }
+
+  // Hapus akun: file gambar di Storage -> akun login (cascade: profil, toko, produk, transaksi, keuangan)
+  const deleteAccount = async (profile) => {
+    if (deletingAccount) return
+    setDeletingAccount(true)
+    try {
+      // Fungsi ini juga memvalidasi (bukan akun sendiri / bukan admin) sebelum ada yang dihapus
+      const { data: files, error: listError } = await supabase.rpc('admin_list_user_files', { target: profile.id })
+      if (listError) throw listError
+
+      const paths = files || []
+      for (let i = 0; i < paths.length; i += 100) {
+        const chunk = paths.slice(i, i + 100)
+        const { data: removed, error: removeError } = await supabase.storage.from(BUCKET).remove(chunk)
+        if (removeError) throw removeError
+        if ((removed?.length || 0) < chunk.length) {
+          throw new Error('Sebagian file gambar tidak dapat dihapus. Pastikan migrasi SQL hapus akun sudah dijalankan.')
+        }
+      }
+
+      const { error } = await supabase.rpc('admin_delete_user', { target: profile.id })
+      if (error) throw error
+
+      setUsers((current) => current.filter((item) => item.id !== profile.id))
+      setStores((current) => current.filter((item) => item.owner_id !== profile.id))
+      setAccountToDelete(null)
+      toast.success(`Akun ${profile.full_name || profile.email} beserta datanya telah dihapus`)
+    } catch (error) {
+      toast.error(`Akun gagal dihapus: ${error.message}`)
+    } finally {
+      setDeletingAccount(false)
+    }
   }
 
   const saveSubscription = async ({ store, plan, renewalDate }) => {
@@ -109,7 +145,7 @@ export default function AdminDashboard() {
       ) : (
         <Routes>
           <Route index element={<AdminOverview stores={stores} users={users} />} />
-          <Route path="pengguna" element={<AdminUsers users={users} stores={stores} onChangeRole={changeRole} toggleActive={toggleActive} remove={remove} onManageSubscription={setSelectedStore} />} />
+          <Route path="pengguna" element={<AdminUsers users={users} stores={stores} onChangeRole={changeRole} toggleActive={toggleActive} remove={remove} onManageSubscription={setSelectedStore} onDeleteAccount={setAccountToDelete} />} />
           <Route path="langganan" element={<AdminSubscriptions stores={stores} onManageSubscription={setSelectedStore} />} />
           <Route path="pembelian" element={<AdminPurchases stores={stores} />} />
           <Route path="pertumbuhan" element={<AdminGrowth users={users} stores={stores} />} />
@@ -122,6 +158,15 @@ export default function AdminDashboard() {
           saving={savingSubscription}
           onClose={() => !savingSubscription && setSelectedStore(null)}
           onSave={(details) => saveSubscription({ store: selectedStore, ...details })}
+        />
+      )}
+      {accountToDelete && (
+        <DeleteAccountModal
+          profile={accountToDelete}
+          stores={stores.filter((item) => item.owner_id === accountToDelete.id)}
+          deleting={deletingAccount}
+          onClose={() => !deletingAccount && setAccountToDelete(null)}
+          onConfirm={() => deleteAccount(accountToDelete)}
         />
       )}
     </DashboardLayout>

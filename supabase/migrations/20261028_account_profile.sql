@@ -6,6 +6,7 @@ alter table public.profiles
   add column if not exists avatar_url text,
   add column if not exists avatar_path text;
 
+
 -- Preserve the role guard and ensure Auth, not profiles.email, controls account email.
 create or replace function public.protect_profile_role()
 returns trigger language plpgsql security definer set search_path = public as $$

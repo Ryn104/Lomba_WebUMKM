@@ -103,7 +103,7 @@ export function groupStoresByOwner(stores) {
  * mode 'day' -> N hari terakhir, mode 'month' -> N bulan terakhir (zona Jakarta).
  * Hasil: [{ key, label, baru, total }] ; total = akumulasi sampai periode tsb.
  */
-export function buildSeries(items, getDate, mode, length) {
+export function buildSeries(items, getDate, mode, length, getValue = () => 1) {
   const todayKey = jakartaDay(new Date())
   const keys = []
   if (mode === 'month') {
@@ -126,8 +126,9 @@ export function buildSeries(items, getDate, mode, length) {
     const raw = getDate(item)
     if (!raw) return
     const k = jakartaDay(raw).slice(0, sliceLen)
-    if (counts.has(k)) counts.set(k, counts.get(k) + 1)
-    else if (k < keys[0]) baseline += 1
+    const v = Number(getValue(item)) || 0
+    if (counts.has(k)) counts.set(k, counts.get(k) + v)
+    else if (k < keys[0]) baseline += v
   })
 
   let running = baseline
@@ -173,6 +174,42 @@ export function collectPurchases(stores) {
     })
   })
   return rows.sort((a, b) => new Date(b.date) - new Date(a.date))
+}
+
+/** Pilihan rentang waktu yang dipakai bersama oleh halaman Grafik Pendaftar & Pembelian Paket */
+export const RANGE_OPTIONS = [
+  { value: '7', label: '7 hari', mode: 'day', length: 7 },
+  { value: '30', label: '30 hari', mode: 'day', length: 30 },
+  { value: '12m', label: '12 bulan', mode: 'month', length: 12 },
+  { value: 'all', label: 'Lifetime' },
+]
+
+export function resolveRange(value, items, getDate) {
+  const p = RANGE_OPTIONS.find((x) => x.value === value) || RANGE_OPTIONS[1]
+  if (p.value !== 'all') return { mode: p.mode, length: p.length, label: p.label, lifetime: false }
+
+  const days = items.map(getDate).filter(Boolean).map((d) => jakartaDay(d)).sort()
+  if (!days.length) return { mode: 'day', length: 7, label: p.label, lifetime: true }
+
+  const first = days[0]
+  const today = jakartaDay(new Date())
+  const spanDays = Math.round((new Date(`${today}T00:00:00Z`) - new Date(`${first}T00:00:00Z`)) / DAY_MS) + 1
+  if (spanDays <= 60) return { mode: 'day', length: Math.max(spanDays, 7), label: p.label, lifetime: true }
+
+  const [y1, m1] = first.split('-').map(Number)
+  const [y2, m2] = today.split('-').map(Number)
+  return { mode: 'month', length: (y2 - y1) * 12 + (m2 - m1) + 1, label: p.label, lifetime: true }
+}
+
+/** Ambil item yang tanggalnya berada di dalam rentang deret waktu */
+export function filterBySeries(items, getDate, series, mode) {
+  if (!series.length) return items
+  const startKey = series[0].key
+  const len = mode === 'month' ? 7 : 10
+  return items.filter((item) => {
+    const raw = getDate(item)
+    return raw && jakartaDay(raw).slice(0, len) >= startKey
+  })
 }
 
 /** Unduh array-of-object sebagai CSV (BOM agar Excel membaca UTF-8) */

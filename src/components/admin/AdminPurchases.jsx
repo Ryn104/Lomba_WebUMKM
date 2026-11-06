@@ -4,47 +4,39 @@ import { Download, Receipt, Search, Wallet, TrendingUp } from 'lucide-react'
 import { StatCard, EmptyState } from '../ui/Field'
 import { formatDateTime, rupiah } from '../../lib/utils'
 import { Badge, ChartCard, PageHeader, PlanBadge, Pagination, Tabs } from './AdminWidgets'
-import { PAGE_SIZE, collectPurchases, downloadCSV, jakartaDay } from './adminUtils'
+import { PAGE_SIZE, RANGE_OPTIONS, buildSeries, collectPurchases, downloadCSV, filterBySeries, resolveRange } from './adminUtils'
 
 export default function AdminPurchases({ stores }) {
+  const [range, setRange] = useState('30')
   const [tab, setTab] = useState('all')
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
 
   const purchases = useMemo(() => collectPurchases(stores), [stores])
+  const cfg = useMemo(() => resolveRange(range, purchases, (p) => p.date), [range, purchases])
+  const series = useMemo(() => buildSeries(purchases, (p) => p.date, cfg.mode, cfg.length, (p) => p.amount), [purchases, cfg])
+  const inRange = useMemo(() => filterBySeries(purchases, (p) => p.date, series, cfg.mode), [purchases, series, cfg])
 
   const stats = useMemo(() => {
-    const monthKey = jakartaDay(new Date()).slice(0, 7)
-    const total = purchases.reduce((a, b) => a + b.amount, 0)
-    const month = purchases.filter((p) => jakartaDay(p.date).startsWith(monthKey)).reduce((a, b) => a + b.amount, 0)
-    return { total, month, count: purchases.length, avg: purchases.length ? Math.round(total / purchases.length) : 0 }
-  }, [purchases])
-
-  // Pendapatan 6 bulan terakhir
-  const chart = useMemo(() => {
-    const [y, m] = jakartaDay(new Date()).split('-').map(Number)
-    return Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(Date.UTC(y, m - 1 - (5 - i), 1))
-      const key = d.toISOString().slice(0, 7)
-      return {
-        label: d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit', timeZone: 'UTC' }),
-        Pendapatan: purchases.filter((p) => jakartaDay(p.date).startsWith(key)).reduce((a, b) => a + b.amount, 0),
-      }
-    })
-  }, [purchases])
+    const lifetimeTotal = purchases.reduce((a, b) => a + b.amount, 0)
+    const total = inRange.reduce((a, b) => a + b.amount, 0)
+    return { lifetimeTotal, total, count: inRange.length, avg: inRange.length ? Math.round(total / inRange.length) : 0 }
+  }, [purchases, inRange])
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
-    return purchases.filter((p) =>
+    return inRange.filter((p) =>
       (tab === 'all' || p.plan === tab)
       && (!term || p.id.toLowerCase().includes(term) || p.storeName.toLowerCase().includes(term) || p.ownerEmail.toLowerCase().includes(term))
     )
-  }, [purchases, tab, q])
+  }, [inRange, tab, q])
 
-  useEffect(() => { setPage(1) }, [tab, q])
+  useEffect(() => { setPage(1) }, [range, tab, q])
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const xInterval = cfg.length > 30 ? Math.floor(cfg.length / 8) : 'preserveStartEnd'
+  const per = cfg.mode === 'month' ? 'bulan' : 'hari'
 
   const exportCsv = () => downloadCSV('pembelian-paket.csv', filtered.map((p) => ({
     Invoice: p.id, Tanggal: p.date, Toko: p.storeName, Pemilik: p.ownerName, Email: p.ownerEmail,
@@ -56,24 +48,29 @@ export default function AdminPurchases({ stores }) {
       <PageHeader
         title="Pembelian Paket"
         desc="Riwayat pembelian paket Bisnis dan Pro dari seluruh toko."
-        actions={<button type="button" className="btn-secondary" onClick={exportCsv} disabled={!filtered.length}><Download size={16} /> Ekspor CSV</button>}
+        actions={(
+          <div className="flex flex-wrap items-center gap-2">
+            <Tabs value={range} onChange={setRange} options={RANGE_OPTIONS.map(({ value, label }) => ({ value, label }))} />
+            <button type="button" className="btn-secondary" onClick={exportCsv} disabled={!filtered.length}><Download size={16} /> Ekspor CSV</button>
+          </div>
+        )}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Wallet} tone="green" label="Total pendapatan" value={rupiah(stats.total)} />
-        <StatCard icon={TrendingUp} tone="info" label="Pendapatan bulan ini" value={rupiah(stats.month)} />
-        <StatCard icon={Receipt} tone="amber" label="Jumlah transaksi" value={stats.count} />
+        <StatCard icon={TrendingUp} tone="green" label={cfg.lifetime ? 'Pendapatan (lifetime)' : `Pendapatan (${cfg.label})`} value={rupiah(stats.total)} />
+        <StatCard icon={Wallet} tone="info" label="Total pendapatan lifetime" value={rupiah(stats.lifetimeTotal)} />
+        <StatCard icon={Receipt} tone="amber" label="Jumlah transaksi" value={stats.count} sub={cfg.lifetime ? 'Sejak awal' : cfg.label} />
         <StatCard icon={Wallet} tone="neutral" label="Rata-rata transaksi" value={rupiah(stats.avg)} />
       </div>
 
-      <ChartCard title="Pendapatan 6 bulan terakhir" desc="Total nilai pembelian paket per bulan">
+      <ChartCard title="Grafik pendapatan" desc={`Total nilai pembelian paket per ${per}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chart}>
+          <BarChart data={series}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={xInterval} />
             <YAxis tick={{ fontSize: 11 }} width={48} tickFormatter={(v) => (v >= 1000000 ? `${v / 1000000}jt` : v >= 1000 ? `${v / 1000}rb` : v)} />
             <Tooltip formatter={(v) => rupiah(v)} />
-            <Bar dataKey="Pendapatan" fill="#047857" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="baru" name="Pendapatan" fill="#047857" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -88,7 +85,7 @@ export default function AdminPurchases({ stores }) {
         </div>
 
         {filtered.length === 0 ? (
-          <EmptyState icon={Receipt} title="Belum ada pembelian" desc="Pembelian paket oleh pemilik toko akan muncul di sini." />
+          <EmptyState icon={Receipt} title="Belum ada pembelian" desc="Tidak ada pembelian paket pada rentang waktu ini." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
