@@ -52,7 +52,7 @@ export default function AdminGrowth({ users, stores }) {
         <StatCard icon={Percent} tone="amber" label="Konversi punya toko" value={`${data.conversion}%`} sub="Pengguna yang sudah membuat toko" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <ChartCard title="Pendaftar baru" desc={`Akun baru per ${per}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.userGrowth.series}>
