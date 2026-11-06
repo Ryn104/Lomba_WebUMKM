@@ -11,7 +11,7 @@ export const supabase = createClient(
   { auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true } }
 )
 
-export const PLATFORM_DOMAIN = 'umkm.rtrwstudio.online'
+export const PLATFORM_DOMAIN = 'umkita.rtrwstudio.online'
   // import.meta.env.VITE_PLATFORM_DOMAIN || 'umkm.rtrwstudio.online'
 
 export const BUCKET = 'store-assets'
