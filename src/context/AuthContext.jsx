@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     provider: 'google',
     options: {
       redirectTo: `${window.location.origin}${redirectPath}`,
-      queryParams: { prompt: 'select_account' }, // selalu tampilkan pilihan akun
+      queryParams: { prompt: 'select_account' },
     },
   })
 
@@ -43,7 +43,6 @@ export function AuthProvider({ children }) {
       setSession(s)
       if (currentUserId !== nextUserId) setUnsavedChanges(false)
       currentUserId = nextUserId
-      // hindari deadlock: jalankan query di luar callback
       setTimeout(() => loadProfile(s?.user), 0)
     })
     return () => {
@@ -62,8 +61,6 @@ export function AuthProvider({ children }) {
 
   const updatePassword = (password) => supabase.auth.updateUser({ password })
 
-  // Registrasi: kirim kode OTP saja. Nama & password TIDAK dikirim ke server
-  // sampai kode benar (lihat completeSignup).
   const isEmailRegistered = async (email) => {
     const { data, error } = await supabase.rpc('is_email_registered', { p_email: email })
     return { registered: Boolean(data), error }
@@ -75,7 +72,6 @@ export function AuthProvider({ children }) {
   const verifySignupOtp = (email, token) =>
     supabase.auth.verifyOtp({ email, token, type: 'email' })
 
-  // Dipanggil setelah OTP benar: simpan password + nama lengkap.
   const completeSignup = async ({ password, full_name }) => {
     const { data, error } = await supabase.auth.updateUser({ password, data: { full_name } })
     if (error) return { error }
