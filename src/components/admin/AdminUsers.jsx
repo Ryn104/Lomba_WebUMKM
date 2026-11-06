@@ -191,7 +191,6 @@ export default function AdminUsers({
               <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Pengguna</th>
-                  <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Toko</th>
                   <th className="px-4 py-3">Langganan</th>
                   <th className="px-4 py-3">Terdaftar</th>
@@ -207,14 +206,7 @@ export default function AdminUsers({
                         <div className="flex items-center gap-3">
                           <Avatar profile={r} />
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-slate-900">
-                              {r.full_name || "-"}
-                              {isMe && (
-                                <span className="ml-1 text-xs font-normal text-slate-400">
-                                  (Anda)
-                                </span>
-                              )}
-                            </p>
+                            <p className="truncate font-semibold text-slate-900">{r.full_name || '-'}{isMe && <span className="ml-1 text-xs font-normal text-slate-400">(Anda)</span>}{r.role === 'admin' && <span className="ml-1.5 rounded-full bg-[#DBEAFE] px-2 py-0.5 text-[10px] font-semibold text-[#1D4ED8]">Admin</span>}</p>
                             <p className="truncate text-xs text-slate-500">
                               {r.email}
                             </p>
@@ -226,14 +218,9 @@ export default function AdminUsers({
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <Badge tone={r.status.tone}>{r.status.label}</Badge>
-                      </td>
 
                       <td className="px-4 py-3">
-                        {r.owned.length === 0 ? (
-                          <span className="text-slate-400">-</span>
-                        ) : (
+                        {r.owned.length === 0 ? <Badge tone="neutral">Belum buat toko</Badge> : (
                           <div className="space-y-3">
                             {r.owned.map((s) => {
                               const st = storeStatus(s);
