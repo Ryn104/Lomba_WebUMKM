@@ -27,7 +27,7 @@ const NavLinkItem = ({ to, label, icon: Icon, end, onClick }) => (
 const WORDMARK = { x: 667, y: 250, w: 1236, h: 240, imgH: 792, hPx: 24 }
 
 export default function DashboardLayout({ title, subtitle, links, specialLinks = [], children, headerRight, sidebarWidget }) {
-  const { profile, user, signOut, unsavedChanges } = useAuth()
+  const { profile, user, signOut, unsavedChanges, isAdmin } = useAuth()
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -58,7 +58,7 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
     if (error) return toast.error(`Tidak dapat keluar: ${error.message}`)
     nav('/login', { replace: true })
   }
-
+  const accountBase = isAdmin ? '/admin' : '/dashboard'
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Pengguna'
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture
 
@@ -112,10 +112,10 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
       <div className="relative border-t border-slate-800 p-3" data-sidebar-account-menu>
         {accountOpen && (
           <div className="absolute bottom-full left-3 right-3 z-30 mb-2 max-h-[min(16rem,40vh)] overflow-y-auto rounded-lg hide-scrollbar border border-slate-700 bg-slate-800 py-1 shadow-xl">
-            <Link to="/dashboard/profil" onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
+            <Link to={`${accountBase}/profil`} onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
               <UserRound size={16} /> Profil Saya
             </Link>
-            <Link to="/dashboard/pengaturan" onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
+            <Link to={`${accountBase}/pengaturan`} onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
               <Settings2 size={16} /> Pengaturan
             </Link>
             <button type="button" disabled={loggingOut} onClick={logout} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-700 hover:text-white disabled:opacity-60">

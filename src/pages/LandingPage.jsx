@@ -23,8 +23,7 @@ export default function LandingPage() {
           <nav className="flex items-center gap-2">
             {user ? (
               <>
-                {isAdmin && <Link to="/admin" className="btn-ghost">Admin</Link>}
-                <Link to="/dashboard" className="btn-primary">Buka Dashboard</Link>
+                <Link to={isAdmin ? '/admin' : '/dashboard'} className="btn-primary">{isAdmin ? 'Dashboard Admin' : 'Buka Dashboard'}</Link>
               </>
             ) : (
               <>

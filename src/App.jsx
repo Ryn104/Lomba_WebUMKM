@@ -55,7 +55,7 @@ export default function App() {
         <Route
           path="/builder"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute userOnly>
               <BuilderPage />
             </ProtectedRoute>
           }
@@ -63,7 +63,7 @@ export default function App() {
         <Route
           path="/dashboard/*"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute userOnly>
               <StoreDashboard />
             </ProtectedRoute>
           }
@@ -71,7 +71,7 @@ export default function App() {
         <Route
           path="/pos"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute userOnly>
               <POSPage />
             </ProtectedRoute>
           }

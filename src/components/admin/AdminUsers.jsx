@@ -220,7 +220,7 @@ export default function AdminUsers({
                       </td>
 
                       <td className="px-4 py-3">
-                        {r.owned.length === 0 ? <Badge tone="neutral">Belum buat toko</Badge> : (
+                        {r.owned.length === 0 ? (r.role === 'admin' ? <span className="text-slate-400">-</span> : <Badge tone="neutral">Belum buat toko</Badge>) : (
                           <div className="space-y-3">
                             {r.owned.map((s) => {
                               const st = storeStatus(s);

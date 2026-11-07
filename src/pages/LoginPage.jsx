@@ -30,7 +30,8 @@ export default function LoginPage() {
     const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle()
     setBusy(false)
     toast.success('Berhasil masuk')
-    const dest = loc.state?.from?.pathname || (prof?.role === 'admin' ? '/admin' : '/dashboard')
+    const from = loc.state?.from?.pathname
+    const dest = prof?.role === 'admin' ? (from?.startsWith('/admin') ? from : '/admin') : (from || '/dashboard')
     nav(dest, { replace: true })
   }
 

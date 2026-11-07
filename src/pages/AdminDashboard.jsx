@@ -12,6 +12,8 @@ import AdminPurchases from '../components/admin/AdminPurchases'
 import AdminGrowth from '../components/admin/AdminGrowth'
 import SubscriptionAdminModal from '../components/admin/SubscriptionAdminModal'
 import DeleteAccountModal from '../components/admin/DeleteAccountModal'
+import AccountProfilePage from './AccountProfilePage'
+import AccountSecurityPage from './AccountSecurityPage'
 
 const links = [
   { to: '/admin', label: 'Ringkasan', icon: LayoutDashboard, end: true },
@@ -59,6 +61,9 @@ export default function AdminDashboard() {
 
   const changeRole = async (profile) => {
     const nextRole = profile.role === 'admin' ? 'umkm' : 'admin'
+    if (nextRole === 'admin' && stores.some((item) => item.owner_id === profile.id)) {
+      return toast.error('Pengguna ini masih memiliki toko. Hapus tokonya terlebih dahulu karena admin tidak dapat memiliki website.')
+    }
     const name = profile.full_name || profile.email
     const message = nextRole === 'admin'
       ? `Jadikan “${name}” sebagai admin platform? Admin dapat melihat dan mengubah semua toko.`
@@ -149,6 +154,8 @@ export default function AdminDashboard() {
           <Route path="langganan" element={<AdminSubscriptions stores={stores} onManageSubscription={setSelectedStore} />} />
           <Route path="pembelian" element={<AdminPurchases stores={stores} />} />
           <Route path="pertumbuhan" element={<AdminGrowth users={users} stores={stores} />} />
+          <Route path="profil" element={<AccountProfilePage />} />
+          <Route path="pengaturan" element={<AccountSecurityPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       )}

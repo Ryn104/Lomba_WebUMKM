@@ -8,7 +8,7 @@ import PasswordInput from '../components/ui/PasswordInput'
 import StoreSettings from '../components/store-dashboard/StoreSettings'
 
 export default function AccountSecurityPage({ store, setStore }) {
-  const { user, updatePassword } = useAuth()
+  const { user, updatePassword, isAdmin } = useAuth()
   const location = useLocation()
   const [identities, setIdentities] = useState([])
   const [authProviders, setAuthProviders] = useState(user?.app_metadata?.providers || [])
@@ -185,7 +185,7 @@ export default function AccountSecurityPage({ store, setStore }) {
       sessionStorage.setItem('umkm-google-link-user', user.id)
       const { error } = await supabase.auth.linkIdentity({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/dashboard/pengaturan?google_link=1` },
+        options: { redirectTo: `${window.location.origin}${isAdmin ? '/admin' : '/dashboard'}/pengaturan?google_link=1` },
       })
       if (error) {
         sessionStorage.removeItem('umkm-google-link-user')
