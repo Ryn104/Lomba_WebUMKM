@@ -13,7 +13,7 @@ import {
   Pie,
   Cell,
 } from 'recharts'
-import { Plus, Trash2, TrendingUp, TrendingDown, Scale, Wallet, FileSpreadsheet, Download } from 'lucide-react'
+import { Plus, Trash2, TrendingUp, TrendingDown, Scale, Wallet } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
@@ -22,9 +22,9 @@ import MoneyInput from '../ui/MoneyInput'
 import { useSubscription } from '../../hooks/useSubscription'
 import LockedFeatureCard from '../subscription/LockedFeatureCard'
 import UpgradeModal from '../subscription/UpgradeModal'
+import AdvancedReport from './finance/AdvancedReport'
+import { EXPENSE_CATS, INCOME_CATS } from './finance/financeUtils'
 
-const INCOME_CATS = ['Penjualan Kasir', 'Penjualan Online', 'Lainnya']
-const EXPENSE_CATS = ['Bahan Baku', 'Gaji', 'Sewa', 'Listrik & Air', 'Transportasi', 'Pemasaran', 'Peralatan', 'Lainnya']
 const PIE = ['#047857', '#10b981', '#059669', '#34d399', '#0d9488', '#0284c7', '#f59e0b', '#64748b']
 
 export default function Finance({ store, setStore }) {
@@ -118,21 +118,6 @@ export default function Finance({ store, setStore }) {
     await supabase.from('finances').delete().eq('id', r.id)
     toast.success('Catatan dihapus')
     load()
-  }
-
-  const handleExportExcel = () => {
-    const escapeCsv = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`
-    const csv = [
-      ['Tanggal', 'Jenis', 'Kategori', 'Jumlah', 'Catatan'],
-      ...monthRows.map((row) => [row.date, row.type === 'income' ? 'Pemasukan' : 'Pengeluaran', row.category, row.amount, row.note]),
-    ].map((row) => row.map(escapeCsv).join(';')).join('\r\n')
-    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `laporan-keuangan-${month}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
   }
 
   if (!rows) return <Spinner />
@@ -281,47 +266,17 @@ export default function Finance({ store, setStore }) {
             )}
           </div>
         </>
+      ) : isPro ? (
+        <AdvancedReport store={store} setStore={setStore} />
       ) : (
-        /* Tab Laporan Lanjutan: Locked Feature Card (Mockup 3) */
-        isPro ? (
-          <div className="card p-6 space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg">Ringkasan Laporan Keuangan</h3>
-                <p className="text-xs text-slate-500">Berdasarkan catatan bulan {month} yang tersimpan di toko.</p>
-              </div>
-              <button onClick={handleExportExcel} className="btn-primary text-xs font-bold shadow-sm">
-                <FileSpreadsheet size={16} /> Unduh CSV untuk Excel
-              </button>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">Total pemasukan</p>
-                <p className="mt-1 text-xl font-extrabold text-brand-700">{rupiah(income)}</p>
-                <p className="mt-0.5 text-[11px] text-slate-500">Dari {monthRows.filter((row) => row.type === 'income').length} catatan</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">Total pengeluaran</p>
-                <p className="mt-1 text-xl font-extrabold text-red-700">{rupiah(expense)}</p>
-                <p className="mt-0.5 text-[11px] text-slate-500">Dari {monthRows.filter((row) => row.type === 'expense').length} catatan</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">Laba bersih</p>
-                <p className={`mt-1 text-xl font-extrabold ${income - expense >= 0 ? 'text-brand-700' : 'text-red-700'}`}>{rupiah(income - expense)}</p>
-                <p className="mt-0.5 text-[11px] text-slate-500">Pemasukan dikurangi pengeluaran</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <LockedFeatureCard
-            title="Laporan keuangan lanjutan"
-            desc="Buka ringkasan pemasukan, pengeluaran, laba bersih, dan unduh catatan keuangan untuk Excel dengan Paket Pro."
-            requiredPlan="Pro"
-            onUpgrade={() => {
-              setUpgradeOpen(true)
-            }}
-          />
-        )
+        <LockedFeatureCard
+          title="Laporan keuangan lanjutan"
+          desc="Buka laporan laba rugi, produk terlaris, tren penjualan, arus kas, anggaran, dan ekspor CSV dengan Paket Pro."
+          requiredPlan="Pro"
+          onUpgrade={() => {
+            setUpgradeOpen(true)
+          }}
+        />
       )}
 
       {/* Modal Catat Keuangan */}

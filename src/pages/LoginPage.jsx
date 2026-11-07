@@ -28,10 +28,22 @@ export default function LoginPage() {
       return toast.error(msg)
     }
     const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle()
+    const { data: ownedStore } = await supabase
+      .from('stores')
+      .select('id,theme')
+      .eq('owner_id', data.user.id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle()
     setBusy(false)
     toast.success('Berhasil masuk')
     const from = loc.state?.from?.pathname
-    const dest = prof?.role === 'admin' ? (from?.startsWith('/admin') ? from : '/admin') : (from || '/dashboard')
+    const needsOnboarding = prof?.role !== 'admin' && (!ownedStore || !ownedStore.theme?.onboarding_done)
+    const dest = prof?.role === 'admin'
+      ? (from?.startsWith('/admin') ? from : '/admin')
+      : needsOnboarding
+        ? '/onboarding'
+        : (from || '/dashboard')
     nav(dest, { replace: true })
   }
 

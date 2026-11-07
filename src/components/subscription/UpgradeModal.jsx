@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, CreditCard, Landmark, QrCode, Smartphone, X } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
+import { planOf, planPrice } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
 
 const paymentMethods = [
@@ -14,10 +15,10 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
   const [method, setMethod] = useState('qris')
   const [processing, setProcessing] = useState(false)
   const [step, setStep] = useState('checkout')
-  const isPro = targetPlan === 'pro'
-  const planName = isPro ? 'Paket Pro' : 'Paket Bisnis'
-  const monthlyPrice = isPro ? 149000 : 79000
-  const yearlyMonthlyPrice = isPro ? 119000 : 63000
+  const plan = planOf(targetPlan)
+  const planName = `Paket ${plan.name}`
+  const monthlyPrice = planPrice(targetPlan, 'monthly')
+  const yearlyMonthlyPrice = planPrice(targetPlan, 'yearly')
   const total = period === 'yearly' ? yearlyMonthlyPrice * 12 : monthlyPrice
   const selectedMethod = paymentMethods.find((item) => item.id === method)
 

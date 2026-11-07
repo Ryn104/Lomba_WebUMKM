@@ -1,6 +1,9 @@
 import { X, Check, Minus } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
+import { planLimits, planPrice } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
+
+const freeLimits = planLimits('gratis')
 
 export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis', onSelectPlan }) {
   if (!open) return null
@@ -19,7 +22,7 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
     {
       id: 'bisnis',
       name: 'Paket Bisnis',
-      price: 'Rp79.000',
+      price: rupiah(planPrice('bisnis')),
       period: 'per bulan',
       badge: 'Paling Populer',
       desc: 'Produk tidak terbatas, tanpa watermark, custom domain',
@@ -30,9 +33,9 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
     {
       id: 'pro',
       name: 'Paket Pro',
-      price: 'Rp149.000',
+      price: rupiah(planPrice('pro')),
       period: 'per bulan',
-      desc: 'Multi-cabang, laporan lanjutan & integrasi tanpa batas',
+      desc: 'Laporan keuangan lanjutan, ekspor CSV & POS tanpa batas',
       btnText: currentPlan === 'pro' ? 'Paket Aktif Saat Ini' : 'Pilih Pro',
       disabled: currentPlan === 'pro',
       highlight: false,
@@ -42,11 +45,11 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
   const features = [
     {
       name: 'Batas produk',
-      values: { gratis: '10 produk', bisnis: 'Tanpa batas', pro: 'Tanpa batas' },
+      values: { gratis: `${freeLimits.maxProducts} produk`, bisnis: 'Tanpa batas', pro: 'Tanpa batas' },
     },
     {
       name: 'Section Web Builder',
-      values: { gratis: '3 section', bisnis: 'Semua section', pro: 'Semua section + template premium' },
+      values: { gratis: `${freeLimits.maxSections} section`, bisnis: 'Semua section', pro: 'Semua section + template premium' },
     },
     {
       name: 'Watermark platform',
