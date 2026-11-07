@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
+import { planLimits, planPrice } from '../lib/plans'
 
 /**
  * Subscription selection, payment method, and generated receipt are stored on the store record.
@@ -59,19 +60,8 @@ export function useSubscription(store, setStore) {
   )
 
   const plan = subscription.plan || 'gratis'
-  // Batasan kuota paket
-  const limits = useMemo(() => {
-    const isPaid = plan !== 'gratis'
-    return {
-      maxProducts: isPaid ? Infinity : 10,
-      maxSections: isPaid ? Infinity : 3,
-      hasWatermark: !isPaid,
-      hasCustomDomain: isPaid,
-      hasAdvancedFinance: plan === 'pro',
-      maxImagesGB: plan === 'pro' ? 20 : isPaid ? 5 : 0.5,
-      maxPosMonthly: plan === 'pro' ? Infinity : isPaid ? 500 : 50,
-    }
-  }, [plan])
+  // Batasan kuota paket berasal dari konstanta paket (src/lib/plans.js).
+  const limits = useMemo(() => planLimits(plan), [plan])
 
   // Simpan aktivasi paket dan catatan pembayaran setelah konfirmasi checkout.
   const upgrade = useCallback(
@@ -86,8 +76,8 @@ export function useSubscription(store, setStore) {
       if (period === 'yearly') renewalDate.setFullYear(renewalDate.getFullYear() + 1)
       else renewalDate.setMonth(renewalDate.getMonth() + 1)
 
-      const monthlyPrice = targetPlan === 'pro' ? 149000 : 79000
-      const yearlyPrice = targetPlan === 'pro' ? 119000 : 63000
+      const monthlyPrice = planPrice(targetPlan, 'monthly')
+      const yearlyPrice = planPrice(targetPlan, 'yearly')
       const normalizedPeriod = period === 'yearly' ? 'yearly' : 'monthly'
       const expectedAmount = normalizedPeriod === 'yearly' ? yearlyPrice * 12 : monthlyPrice
       const paidAmount = Number.isFinite(amount) && amount === expectedAmount ? amount : expectedAmount

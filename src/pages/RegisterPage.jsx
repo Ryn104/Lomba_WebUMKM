@@ -71,8 +71,8 @@ export default function RegisterPage() {
     setBusy(false)
     if (saveErr) return toast.error('Email terverifikasi, tetapi data akun gagal disimpan. Coba lagi.')
 
-    toast.success('Email terverifikasi! Silakan buat toko Anda.')
-    nav('/dashboard', { replace: true })
+    toast.success('Email terverifikasi! Lengkapi data toko Anda.')
+    nav('/onboarding', { replace: true })
   }
 
   const resend = async () => {

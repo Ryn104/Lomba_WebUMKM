@@ -18,15 +18,37 @@ export function AuthProvider({ children }) {
     },
   })
 
+  // Lengkapi profil dari metadata OAuth (Google) hanya bila masih kosong.
+  // Avatar hasil unggahan manual (avatar_path terisi) tidak pernah ditimpa.
+  const syncProfileFromMetadata = useCallback(async (user, current) => {
+    if (!user || !current || current.avatar_path) return current
+    const meta = user.user_metadata || {}
+    const metaAvatar = meta.avatar_url || meta.picture || ''
+    const metaName = meta.full_name || meta.name || ''
+    const patch = {}
+    if (!current.avatar_url && metaAvatar) patch.avatar_url = metaAvatar
+    if (!current.full_name && metaName) patch.full_name = metaName
+    if (!Object.keys(patch).length) return current
+
+    const { data } = await supabase
+      .from('profiles')
+      .update(patch)
+      .eq('id', user.id)
+      .select('*')
+      .maybeSingle()
+    return data || { ...current, ...patch }
+  }, [])
+
   const loadProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null)
       return null
     }
     const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
-    setProfile(data)
-    return data
-  }, [])
+    const profileData = await syncProfileFromMetadata(user, data)
+    setProfile(profileData)
+    return profileData
+  }, [syncProfileFromMetadata])
 
   useEffect(() => {
     let mounted = true
@@ -99,6 +121,11 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     refreshProfile: () => loadProfile(session?.user),
+    displayAvatarUrl:
+      profile?.avatar_url ||
+      session?.user?.user_metadata?.avatar_url ||
+      session?.user?.user_metadata?.picture ||
+      '',
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

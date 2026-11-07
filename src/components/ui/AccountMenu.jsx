@@ -4,6 +4,7 @@ import { ChevronDown, LayoutDashboard, LogOut, Settings2, UserRound } from 'luci
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import { ThemeSegmented } from './ThemeToggle'
+import Avatar from './Avatar'
 
 /** Menu akun untuk header landing page: profil, pengaturan akun, tema, dan keluar */
 export default function AccountMenu() {
@@ -31,7 +32,6 @@ export default function AccountMenu() {
   const name = profile?.full_name || user?.user_metadata?.full_name || 'Pengguna'
   const email = user?.email || profile?.email
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture
-  const initial = name.trim().charAt(0).toUpperCase()
 
   const logout = async () => {
     if (loggingOut) return
@@ -53,11 +53,7 @@ export default function AccountMenu() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-2.5 shadow-sm transition hover:bg-slate-50"
       >
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="" className="h-8 w-8 rounded-full bg-slate-200 object-cover" />
-        ) : (
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-700 text-sm font-bold text-white">{initial}</span>
-        )}
+        <Avatar name={name} src={avatarUrl || ''} className="h-8 w-8 text-sm" />
         <span className="hidden max-w-[8rem] truncate text-sm font-medium text-slate-700 sm:block">{name}</span>
         <ChevronDown size={16} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -65,11 +61,7 @@ export default function AccountMenu() {
       {open && (
         <div role="menu" className="card absolute right-0 top-full z-40 mt-2 w-72 overflow-hidden shadow-xl">
           <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full bg-slate-200 object-cover" />
-            ) : (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-700 font-bold text-white">{initial}</span>
-            )}
+            <Avatar name={name} src={avatarUrl || ''} className="h-10 w-10 text-base" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-slate-900">{name}</p>
               <p className="truncate text-xs text-slate-500">{email}</p>

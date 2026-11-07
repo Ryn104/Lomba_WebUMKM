@@ -14,6 +14,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AccountProfilePage from './pages/AccountProfilePage'
 import AccountSecurityPage from './pages/AccountSecurityPage'
+import OnboardingPage from './pages/OnboardingPage'
 
 function SetupNotice() {
   return (
@@ -57,6 +58,14 @@ export default function App() {
           element={
             <ProtectedRoute userOnly>
               <BuilderPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute userOnly>
+              <OnboardingPage />
             </ProtectedRoute>
           }
         />
