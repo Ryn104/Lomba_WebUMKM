@@ -520,7 +520,10 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row">
-            <p>© {new Date().getFullYear()} RTRW Studio — UMKM Web Builder</p>
+            <p>
+              © {new Date().getFullYear()} UMKITA · {' '}
+              <span className="font-semibold text-slate-700">Kata Sandi Bebas</span>, RTRW Studio
+            </p>
             <p className="font-mono">{PLATFORM_DOMAIN}</p>
           </div>
         </div>
