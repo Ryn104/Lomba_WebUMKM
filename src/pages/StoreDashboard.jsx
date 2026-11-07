@@ -27,6 +27,7 @@ import SubscriptionPage from './SubscriptionPage'
 import UpgradeModal from '../components/subscription/UpgradeModal'
 import AccountProfilePage from './AccountProfilePage'
 import AccountSecurityPage from './AccountSecurityPage'
+import { ThemeIconButton } from '../components/ui/ThemeToggle'
 
 const links = [
   { to: '/dashboard', label: 'Ringkasan', icon: LayoutDashboard, end: true },
@@ -138,6 +139,8 @@ export default function StoreDashboard() {
             >
               {plan === 'pro' ? 'Pro' : plan === 'bisnis' ? 'Bisnis' : 'Gratis'}
             </span>
+
+            <ThemeIconButton className='btn-secondary'/>
 
             <Link to="/" className="btn-secondary">
               <Home size={16} />
