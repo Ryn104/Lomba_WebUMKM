@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "./Avatar";
-import { ThemeSegmented } from "./ThemeToggle";
 
 /** Layout dashboard dengan sidebar — dipakai Admin & Dashboard Toko */
 const NavLinkItem = ({ to, label, icon: Icon, end, onClick }) => (
