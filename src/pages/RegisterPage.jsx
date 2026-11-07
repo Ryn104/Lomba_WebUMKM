@@ -100,7 +100,7 @@ export default function RegisterPage() {
               </div>
               <div>
                 <label className="label">Password</label>
-                <PasswordInput autoComplete="new-password" required minLength={6} placeholder="Buat kata sandi (min. 6 karakter)" value={form.password} onChange={set('password')} />
+                <PasswordInput autoComplete="new-password" required minLength={8} placeholder="Buat kata sandi (min. 8 karakter)" value={form.password} onChange={set('password')} />
               </div>
               <button className="btn-primary w-full" disabled={busy}>{busy ? 'Memproses…' : 'Daftar'}</button>
             </form>
