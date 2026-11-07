@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate, Link } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom'
 import {
   Home,
   LayoutDashboard,
@@ -17,7 +17,6 @@ import { Spinner } from '../components/ui/Field'
 import { useMyStore } from '../hooks/useMyStore'
 import { useSubscription } from '../hooks/useSubscription'
 import { PLATFORM_DOMAIN, supabase } from '../lib/supabase'
-import CreateStore from '../components/builder/CreateStore'
 import Overview from '../components/store-dashboard/Overview'
 import Products from '../components/store-dashboard/Products'
 import Discounts from '../components/store-dashboard/Discounts'
@@ -44,7 +43,7 @@ const specialLinks = [
 ]
 
 export default function StoreDashboard() {
-  const { store, setStore, loading, reload } = useMyStore()
+  const { store, setStore, loading } = useMyStore()
   const { plan, upgrade } = useSubscription(store, setStore)
   const nav = useNavigate()
   const [productsCount, setProductsCount] = useState(0)
@@ -66,17 +65,9 @@ export default function StoreDashboard() {
   }, [store?.id])
 
   if (loading) return <Spinner full />
-  if (!store) {
-    return (
-      <DashboardLayout title="UMKM Builder" links={links} specialLinks={specialLinks}>
-        <Routes>
-          <Route path="profil" element={<AccountProfilePage />} />
-          <Route path="pengaturan" element={<AccountSecurityPage store={store} setStore={setStore} />} />
-          <Route path="*" element={<CreateStore onCreated={reload} />} />
-        </Routes>
-      </DashboardLayout>
-    )
-  }
+  // Pengguna baru (belum punya toko) menyelesaikan wizard onboarding,
+  // bukan formulir CreateStore di dalam dashboard.
+  if (!store) return <Navigate to="/onboarding" replace />
 
   const isFree = plan === 'gratis'
 

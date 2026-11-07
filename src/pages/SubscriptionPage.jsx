@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { CreditCard, Crown, Sparkles, Check, FileText, Download, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { PLAN_PRICE } from '../components/admin/adminUtils'
+import { planLimits, planPrice, YEARLY_SAVING_LABEL } from '../lib/plans'
 import { formatDate, rupiah } from '../lib/utils'
 import { useSubscription } from '../hooks/useSubscription'
 import UpgradeModal from '../components/subscription/UpgradeModal'
 import ComparePlansModal from '../components/subscription/ComparePlansModal'
 import InvoiceReceiptModal from '../components/subscription/InvoiceReceiptModal'
+import PlanCards from '../components/subscription/PlanCards'
 
 export default function SubscriptionPage({ store, setStore }) {
   const {
@@ -27,6 +28,8 @@ export default function SubscriptionPage({ store, setStore }) {
   const [targetUpgradePlan, setTargetUpgradePlan] = useState('bisnis')
   const [compareOpen, setCompareOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState(null)
+  const [billingPeriod, setBillingPeriod] = useState(period === 'yearly' ? 'yearly' : 'monthly')
+  const freeLimits = planLimits('gratis')
 
   // Ambil data real produk & section toko
   useEffect(() => {
@@ -45,7 +48,7 @@ export default function SubscriptionPage({ store, setStore }) {
   }, [store?.id])
 
   const isPaid = plan === 'bisnis' || plan === 'pro'
-  const currentMonthlyPrice = isPaid ? PLAN_PRICE[plan]?.[period === 'yearly' ? 'yearly' : 'monthly'] : null
+  const currentMonthlyPrice = isPaid ? planPrice(plan, period) : null
 
   const handleOpenUpgrade = (target = 'bisnis') => {
     setTargetUpgradePlan(target)
@@ -104,72 +107,55 @@ export default function SubscriptionPage({ store, setStore }) {
         </div>
       )}
 
-      {/* Highlight Paket Pro — informasi tampil langsung di halaman; perbandingan detail tetap di modal */}
-      {plan !== 'pro' && (
-        <section className="card relative overflow-hidden border-brand-200 bg-gradient-to-br from-brand-50/70 via-white to-white p-6 shadow-sm">
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-800">
-                  <Crown size={12} /> Paket tertinggi
-                </span>
-                <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
-                  Hemat 20% dengan paket tahunan
-                </span>
-              </div>
-              <h2 className="mt-3 text-xl font-bold text-slate-900">Upgrade ke Pro dan kembangkan bisnismu</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Media 20 GB, kasir tanpa batas, dan keuangan lanjutan untuk toko yang siap tumbuh lebih besar.
-              </p>
-
-              {/* Harga mengikuti konfigurasi PLAN_PRICE yang sudah ada */}
-              <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-3xl font-extrabold text-slate-900">{rupiah(PLAN_PRICE.pro.monthly)}</span>
-                <span className="text-sm text-slate-500">/ bulan</span>
-                <span className="w-full text-xs text-slate-500 sm:w-auto">
-                  atau <b className="font-bold text-slate-800">{rupiah(PLAN_PRICE.pro.yearly)}</b>/bulan dengan paket tahunan
-                </span>
-              </div>
-
-              {/* Ringkasan ketiga paket; perbandingan lengkap di modal Bandingkan Paket */}
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-semibold text-slate-600">Gratis · Rp0</span>
-                <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-semibold text-slate-600">Bisnis · {rupiah(PLAN_PRICE.bisnis.monthly)}/bln</span>
-                <span className="rounded-lg border border-brand-200 bg-brand-50 px-2.5 py-1 font-bold text-brand-800">Pro · {rupiah(PLAN_PRICE.pro.monthly)}/bln</span>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => handleOpenUpgrade('pro')} className="btn-primary px-5 py-2.5 font-bold shadow-sm">
-                  <Crown size={16} /> {plan === 'gratis' ? 'Lihat Paket Pro' : 'Upgrade ke Pro'}
-                </button>
-                <button type="button" onClick={() => setCompareOpen(true)} className="btn-secondary px-4 py-2.5 text-xs font-semibold">
-                  Bandingkan paket
-                </button>
-              </div>
-            </div>
-
-            <div className="lg:border-l lg:border-slate-100 lg:pl-6">
-              <p className="text-xs font-bold text-slate-800">Fitur unggulan Pro</p>
-              <ul className="mt-3 grid gap-2.5 text-xs text-slate-700">
-                {[
-                  'Semua fitur paket Bisnis',
-                  'Advanced Finance',
-                  'Ekspor laporan keuangan CSV',
-                  'Penyimpanan media hingga 20 GB',
-                  'Transaksi POS unlimited',
-                ].map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-                      <Check size={12} />
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {/* Paket Bisnis & Pro berdampingan; perbandingan detail tetap di modal */}
+      <section className="card relative overflow-hidden border-brand-200 bg-gradient-to-br from-brand-50/60 via-white to-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Pilih paket yang sesuai kebutuhan toko</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Bisnis untuk tampil profesional tanpa batas, Pro untuk laporan keuangan lengkap.
+            </p>
           </div>
-        </section>
-      )}
+          <button
+            type="button"
+            onClick={() => setCompareOpen(true)}
+            className="btn-secondary px-4 py-2 text-xs font-semibold"
+          >
+            Bandingkan paket
+          </button>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+            {[
+              { id: 'monthly', label: 'Bulanan' },
+              { id: 'yearly', label: 'Tahunan' },
+            ].map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={billingPeriod === option.id}
+                onClick={() => setBillingPeriod(option.id)}
+                className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${billingPeriod === option.id ? 'bg-brand-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800">
+            {YEARLY_SAVING_LABEL} dengan paket tahunan
+          </span>
+        </div>
+
+        <div className="mt-4">
+          <PlanCards
+            planIds={['bisnis', 'pro']}
+            period={billingPeriod}
+            activePlan={plan}
+            onSelect={handleOpenUpgrade}
+          />
+        </div>
+      </section>
 
       {/* 4. Plan Overview Grid (Mockup 1 & 4) */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -315,15 +301,15 @@ export default function SubscriptionPage({ store, setStore }) {
                 <div>
                   <div className="flex justify-between text-xs font-semibold">
                     <span className="text-slate-700">Produk digunakan</span>
-                    <span className={productsCount >= 10 ? 'text-red-600' : 'text-slate-900'}>
-                      {productsCount}/10 produk
+                    <span className={productsCount >= freeLimits.maxProducts ? 'text-red-600' : 'text-slate-900'}>
+                      {productsCount}/{freeLimits.maxProducts} produk
                     </span>
                   </div>
                   <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${productsCount >= 10 ? 'bg-red-600' : 'bg-brand-600'
+                      className={`h-full rounded-full transition-all duration-300 ${productsCount >= freeLimits.maxProducts ? 'bg-red-600' : 'bg-brand-600'
                         }`}
-                      style={{ width: `${Math.min((productsCount / 10) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((productsCount / freeLimits.maxProducts) * 100, 100)}%` }}
                     />
                   </div>
                 </div>
@@ -344,15 +330,15 @@ export default function SubscriptionPage({ store, setStore }) {
                 <div>
                   <div className="flex justify-between text-xs font-semibold">
                     <span className="text-slate-700">Section Web Builder</span>
-                    <span className={sectionsCount >= 4 ? 'text-red-600' : 'text-slate-900'}>
-                      {sectionsCount}/4 section
+                    <span className={sectionsCount >= freeLimits.maxSections ? 'text-red-600' : 'text-slate-900'}>
+                      {sectionsCount}/{freeLimits.maxSections} section
                     </span>
                   </div>
                   <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${sectionsCount >= 4 ? 'bg-red-600' : 'bg-brand-600'
+                      className={`h-full rounded-full transition-all duration-300 ${sectionsCount >= freeLimits.maxSections ? 'bg-red-600' : 'bg-brand-600'
                         }`}
-                      style={{ width: `${Math.min((sectionsCount / 3) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((sectionsCount / freeLimits.maxSections) * 100, 100)}%` }}
                     />
                   </div>
                 </div>
@@ -430,7 +416,7 @@ export default function SubscriptionPage({ store, setStore }) {
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
         targetPlan={targetUpgradePlan}
-        currentPeriod={period}
+        currentPeriod={billingPeriod}
         onSuccess={({ targetPlan, period: selectedPeriod, method, amount }) => upgrade({ targetPlan, period: selectedPeriod, method, amount })}
       />
 
