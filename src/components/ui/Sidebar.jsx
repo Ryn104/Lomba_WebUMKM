@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import Avatar from './Avatar'
+import { ThemeSegmented } from './ThemeToggle'
 
 /** Layout dashboard dengan sidebar — dipakai Admin & Dashboard Toko */
 const NavLinkItem = ({ to, label, icon: Icon, end, onClick }) => (
@@ -111,13 +112,17 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
 
       <div className="relative border-t border-slate-800 p-3" data-sidebar-account-menu>
         {accountOpen && (
-          <div className="absolute bottom-full left-3 right-3 z-30 mb-2 max-h-[min(16rem,40vh)] overflow-y-auto rounded-lg hide-scrollbar border border-slate-700 bg-slate-800 py-1 shadow-xl">
+          <div className="absolute bottom-full left-3 right-3 z-30 mb-2 max-h-[min(26rem,70vh)] overflow-y-auto rounded-lg hide-scrollbar border border-slate-700 bg-slate-800 py-1 shadow-xl">
             <Link to={`${accountBase}/profil`} onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
               <UserRound size={16} /> Profil Saya
             </Link>
             <Link to={`${accountBase}/pengaturan`} onClick={() => { setAccountOpen(false); setOpen(false) }} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white">
               <Settings2 size={16} /> Pengaturan
             </Link>
+            <div className="border-y border-slate-700 px-3 py-2.5">
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Tampilan</p>
+              <ThemeSegmented variant="sidebar" />
+            </div>
             <button type="button" disabled={loggingOut} onClick={logout} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-700 hover:text-white disabled:opacity-60">
               <LogOut size={16} /> {loggingOut ? 'Keluar…' : 'Keluar'}
             </button>
@@ -136,7 +141,7 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
   )
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-slate-50">
+    <div className="app-bg flex h-[100dvh] overflow-hidden bg-slate-50">
       <div className="hidden lg:block">{sidebar}</div>
       {open && (
         <div className="fixed inset-0 z-40 flex lg:hidden">
@@ -151,7 +156,7 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
           </button>
           {headerRight && <div className="ml-auto">{headerRight}</div>}
         </header>
-        <main data-dashboard-scroll className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 p-4 lg:p-8">{children}</main>
+        <main data-dashboard-scroll className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 app-bg p-4 lg:p-8">{children}</main>
       </div>
     </div>
   )

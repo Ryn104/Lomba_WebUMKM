@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { LayoutDashboard, Users, Home, Crown, Receipt, TrendingUp } from 'lucide-react'
 import { supabase, PLATFORM_DOMAIN, BUCKET } from '../lib/supabase'
@@ -21,7 +21,6 @@ const links = [
   { to: '/admin/langganan', label: 'Status Paket', icon: Crown },
   { to: '/admin/pembelian', label: 'Pembelian Paket', icon: Receipt },
   { to: '/admin/pertumbuhan', label: 'Grafik Pendaftar', icon: TrendingUp },
-  { to: '/', label: 'Beranda Platform', icon: Home },
 ]
 
 export default function AdminDashboard() {
@@ -144,7 +143,12 @@ export default function AdminDashboard() {
   }
 
   return (
-    <DashboardLayout title="Admin Platform" subtitle={PLATFORM_DOMAIN} links={links}>
+    <DashboardLayout
+      title="Admin Platform"
+      subtitle={PLATFORM_DOMAIN}
+      links={links}
+      headerRight={<Link to="/" className="btn-secondary"><Home size={16} /> Beranda</Link>}
+      >
       {!stores ? (
         <Spinner />
       ) : (

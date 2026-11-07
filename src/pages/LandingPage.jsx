@@ -3,6 +3,8 @@ import { Blocks, LayoutDashboard, ReceiptText, Wallet, Globe, MousePointerClick,
 import Logo from '../components/ui/Logo'
 import { useAuth } from '../context/AuthContext'
 import { PLATFORM_DOMAIN } from '../lib/supabase'
+import AccountMenu from '../components/ui/AccountMenu'
+import { ThemeIconButton } from '../components/ui/ThemeToggle'
 
 const features = [
   { icon: MousePointerClick, title: 'Web Builder Drag & Drop', desc: 'Susun Hero, Tentang, Produk, Galeri, Testimoni, dan Kontak dengan seret & lepas. Tanpa coding.' },
@@ -16,7 +18,7 @@ const features = [
 export default function LandingPage() {
   const { user, isAdmin } = useAuth()
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="app-bg min-h-screen bg-[#F8FAFC]">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="text-slate-900"><Logo /></Link>
@@ -24,9 +26,11 @@ export default function LandingPage() {
             {user ? (
               <>
                 <Link to={isAdmin ? '/admin' : '/dashboard'} className="btn-primary">{isAdmin ? 'Dashboard Admin' : 'Buka Dashboard'}</Link>
+                <AccountMenu />
               </>
             ) : (
               <>
+                <ThemeIconButton />
                 <Link to="/login" className="btn-ghost">Masuk</Link>
                 <Link to="/register" className="btn-primary">Daftar Gratis</Link>
               </>

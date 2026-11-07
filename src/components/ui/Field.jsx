@@ -46,5 +46,5 @@ export function EmptyState({ icon: Icon, title, desc, action }) {
 
 export function Spinner({ full = false }) {
   const el = <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-700" />
-  return full ? <div className="flex h-screen items-center justify-center bg-slate-50">{el}</div> : <div className="flex justify-center py-10">{el}</div>
+  return full ? <div className="app-bg flex h-screen items-center justify-center bg-slate-50">{el}</div> : <div className="flex justify-center py-10">{el}</div>
 }

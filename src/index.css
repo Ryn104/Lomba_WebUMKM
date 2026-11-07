@@ -158,3 +158,113 @@
       bg-[#F1F5F9] px-2.5 py-1 text-xs font-medium text-[#334155];
   }
 }
+
+/* =====================================================================
+   DARK MODE
+   Aktif saat <html class="dark">. Hanya untuk halaman platform:
+   website toko publik (/:slug) dan preview builder (data-light-zone) tetap terang.
+   ===================================================================== */
+html.dark {
+  color-scheme: dark;
+  --d-page: #0b1220;
+  --d-card: #131c31;
+  --d-muted: #18233b;
+  --d-raised: #1d2a47;
+  --d-line: #26324d;
+  --d-line-strong: #34425f;
+}
+
+html.dark body { background-color: var(--d-page); color: #e5ebf5; }
+html.dark ::selection { background-color: #065f46; color: #d1fae5; }
+
+/* Warna garis bawaan (spesifisitas 0 agar kelas border-* tetap menang) */
+:where(html.dark *:not([data-light-zone], [data-light-zone] *)) { border-color: var(--d-line); }
+
+/* Latar */
+html.dark :is(.bg-white, .card):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-card); }
+html.dark :is(.bg-slate-50, .bg-slate-50\/50, .bg-slate-50\/60, .bg-slate-50\/70):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-muted); }
+html.dark :is(.bg-slate-100, .bg-\[\#F1F5F9\]):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-raised); }
+html.dark :is(.bg-slate-200):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-line); }
+html.dark :is(.bg-slate-200\/80):not([data-light-zone], [data-light-zone] *) { background-color: #0f1829; }
+html.dark :is(.bg-white\/95):not([data-light-zone], [data-light-zone] *) { background-color: rgba(11, 18, 32, 0.92); }
+html.dark :is(.bg-white\/70):not([data-light-zone], [data-light-zone] *) { background-color: rgba(11, 18, 32, 0.7); }
+html.dark :is(.bg-brand-50, .bg-brand-50\/40, .bg-brand-50\/50, .bg-brand-50\/70, .bg-emerald-50):not([data-light-zone], [data-light-zone] *) { background-color: rgba(16, 185, 129, 0.12); }
+html.dark :is(.bg-brand-100, .bg-emerald-100):not([data-light-zone], [data-light-zone] *) { background-color: rgba(16, 185, 129, 0.2); }
+html.dark :is(.bg-red-50):not([data-light-zone], [data-light-zone] *) { background-color: rgba(239, 68, 68, 0.12); }
+html.dark :is(.bg-red-100):not([data-light-zone], [data-light-zone] *) { background-color: rgba(239, 68, 68, 0.2); }
+html.dark :is(.bg-amber-50):not([data-light-zone], [data-light-zone] *) { background-color: rgba(245, 158, 11, 0.12); }
+html.dark :is(.bg-amber-200\/60):not([data-light-zone], [data-light-zone] *) { background-color: rgba(245, 158, 11, 0.25); }
+html.dark :is(.bg-\[\#DCFCE7\]):not([data-light-zone], [data-light-zone] *) { background-color: rgba(34, 197, 94, 0.16); }
+html.dark :is(.bg-\[\#FEF3C7\]):not([data-light-zone], [data-light-zone] *) { background-color: rgba(245, 158, 11, 0.16); }
+html.dark :is(.bg-\[\#FEE2E2\]):not([data-light-zone], [data-light-zone] *) { background-color: rgba(239, 68, 68, 0.16); }
+html.dark :is(.bg-\[\#DBEAFE\]):not([data-light-zone], [data-light-zone] *) { background-color: rgba(59, 130, 246, 0.2); }
+html.dark :is(.app-bg):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-page); }
+
+/* Teks */
+html.dark :is(.text-slate-900):not([data-light-zone], [data-light-zone] *) { color: #f1f5f9; }
+html.dark :is(.text-slate-800):not([data-light-zone], [data-light-zone] *) { color: #e2e8f0; }
+html.dark :is(.text-slate-700):not([data-light-zone], [data-light-zone] *) { color: #cbd5e1; }
+html.dark :is(.text-slate-600):not([data-light-zone], [data-light-zone] *) { color: #b4c0d3; }
+html.dark :is(.text-slate-500):not([data-light-zone], [data-light-zone] *) { color: #94a3b8; }
+html.dark :is(.text-slate-400):not([data-light-zone], [data-light-zone] *) { color: #7a889f; }
+html.dark :is(.text-brand-600, .text-brand-700):not([data-light-zone], [data-light-zone] *) { color: #34d399; }
+html.dark :is(.text-brand-800, .text-brand-900, .text-emerald-700, .text-emerald-800):not([data-light-zone], [data-light-zone] *) { color: #6ee7b7; }
+html.dark :is(.text-red-500, .text-red-600):not([data-light-zone], [data-light-zone] *) { color: #f87171; }
+html.dark :is(.text-red-700, .text-red-800):not([data-light-zone], [data-light-zone] *) { color: #fca5a5; }
+html.dark :is(.text-amber-600):not([data-light-zone], [data-light-zone] *) { color: #fbbf24; }
+html.dark :is(.text-amber-800, .text-amber-900):not([data-light-zone], [data-light-zone] *) { color: #fcd34d; }
+html.dark :is(.text-\[\#166534\]):not([data-light-zone], [data-light-zone] *) { color: #86efac; }
+html.dark :is(.text-\[\#92400E\]):not([data-light-zone], [data-light-zone] *) { color: #fcd34d; }
+html.dark :is(.text-\[\#991B1B\]):not([data-light-zone], [data-light-zone] *) { color: #fca5a5; }
+html.dark :is(.text-\[\#1D4ED8\]):not([data-light-zone], [data-light-zone] *) { color: #93c5fd; }
+html.dark :is(.text-\[\#334155\]):not([data-light-zone], [data-light-zone] *) { color: #cbd5e1; }
+
+/* Garis */
+html.dark :is(.border-slate-100, .border-slate-200, .border-slate-200\/80, .card):not([data-light-zone], [data-light-zone] *) { border-color: var(--d-line); }
+html.dark :is(.border-slate-300):not([data-light-zone], [data-light-zone] *) { border-color: var(--d-line-strong); }
+html.dark :is(.border-brand-200, .border-emerald-200):not([data-light-zone], [data-light-zone] *) { border-color: rgba(16, 185, 129, 0.35); }
+html.dark :is(.border-amber-200):not([data-light-zone], [data-light-zone] *) { border-color: rgba(245, 158, 11, 0.4); }
+html.dark :is(.border-red-200):not([data-light-zone], [data-light-zone] *) { border-color: rgba(239, 68, 68, 0.4); }
+html.dark :is(.border-t-brand-700):not([data-light-zone], [data-light-zone] *) { border-top-color: #10b981; }
+html.dark :is(.divide-slate-100, .divide-slate-200):not([data-light-zone], [data-light-zone] *) > :not([hidden]) ~ :not([hidden]) { border-color: var(--d-line); }
+
+/* Hover */
+html.dark :is(.hover\:bg-slate-50):hover:not([data-light-zone], [data-light-zone] *) { background-color: var(--d-muted); }
+html.dark :is(.hover\:bg-slate-100, .hover\:bg-slate-200):hover:not([data-light-zone], [data-light-zone] *) { background-color: var(--d-raised); }
+html.dark :is(.hover\:bg-red-50):hover:not([data-light-zone], [data-light-zone] *) { background-color: rgba(239, 68, 68, 0.12); }
+html.dark :is(.hover\:bg-brand-50):hover:not([data-light-zone], [data-light-zone] *) { background-color: rgba(16, 185, 129, 0.12); }
+html.dark :is(.hover\:bg-amber-200\/50):hover:not([data-light-zone], [data-light-zone] *) { background-color: rgba(245, 158, 11, 0.25); }
+html.dark :is(.hover\:text-slate-700, .hover\:text-slate-800, .hover\:text-slate-900):hover:not([data-light-zone], [data-light-zone] *) { color: #f8fafc; }
+html.dark :is(.hover\:text-brand-700, .hover\:text-brand-800):hover:not([data-light-zone], [data-light-zone] *) { color: #6ee7b7; }
+html.dark :is(.hover\:text-red-500, .hover\:text-red-600, .hover\:text-red-700, .hover\:text-red-800):hover:not([data-light-zone], [data-light-zone] *) { color: #fca5a5; }
+html.dark :is(.hover\:border-slate-300):hover:not([data-light-zone], [data-light-zone] *) { border-color: var(--d-line-strong); }
+html.dark :is(.placeholder\:text-slate-400):not([data-light-zone], [data-light-zone] *)::placeholder { color: #64748b; }
+
+/* Komponen */
+html.dark :is(.input):not([data-light-zone], [data-light-zone] *) { background-color: #0e1628; border-color: var(--d-line-strong); color: #f1f5f9; }
+html.dark :is(.input):not([data-light-zone], [data-light-zone] *)::placeholder { color: #64748b; }
+html.dark :is(.input):focus:not([data-light-zone], [data-light-zone] *) { border-color: #10b981; --tw-ring-color: rgba(16, 185, 129, 0.3); }
+html.dark :is(.btn-secondary):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-raised); border-color: var(--d-line-strong); color: #e2e8f0; }
+html.dark :is(.btn-secondary):hover:not([data-light-zone], [data-light-zone] *) { background-color: #26385c; color: #ffffff; }
+html.dark :is(.btn-ghost):not([data-light-zone], [data-light-zone] *) { color: #b4c0d3; }
+html.dark :is(.btn-ghost):hover:not([data-light-zone], [data-light-zone] *) { background-color: var(--d-raised); color: #f8fafc; }
+html.dark :is(.label):not([data-light-zone], [data-light-zone] *) { color: #b4c0d3; }
+html.dark :is(.badge-success):not([data-light-zone], [data-light-zone] *) { background-color: rgba(34, 197, 94, 0.16); color: #86efac; }
+html.dark :is(.badge-warning):not([data-light-zone], [data-light-zone] *) { background-color: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+html.dark :is(.badge-danger):not([data-light-zone], [data-light-zone] *) { background-color: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+html.dark :is(.badge-info):not([data-light-zone], [data-light-zone] *) { background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+html.dark :is(.badge-neutral):not([data-light-zone], [data-light-zone] *) { background-color: var(--d-raised); color: #cbd5e1; }
+
+/* Gradien */
+html.dark :is(.bg-gradient-to-br, .bg-gradient-to-b).via-slate-50:not([data-light-zone], [data-light-zone] *) { background-image: linear-gradient(to bottom, rgba(6, 78, 59, 0.35), var(--d-page) 60%, var(--d-page)); }
+html.dark .bg-gradient-to-br.via-slate-50:not([data-light-zone], [data-light-zone] *) { background-image: linear-gradient(to bottom right, rgba(6, 78, 59, 0.35), var(--d-page) 55%, var(--d-page)); }
+
+/* Grafik */
+html.dark .recharts-cartesian-axis-tick-value { fill: #94a3b8; }
+html.dark .recharts-cartesian-grid line { stroke: var(--d-line); }
+html.dark .recharts-cartesian-axis-line, html.dark .recharts-cartesian-axis-tick-line { stroke: var(--d-line-strong); }
+html.dark .recharts-default-tooltip { background-color: var(--d-raised) !important; border-color: var(--d-line-strong) !important; }
+html.dark .recharts-tooltip-label { color: #e2e8f0 !important; }
+html.dark .recharts-tooltip-cursor { fill: rgba(148, 163, 184, 0.12); }
+html.dark .recharts-area-area { fill-opacity: 0.25; }
+html.dark .recharts-legend-item-text { color: #cbd5e1 !important; }

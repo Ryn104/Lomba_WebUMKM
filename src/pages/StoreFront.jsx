@@ -64,7 +64,7 @@ export default function StoreFront() {
   const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
 
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>
+    <div data-light-zone className="min-h-screen bg-white" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>
       <StorefrontHeader store={store} sections={sections} primary={primary} layout={theme.headerLayout} />
 
       {sections.length === 0 ? (

@@ -126,7 +126,7 @@ function POS({ store }) {
   if (loading) return <Spinner full />
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50 lg:flex-row">
+    <div className="app-bg flex h-screen flex-col bg-slate-50 lg:flex-row">
       {/* Kiri: produk */}
       <section className="flex min-h-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">

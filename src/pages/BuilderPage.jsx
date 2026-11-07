@@ -157,7 +157,7 @@ function Builder({ store, setStore }) {
   if (loading) return <Spinner full />
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
+    <div className="app-bg flex h-screen flex-col bg-slate-50">
       {/* Top bar */}
       <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-4 py-2.5">
         <Link to="/dashboard" className="btn-ghost px-2"><ArrowLeft size={18} /></Link>
@@ -309,6 +309,7 @@ function Builder({ store, setStore }) {
         {/* Tengah: preview real-time */}
         <main className="min-w-0 flex-1 overflow-auto bg-slate-200/80 p-4">
           <div
+            data-light-zone
             className={`mx-auto overflow-hidden rounded-xl bg-white shadow-xl transition-all ${device === 'mobile' ? 'max-w-[390px]' : 'max-w-full'}`}
           >
             <div className="pointer-events-none">
