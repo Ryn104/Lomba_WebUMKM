@@ -14,6 +14,8 @@ import SubscriptionAdminModal from '../components/admin/SubscriptionAdminModal'
 import DeleteAccountModal from '../components/admin/DeleteAccountModal'
 import AccountProfilePage from './AccountProfilePage'
 import AccountSecurityPage from './AccountSecurityPage'
+import { ThemeIconButton } from '../components/ui/ThemeToggle'
+import { divIcon } from 'leaflet'
 
 const links = [
   { to: '/admin', label: 'Ringkasan', icon: LayoutDashboard, end: true },
@@ -147,7 +149,7 @@ export default function AdminDashboard() {
       title="Admin Platform"
       subtitle={PLATFORM_DOMAIN}
       links={links}
-      headerRight={<Link to="/" className="btn-secondary"><Home size={16} /> Beranda</Link>}
+      headerRight={<div className='flex gap-3'><ThemeIconButton className='btn-secondary'/><Link to="/" className="btn-secondary"><Home size={16} /><span className="hidden sm:inline">Beranda</span></Link></div>}
       >
       {!stores ? (
         <Spinner />
