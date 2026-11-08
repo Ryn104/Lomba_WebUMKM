@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Check, Crown, Eye, Monitor, Palette, Smartphone, Sparkles } from 'lucide-react'
+import { ArrowLeft, Check, Crown, Eye, Monitor, Palette, Smartphone, Sparkles, Tablet } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { useMyStore } from '../hooks/useMyStore'
 import { Spinner } from '../components/ui/Field'
 import CreateStore from '../components/builder/CreateStore'
+import DevicePreview from '../components/builder/DevicePreview'
 import SectionRenderer from '../components/store-front/SectionRenderer'
 import LayoutThumb from '../components/store-front/layoutThumbs'
 import { StorefrontFooter, StorefrontHeader } from '../components/store-front/HeaderFooter'
@@ -19,6 +20,13 @@ const galleryCss = `
 .tg-drift { animation: tg-drift 12s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .tg-in, .tg-drift { animation: none; } }
 `
+
+// Pilihan ukuran preview (lebar virtual tiap perangkat ada di DevicePreview)
+const DEVICE_BUTTONS = [
+  { id: 'desktop', label: 'Tampilan desktop', icon: Monitor },
+  { id: 'tablet', label: 'Tampilan tablet', icon: Tablet },
+  { id: 'mobile', label: 'Tampilan mobile', icon: Smartphone },
+]
 
 export default function ThemeGalleryPage() {
   const { store, setStore, loading, reload } = useMyStore()
@@ -261,9 +269,21 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
           <p className="hidden text-[11px] text-slate-500 sm:block">Memakai data tokomu sendiri — tidak mengubah tema aktif maupun konten tersimpan.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <div className="flex rounded-full border border-slate-500/20 bg-slate-500/10 p-0.5">
-            <button type="button" onClick={() => onDevice('desktop')} aria-pressed={device === 'desktop'} aria-label="Tampilan desktop" className={`rounded-full p-1.5 transition ${device === 'desktop' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><Monitor size={16} /></button>
-            <button type="button" onClick={() => onDevice('mobile')} aria-pressed={device === 'mobile'} aria-label="Tampilan mobile" className={`rounded-full p-1.5 transition ${device === 'mobile' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}><Smartphone size={16} /></button>
+          {/* Di HP, preview otomatis mengikuti lebar layar, jadi pilihan perangkat disembunyikan */}
+          <div className="hidden rounded-full border border-slate-500/20 bg-slate-500/10 p-0.5 sm:flex">
+            {DEVICE_BUTTONS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onDevice(id)}
+                aria-pressed={device === id}
+                aria-label={label}
+                title={label}
+                className={`rounded-full p-1.5 transition ${device === id ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                <Icon size={16} />
+              </button>
+            ))}
           </div>
           <button type="button" onClick={onApply} disabled={applying} className="btn-primary !rounded-full px-4 py-2 text-xs font-bold shadow-sm sm:text-sm">
             <Crown size={16} /> {applying ? 'Menerapkan…' : 'Gunakan Tema Ini'}
@@ -271,31 +291,30 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
         </div>
       </div>
 
-      {/* Konten preview */}
-      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-6">
-        <div
-          className={`mx-auto overflow-hidden rounded-xl bg-white shadow-xl transition-all ${device === 'mobile' ? 'max-w-[390px]' : 'max-w-6xl'}`}
-          style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}
-        >
-          {loading ? (
-            <div className="py-32 text-center text-sm text-slate-400">Memuat pratinjau…</div>
-          ) : (
-            <>
-              <StorefrontHeader store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.header} />
-              {visibleSections.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-                  <Sparkles size={40} className="text-slate-300" />
-                  <p className="text-sm text-slate-400">Website toko ini belum memiliki section. Tambahkan di Web Builder untuk melihat preview lebih lengkap.</p>
-                </div>
-              ) : (
-                visibleSections.map((s) => (
-                  <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={theme.primary} layout={effective(s)} />
-                ))
-              )}
-              <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
-            </>
-          )}
-        </div>
+      {/* Konten preview: dirender di dalam iframe agar breakpoint (sm/md/lg) mengikuti lebar perangkat yang dipilih */}
+      <main className="min-h-0 flex-1 overflow-hidden p-3 sm:p-6">
+        <DevicePreview device={device}>
+          <div data-light-zone className="bg-white" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>
+            {loading ? (
+              <div className="py-32 text-center text-sm text-slate-400">Memuat pratinjau…</div>
+            ) : (
+              <>
+                <StorefrontHeader store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.header} />
+                {visibleSections.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
+                    <Sparkles size={40} className="text-slate-300" />
+                    <p className="text-sm text-slate-400">Website toko ini belum memiliki section. Tambahkan di Web Builder untuk melihat preview lebih lengkap.</p>
+                  </div>
+                ) : (
+                  visibleSections.map((s) => (
+                    <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={theme.primary} layout={effective(s)} />
+                  ))
+                )}
+                <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
+              </>
+            )}
+          </div>
+        </DevicePreview>
       </main>
     </div>
   )
