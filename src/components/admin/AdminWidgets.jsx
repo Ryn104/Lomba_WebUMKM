@@ -21,6 +21,7 @@ export function PlanBadge({ plan }) {
 }
 
 export function StateBadge({ state }) {
+  if (state === 'free') return null
   const tone = state === 'paid' ? 'success' : state === 'complimentary' ? 'info' : state === 'expired' ? 'danger' : 'neutral'
   return <Badge tone={tone}>{STATE_LABEL[state] || '-'}</Badge>
 }
