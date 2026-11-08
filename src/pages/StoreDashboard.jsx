@@ -175,7 +175,7 @@ export default function StoreDashboard() {
         headerRight={
           <div className="flex items-center gap-2">
             {/* Badge status paket */}
-            <span className={`hidden items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold sm:inline-flex ${planBadge}`}>
+            <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold sm:gap-1.5 sm:px-3 sm:text-xs ${planBadge}`}>
               {!isFree && <Crown size={12} />}
               {plan === 'pro' ? 'Pro' : plan === 'bisnis' ? 'Bisnis' : 'Gratis'}
             </span>
