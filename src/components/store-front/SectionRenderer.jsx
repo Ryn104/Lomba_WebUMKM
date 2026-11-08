@@ -33,6 +33,7 @@ import Modal from "../ui/Modal";
 import ProductImage from "../ui/ProductImage";
 import { DEFAULT_LAYOUTS } from "./sectionDefs";
 import { CATEGORY_ICON_MAP } from "./categoryIcons";
+import { SOCIAL_BY_ID, socialUrl } from "./socialPlatforms";
 
 function WhatsAppIcon({ size = 22 }) {
   return (
@@ -875,6 +876,33 @@ function ContactSection({ c, style, store, color, layout }) {
     </a>
   );
 
+  const socials = (c.socials || [])
+    .map((s) => {
+      const p = SOCIAL_BY_ID[s.type];
+      const url = p && socialUrl(p, s.value);
+      return p && url ? { ...p, url } : null;
+    })
+    .filter(Boolean);
+
+  const socialBlock = (justify = "justify-center") =>
+    socials.length > 0 ? (
+      <div className={`flex flex-wrap gap-3 ${justify}`}>
+        {socials.map(({ id, label, icon: Icon, url }) => (
+          <a
+            key={id}
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={label}
+            title={label}
+            className="grid h-11 w-11 place-items-center rounded-full bg-white/10 transition hover:scale-110 hover:bg-white/20"
+          >
+            <Icon size={20} />
+          </a>
+        ))}
+      </div>
+    ) : null;
+
   if (layout === "cards") {
     return (
       <section id="contact" style={style} className="px-6 py-16">
@@ -890,6 +918,7 @@ function ContactSection({ c, style, store, color, layout }) {
             ))}
           </div>
           {waButton && <div className="mt-8 flex justify-center">{waButton}</div>}
+          {socials.length > 0 && <div className="mt-6">{socialBlock()}</div>}
           {mapBlock && <div className="mt-8">{mapBlock}</div>}
         </div>
       </section>
@@ -913,6 +942,7 @@ function ContactSection({ c, style, store, color, layout }) {
             ))}
           </ul>
           {waButton && <div className="mt-8 flex justify-center">{waButton}</div>}
+          {socials.length > 0 && <div className="mt-6">{socialBlock()}</div>}
           {mapBlock && <div className="mt-8">{mapBlock}</div>}
         </div>
       </section>
@@ -958,6 +988,7 @@ function ContactSection({ c, style, store, color, layout }) {
                 </a>
               </li>
             )}
+            {socials.length > 0 && <li>{socialBlock('justify-start')}</li>}
           </ul>
           {mapBlock}
         </div>
