@@ -54,6 +54,14 @@ export function StatCard({ icon: Icon, label, value, sub, tone = 'brand', subTon
     neutral: 'bg-[#F1F5F9] text-[#334155]',
   }
   const shown = useCountUp(value)
+  const text = String(shown ?? '')
+  const isLong = text.length >= 10
+  const isVeryLong = text.length >= 14
+  const fontSizeClass = isVeryLong
+    ? 'text-base sm:text-lg xl:text-xl'
+    : isLong
+      ? 'text-lg sm:text-xl xl:text-2xl'
+      : 'text-xl sm:text-2xl xl:text-[1.7rem]'
 
   return (
     <div className="card group relative overflow-hidden p-4 transition-colors duration-200 hover:border-brand-500/40 sm:p-5">
@@ -61,15 +69,20 @@ export function StatCard({ icon: Icon, label, value, sub, tone = 'brand', subTon
       <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-brand-500/10 blur-2xl transition-colors duration-300 group-hover:bg-brand-500/25" />
 
       <div className="relative flex items-center justify-between gap-3">
-        <p className="text-xs font-medium text-slate-500 sm:text-sm">{label}</p>
+        <p className="min-w-0 truncate text-xs font-medium text-slate-500 sm:text-sm" title={label}>{label}</p>
         {Icon && (
           <span className={`shrink-0 rounded-xl p-2 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 sm:p-2.5 ${tones[tone] || tones.brand}`}>
             <Icon size={16} className="sm:h-[18px] sm:w-[18px]" />
           </span>
         )}
       </div>
-      <p className="relative mt-2 break-words text-lg font-bold tracking-tight text-slate-900 tabular-nums sm:mt-3 sm:text-[1.7rem]">{shown}</p>
-      {sub && <p className={`relative mt-1 break-words text-[11px] leading-snug ${subTone} sm:text-xs`}>{sub}</p>}
+      <p
+        className={`relative mt-2 font-bold tracking-tight text-slate-900 tabular-nums whitespace-nowrap truncate sm:mt-3 ${fontSizeClass}`}
+        title={text}
+      >
+        {shown}
+      </p>
+      {sub && <p className={`relative mt-1 text-[11px] leading-snug ${subTone} sm:text-xs truncate`} title={typeof sub === 'string' ? sub : undefined}>{sub}</p>}
     </div>
   )
 }

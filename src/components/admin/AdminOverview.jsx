@@ -26,7 +26,7 @@ export default function AdminOverview({ stores, users }) {
     return { live, counts, series14, newThisWeek, revenueMonth, expiring, withoutStore }
   }, [stores, users])
 
-  const paid = data.counts.bisnis + data.counts.pro
+  const paid = (data.counts.basic || 0) + data.counts.bisnis + data.counts.pro
 
   return (
     <div className="space-y-6">
@@ -36,7 +36,7 @@ export default function AdminOverview({ stores, users }) {
         <StatCard icon={Users} tone="info" label="Total pengguna" value={users.length} sub={`+${data.newThisWeek} dalam 7 hari terakhir`} />
         <StatCard icon={Store} label="Total toko" value={stores.length} sub={`${stores.length - data.live} draft / nonaktif`} />
         <StatCard icon={ExternalLink} tone="green" label="Toko online (live)" value={data.live} />
-        <StatCard icon={CreditCard} tone="amber" label="Paket Bisnis / Pro" value={paid} sub={`${data.counts.bisnis} Bisnis · ${data.counts.pro} Pro`} />
+        <StatCard icon={CreditCard} tone="amber" label="Langganan berbayar" value={paid} sub={`${data.counts.basic || 0} Basic · ${data.counts.bisnis} Bisnis · ${data.counts.pro} Pro`} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

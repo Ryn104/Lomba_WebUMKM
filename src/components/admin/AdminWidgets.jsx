@@ -16,8 +16,8 @@ export function Badge({ tone = 'neutral', children }) {
 }
 
 export function PlanBadge({ plan }) {
-  const tone = plan === 'pro' ? 'success' : plan === 'bisnis' ? 'info' : 'neutral'
-  return <Badge tone={tone}>{PLAN_LABEL[plan] || 'Gratis'}</Badge>
+  const tone = plan === 'pro' ? 'success' : plan === 'bisnis' ? 'info' : 'brand'
+  return <Badge tone={tone}>{PLAN_LABEL[plan] || 'Basic'}</Badge>
 }
 
 export function StateBadge({ state }) {
@@ -55,7 +55,7 @@ export function ChartCard({ title, desc, children, className = '' }) {
 
 /** Donut distribusi paket Gratis / Bisnis / Pro */
 export function PlanDonut({ counts }) {
-  const data = ['gratis', 'bisnis', 'pro'].map((k) => ({ key: k, name: PLAN_LABEL[k], value: counts[k] || 0 }))
+  const data = ['basic', 'bisnis', 'pro'].map((k) => ({ key: k, name: PLAN_LABEL[k], value: counts[k] || 0 }))
   const total = data.reduce((a, b) => a + b.value, 0)
   return (
     <div className="flex h-full flex-col">

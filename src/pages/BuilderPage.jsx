@@ -48,11 +48,14 @@ const isCompactScreen = () => typeof window !== 'undefined' && window.matchMedia
 
 function Builder({ store, setStore }) {
   const { plan, upgrade } = useSubscription(store, setStore)
-  const isFree = plan === 'gratis'
+  const { isTrial, isExpired, isPaid } = useSubscription(store, setStore)
+  const isLimited = isExpired
   const theme = resolveTheme(store)
   const sub = store.theme?.subscription || {}
   const hasActiveSubscription = ['active', 'complimentary'].includes(sub.billingMode) && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > Date.now())
-  const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
+  const trialEndMs = sub.trialEndsAt ? new Date(sub.trialEndsAt).getTime() : (store.created_at ? new Date(store.created_at).getTime() + 30 * 24 * 60 * 60 * 1000 : 0)
+  const isTrialActive = !hasActiveSubscription && trialEndMs > Date.now()
+  const hasWatermark = !hasActiveSubscription && !isTrialActive
   const [onboardDismissed, setOnboardDismissed] = useState(false)
 
   const [sections, setSections] = useState([])
@@ -117,7 +120,7 @@ function Builder({ store, setStore }) {
   }
 
   const addSection = (type) => {
-    if (isFree && sections.length >= 4) {
+    if (isLimited && sections.length >= 4) {
       setUpgradeOpen(true)
       return
     }
@@ -271,7 +274,7 @@ function Builder({ store, setStore }) {
           <div>
             <div className="flex items-center justify-between">
               <p className="label">Susunan halaman</p>
-              {isFree && (
+              {isLimited && (
                 <span className={`text-[11px] font-semibold ${sections.length >= 4 ? 'text-red-600' : 'text-slate-500'}`}>
                   {sections.length}/4 section
                 </span>
@@ -299,7 +302,7 @@ function Builder({ store, setStore }) {
           <div>
             <div className="flex items-center justify-between">
               <p className="label">Tambah section</p>
-              {isFree && sections.length >= 4 && (
+              {isLimited && sections.length >= 4 && (
                 <button
                   type="button"
                   onClick={() => setUpgradeOpen(true)}

@@ -1,12 +1,11 @@
 import { Fragment, useState } from 'react'
-import { Check, Minus, Sparkles, X } from 'lucide-react'
+import { Check, Minus, Sparkles, X, Lock } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
-import { planLimits, planPrice } from '../../lib/plans'
+import { planPrice, isLowerPlan } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
 import SegmentedControl from '../ui/SegmentedControl'
 
-const freeLimits = planLimits('gratis')
-const PLAN_IDS = ['gratis', 'bisnis', 'pro']
+const PLAN_IDS = ['basic', 'bisnis', 'pro']
 const GRID = { gridTemplateColumns: 'minmax(0,1.25fr) repeat(3, minmax(0, 1fr))' }
 
 /** Nilai sel perbandingan: centang/minus untuk boolean, teks untuk nilai lain. */
@@ -32,59 +31,53 @@ const ctaClass = (plan) =>
       ? 'btn-primary rounded-lg shadow-sm'
       : 'btn-secondary rounded-lg'
 
-export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis', onSelectPlan }) {
-  const [mobilePlan, setMobilePlan] = useState(currentPlan === 'gratis' ? 'bisnis' : currentPlan)
+export default function ComparePlansModal({ open, onClose, currentPlan = 'basic', onSelectPlan }) {
+  const [mobilePlan, setMobilePlan] = useState(currentPlan === 'basic' ? 'bisnis' : currentPlan)
 
   if (!open) return null
 
+  const buildPlanMeta = (id, name, desc, badge = null, highlight = false) => {
+    const isCurrent = currentPlan === id
+    const isLower = isLowerPlan(currentPlan, id)
+    return {
+      id,
+      name,
+      price: rupiah(planPrice(id)),
+      period: 'per bulan',
+      badge,
+      desc,
+      btnText: isCurrent
+        ? 'Paket aktif saat ini'
+        : isLower
+          ? 'Sudah tercakup'
+          : `Pilih ${id === 'basic' ? 'Basic' : id === 'bisnis' ? 'Bisnis' : 'Pro'}`,
+      disabled: isCurrent || isLower,
+      highlight: highlight && !isCurrent && !isLower,
+      isLower,
+    }
+  }
+
   const plans = [
-    {
-      id: 'gratis',
-      name: 'Paket Gratis',
-      price: 'Rp0',
-      period: 'selamanya',
-      desc: 'Untuk UMKM yang baru mulai go-online',
-      btnText: currentPlan === 'gratis' ? 'Paket aktif saat ini' : 'Pilih Gratis',
-      disabled: currentPlan === 'gratis',
-      highlight: false,
-    },
-    {
-      id: 'bisnis',
-      name: 'Paket Bisnis',
-      price: rupiah(planPrice('bisnis')),
-      period: 'per bulan',
-      badge: 'Paling populer',
-      desc: 'Produk tidak terbatas, tanpa watermark, custom domain',
-      btnText: currentPlan === 'bisnis' ? 'Paket aktif saat ini' : 'Pilih Bisnis',
-      disabled: currentPlan === 'bisnis',
-      highlight: true,
-    },
-    {
-      id: 'pro',
-      name: 'Paket Pro',
-      price: rupiah(planPrice('pro')),
-      period: 'per bulan',
-      desc: 'Laporan keuangan lanjutan, ekspor CSV & POS tanpa batas',
-      btnText: currentPlan === 'pro' ? 'Paket aktif saat ini' : 'Pilih Pro',
-      disabled: currentPlan === 'pro',
-      highlight: false,
-    },
+    buildPlanMeta('basic', 'Paket Basic', 'Untuk UMKM pemula yang baru mulai online', null, false),
+    buildPlanMeta('bisnis', 'Paket Bisnis', 'Produk tidak terbatas, tanpa watermark, custom domain', 'Paling populer', true),
+    buildPlanMeta('pro', 'Paket Pro', 'Laporan keuangan lanjutan, ekspor CSV & POS tanpa batas', 'Fitur lengkap', false),
   ]
 
   const features = [
-    { name: 'Batas produk', values: { gratis: `${freeLimits.maxProducts} produk`, bisnis: 'Tanpa batas', pro: 'Tanpa batas' } },
-    { name: 'Section Web Builder', values: { gratis: `${freeLimits.maxSections} section`, bisnis: 'Semua section', pro: 'Semua section + template premium' } },
-    { name: 'Watermark platform', values: { gratis: 'Ada watermark', bisnis: 'Tanpa watermark', pro: 'Tanpa watermark' } },
-    { name: 'Custom domain sendiri', values: { gratis: false, bisnis: true, pro: true } },
-    { name: 'Penyimpanan media & foto', values: { gratis: '500 MB', bisnis: '5 GB', pro: '20 GB' } },
-    { name: 'Transaksi Kasir POS / bln', values: { gratis: '50 transaksi', bisnis: '500 transaksi', pro: 'Tanpa batas' } },
-    { name: 'Laporan keuangan lanjutan & ekspor', values: { gratis: false, bisnis: false, pro: true } },
-    { name: 'Multi-cabang & staff kasir', values: { gratis: false, bisnis: false, pro: true } },
+    { name: 'Batas produk', values: { basic: '50 produk', bisnis: 'Tanpa batas', pro: 'Tanpa batas' } },
+    { name: 'Section Web Builder', values: { basic: 'Semua section', bisnis: 'Semua section', pro: 'Semua section + template premium' } },
+    { name: 'Watermark platform', values: { basic: 'Tanpa watermark', bisnis: 'Tanpa watermark', pro: 'Tanpa watermark' } },
+    { name: 'Custom domain toko', values: { basic: true, bisnis: true, pro: true } },
+    { name: 'Penyimpanan media & foto', values: { basic: '2 GB', bisnis: '10 GB', pro: '25 GB' } },
+    { name: 'Transaksi Kasir POS / bln', values: { basic: '150 transaksi', bisnis: '500 transaksi', pro: 'Tanpa batas' } },
+    { name: 'Laporan keuangan & laba rugi', values: { basic: false, bisnis: false, pro: true } },
+    { name: 'Ekspor laporan keuangan (CSV)', values: { basic: false, bisnis: false, pro: true } },
   ]
 
   const selected = plans.find((plan) => plan.id === mobilePlan) || plans[1]
 
   const pick = (id) => {
+    if (isLowerPlan(currentPlan, id)) return
     onClose()
     onSelectPlan?.(id)
   }
@@ -125,9 +118,14 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
                   <h3 className="text-base font-extrabold text-slate-900">{selected.name}</h3>
                   <p className="mt-0.5 text-xs leading-snug text-slate-500">{selected.desc}</p>
                 </div>
-                {selected.badge && (
+                {selected.badge && !selected.isLower && (
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
                     <Sparkles size={9} /> {selected.badge}
+                  </span>
+                )}
+                {selected.isLower && (
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-500">
+                    <Lock size={9} /> Di bawah paket aktif
                   </span>
                 )}
               </div>
@@ -141,84 +139,72 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
                 type="button"
                 disabled={selected.disabled}
                 onClick={() => pick(selected.id)}
-                className={`mt-3 w-full py-2.5 text-xs font-bold ${ctaClass(selected)}`}
+                className={`mt-3 w-full py-2 text-xs font-bold ${ctaClass(selected)}`}
               >
                 {selected.btnText}
               </button>
-            </div>
 
-            <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Rincian fitur</p>
-            <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-              {features.map((feature, index) => (
-                <div
-                  key={feature.name}
-                  className={`flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 last:border-0 ${
-                    index % 2 ? 'bg-slate-50/60' : ''
-                  }`}
-                >
-                  <span className="min-w-0 text-xs font-medium text-slate-700">{feature.name}</span>
-                  <span className="flex shrink-0 justify-end text-right">
-                    <ValueCell value={feature.values[mobilePlan]} highlight={mobilePlan === 'bisnis'} />
-                  </span>
-                </div>
-              ))}
+              <dl className="mt-4 divide-y divide-slate-100 border-t border-slate-100 text-xs">
+                {features.map((feature) => (
+                  <div key={feature.name} className="flex items-center justify-between py-2">
+                    <dt className="text-slate-600">{feature.name}</dt>
+                    <dd className="font-medium text-slate-900">
+                      <ValueCell value={feature.values[selected.id]} highlight={selected.highlight} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           </div>
 
-          {/* ---------- Desktop: matriks perbandingan ---------- */}
+          {/* ---------- Desktop (md+): tabel 4 kolom seperti semula ---------- */}
           <div className="hidden md:block">
-            <div className="grid gap-x-3" style={GRID}>
-              <div className="flex items-end pb-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                Fitur &amp; benefit
-              </div>
-
+            <div className="grid border-b border-slate-200 pb-4" style={GRID}>
+              <div />
               {plans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`relative mb-3 flex flex-col rounded-2xl border p-3.5 ${
-                    plan.highlight ? 'border-brand-700 bg-brand-50/50 ring-1 ring-brand-700' : 'border-slate-200 bg-slate-50/60'
-                  }`}
-                >
-                  {plan.badge && (
-                    <span className="absolute -top-2.5 left-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
-                      <Sparkles size={9} /> {plan.badge}
+                <div key={plan.id} className="relative px-3 text-center">
+                  {plan.badge && !plan.isLower && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
+                      {plan.badge}
                     </span>
                   )}
-                  <h3 className="text-sm font-extrabold text-slate-900">{plan.name}</h3>
-                  <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{plan.desc}</p>
-                  <div className="mt-2.5 flex flex-wrap items-baseline gap-1">
-                    <span className="text-lg font-extrabold tracking-tight text-slate-900">{plan.price}</span>
-                    <span className="text-[10px] text-slate-500">/{plan.period}</span>
+                  {plan.isLower && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-500">
+                      <Lock size={9} /> Di bawah paket aktif
+                    </span>
+                  )}
+                  <h3 className="font-extrabold text-slate-900">{plan.name}</h3>
+                  <div className="mt-1">
+                    <span className="text-xl font-black text-slate-900">{plan.price}</span>
+                    <span className="text-xs text-slate-500">/{plan.period}</span>
                   </div>
+                  <p className="mt-1 line-clamp-2 min-h-[32px] text-[11px] text-slate-500">{plan.desc}</p>
                   <button
                     type="button"
                     disabled={plan.disabled}
                     onClick={() => pick(plan.id)}
-                    className={`mt-auto w-full px-2 py-2 text-[11px] font-bold transition ${ctaClass(plan)}`}
+                    className={`mt-3 w-full py-2 text-xs font-bold ${ctaClass(plan)}`}
                   >
                     {plan.btnText}
                   </button>
                 </div>
               ))}
+            </div>
 
-              {features.map((feature, index) => (
-                <Fragment key={feature.name}>
-                  <div
-                    className={`flex items-center border-t border-slate-100 py-3 pr-2 text-xs font-medium text-slate-700 ${
-                      index % 2 ? 'bg-slate-50/50' : ''
-                    }`}
-                  >
-                    {feature.name}
-                  </div>
-                  {PLAN_IDS.map((planId) => (
-                    <div
-                      key={planId}
-                      className={`flex items-center justify-center border-t border-slate-100 py-3 ${index % 2 ? 'bg-slate-50/50' : ''}`}
-                    >
-                      <ValueCell value={feature.values[planId]} highlight={planId === 'bisnis'} />
+            <div className="divide-y divide-slate-100 text-xs">
+              {features.map((f, i) => (
+                <div
+                  key={f.name}
+                  className={`grid items-center py-3 ${i % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}`}
+                  style={GRID}
+                >
+                  <span className="px-3 font-semibold text-slate-700">{f.name}</span>
+                  {PLAN_IDS.map((id) => (
+                    <div key={id} className="px-3 text-center">
+                      <ValueCell value={f.values[id]} highlight={id === 'bisnis'} />
                     </div>
                   ))}
-                </Fragment>
+                </div>
               ))}
             </div>
           </div>
