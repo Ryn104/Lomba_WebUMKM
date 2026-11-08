@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import { ArrowRight, Check, ExternalLink, Sparkles } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { useMyStore } from '../hooks/useMyStore'
 import { useSubscription } from '../hooks/useSubscription'
@@ -16,10 +16,11 @@ import UpgradeModal from '../components/subscription/UpgradeModal'
 
 /** Wizard onboarding 3 langkah setelah registrasi (email OTP maupun Google). */
 export default function OnboardingPage() {
-  const { user, profile, isAdmin } = useAuth()
+  const { profile } = useAuth()
+  const isAdmin = profile?.role === 'admin'
   const nav = useNavigate()
   const { store, setStore, loading, reload } = useMyStore()
-  const { plan, upgrade } = useSubscription(store, setStore)
+  const { plan, isTrial, upgrade, startTrial } = useSubscription(store, setStore)
 
   const [step, setStep] = useState(1)
   const [billingPeriod, setBillingPeriod] = useState('monthly')
@@ -27,17 +28,18 @@ export default function OnboardingPage() {
   const [finishing, setFinishing] = useState(false)
   const [finished, setFinished] = useState(false)
 
+  // Redirect guard
   useEffect(() => {
     if (loading) return
     if (isAdmin) {
       nav('/admin', { replace: true })
       return
     }
-    if (finished) return
     if (!store) {
       if (step !== 1) setStep(1)
       return
     }
+    if (finished) return
     if (store.theme?.onboarding_done) {
       nav('/dashboard', { replace: true })
       return
@@ -58,7 +60,6 @@ export default function OnboardingPage() {
       .single()
     if (updateError) throw updateError
     setStore(updated)
-    return updated
   }
 
   const finishWithPlan = async (label) => {
@@ -76,8 +77,9 @@ export default function OnboardingPage() {
   }
 
   const pickPlan = async (planId) => {
-    if (planId === 'gratis') {
-      await finishWithPlan('Paket Gratis aktif. Selamat berjualan!')
+    if (planId === 'trial' || planId === 'gratis') {
+      await startTrial?.()
+      await finishWithPlan('Trial 1 Bulan aktif! Selamat berjualan.')
       return
     }
     setTargetPlan(planId)
@@ -93,26 +95,26 @@ export default function OnboardingPage() {
 
   if (loading) return <Spinner full />
 
-  const activePlanName = planOf(plan).name
+  const activePlanName = isTrial ? 'Trial 1 Bulan' : planOf(plan).name
 
   return (
     <div className="app-bg min-h-[100dvh] bg-slate-50 px-4 py-8">
       <div className="mx-auto w-full max-w-4xl">
-        <div className="flex justify-center sm:justify-start">
-          <Logo size="lg" />
+        <div className="mb-6 flex justify-center">
+          <Logo />
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-          <OnboardingStepper step={step} />
+        <div className="card overflow-hidden shadow-sm">
+          <div className="border-b border-slate-100 p-6 sm:p-8">
+            <OnboardingStepper current={step} />
+          </div>
 
-          <div className="mt-6">
+          <div className="p-6 sm:p-8">
             {step === 1 && (
               <StoreStep
-                user={user}
-                profile={profile}
-                store={store}
-                onCreated={async () => {
-                  if (!store) await reload()
+                initialStore={store}
+                onDone={() => {
+                  reload()
                   setStep(2)
                 }}
               />
@@ -135,7 +137,7 @@ export default function OnboardingPage() {
                 </span>
                 <h2 className="mt-4 text-2xl font-extrabold text-slate-900">Toko Anda siap!</h2>
                 <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-                  {store?.name} sudah dibuat dengan paket <b>{activePlanName}</b>. Anda bisa mulai menambah produk dan mengatur website toko.
+                  {store?.name} sudah siap dengan paket <b>{activePlanName}</b>. Anda bisa mulai menambah produk dan mengatur website toko.
                 </p>
 
                 <div className="mx-auto mt-5 max-w-md rounded-xl border border-slate-200 bg-slate-50 p-4 text-left text-sm">

@@ -18,8 +18,9 @@ import { CATEGORY_ICON_MAP } from "../store-front/categoryIcons";
 const empty = { name: "", description: "", price: "", cost_price: "", stock: "", category_id: "", image_url: "", is_active: true };
 
 export default function Products({ store, setStore }) {
-  const { plan, upgrade } = useSubscription(store, setStore);
-  const isFree = plan === "gratis";
+  const { plan, isTrial, isExpired, isPaid, limits, upgrade } = useSubscription(store, setStore);
+  const maxProducts = limits?.maxProducts ?? Infinity;
+  const hasLimit = Number.isFinite(maxProducts);
 
   const [products, setProducts] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -50,7 +51,7 @@ export default function Products({ store, setStore }) {
 
   const handleAddClick = () => {
     // Cek batasan 10 produk untuk paket gratis (Mockup 3)
-    if (isFree && (products?.length || 0) >= 10) {
+    if (hasLimit && (products?.length || 0) >= maxProducts) {
       setLimitModalOpen(true);
       return;
     }
@@ -67,7 +68,7 @@ export default function Products({ store, setStore }) {
   const save = async (e) => {
     e.preventDefault();
     // Cek batasan jika insert produk baru
-    if (!form.id && isFree && (products?.length || 0) >= 10) {
+    if (!form.id && hasLimit && (products?.length || 0) >= maxProducts) {
       setLimitModalOpen(true);
       return;
     }
@@ -145,7 +146,7 @@ export default function Products({ store, setStore }) {
       </div>
 
       {/* Usage Nudge untuk Paket Gratis saat mendekati atau mencapai limit 10 produk (Mockup 3) */}
-      {isFree && products.length >= 7 && <UsageNudge currentCount={products.length} maxCount={10} onUpgrade={() => setUpgradeOpen(true)} />}
+      {hasLimit && products.length >= Math.floor(maxProducts * 0.8) && <UsageNudge currentCount={products.length} maxCount={maxProducts} onUpgrade={() => setUpgradeOpen(true)} />}
 
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
@@ -319,7 +320,7 @@ export default function Products({ store, setStore }) {
       </Modal>
 
       {/* Modal Batas 10 Produk Tercapai (Mockup 3) */}
-      <LimitReachedModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} currentCount={products.length} maxCount={10} onUpgrade={() => setUpgradeOpen(true)} />
+      <LimitReachedModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} currentCount={products?.length || 0} maxCount={maxProducts} onUpgrade={() => setUpgradeOpen(true)} />
 
       {/* Upgrade Modal */}
       <UpgradeModal

@@ -148,12 +148,12 @@ export default function AdminDashboard() {
     if (savingSubscription) return
     setSavingSubscription(true)
     const previous = store.theme?.subscription || {}
-    const isPaidPlan = plan !== 'gratis'
+    const isPaidPlan = ['basic', 'bisnis', 'pro'].includes(plan)
     const nextSubscription = {
       ...previous,
       plan,
       status: 'active',
-      billingMode: isPaidPlan ? 'complimentary' : 'free',
+      billingMode: isPaidPlan ? 'complimentary' : 'trial',
       activatedAt: isPaidPlan ? previous.activatedAt || new Date().toISOString() : null,
       renewsAt: isPaidPlan && renewalDate ? new Date(`${renewalDate}T23:59:59+07:00`).toISOString() : null,
       trialEndsAt: null,
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
       if (error) throw error
       setStores((current) => current.map((item) => (item.id === store.id ? { ...item, theme: data.theme } : item)))
       setSelectedStore(null)
-      toast.success(`Akses paket ${plan === 'gratis' ? 'Gratis' : plan === 'pro' ? 'Pro' : 'Bisnis'} diperbarui.`)
+      toast.success(`Akses paket ${plan === 'basic' ? 'Basic' : plan === 'pro' ? 'Pro' : 'Bisnis'} diperbarui.`)
     } catch (error) {
       toast.error(`Paket gagal disimpan: ${error.message}`)
     } finally {

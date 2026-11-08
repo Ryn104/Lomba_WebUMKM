@@ -28,8 +28,8 @@ import { EXPENSE_CATS, INCOME_CATS } from './finance/financeUtils'
 const PIE = ['#047857', '#10b981', '#059669', '#34d399', '#0d9488', '#0284c7', '#f59e0b', '#64748b']
 
 export default function Finance({ store, setStore }) {
-  const { plan, upgrade } = useSubscription(store, setStore)
-  const isPro = plan === 'pro'
+  const { plan, isTrial, upgrade } = useSubscription(store, setStore)
+  const isPro = plan === 'pro' || isTrial
 
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'advanced'
   const [upgradeOpen, setUpgradeOpen] = useState(false)
