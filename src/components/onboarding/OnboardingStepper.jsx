@@ -17,19 +17,19 @@ export default function OnboardingStepper({ step = 1 }) {
           return (
             <div key={item.id} className="flex min-w-0 flex-1 items-center gap-2">
               <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors duration-300 ${
                   done
                     ? 'bg-brand-700 text-white'
                     : active
-                      ? 'border-2 border-brand-700 bg-white text-brand-700'
-                      : 'border border-slate-200 bg-slate-100 text-slate-400'
+                      ? 'border-2 border-brand-600 bg-brand-500/10 text-brand-600'
+                      : 'border border-slate-500/30 bg-slate-500/10 text-slate-500'
                 }`}
               >
                 {done ? '✓' : item.id}
               </span>
               <span
                 className={`truncate text-[11px] font-semibold sm:text-xs ${
-                  active ? 'text-slate-900' : done ? 'text-brand-700' : 'text-slate-400'
+                  active ? 'text-slate-900' : done ? 'text-brand-600' : 'text-slate-500'
                 }`}
               >
                 {item.label}
@@ -38,8 +38,8 @@ export default function OnboardingStepper({ step = 1 }) {
           )
         })}
       </div>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-brand-600 transition-all duration-300" style={{ width: `${percent}%` }} />
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-500/20">
+        <div className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 transition-all duration-500" style={{ width: `${percent}%` }} />
       </div>
       <p className="mt-2 text-xs text-slate-500">Langkah {step} dari {STEPS.length}</p>
     </div>
