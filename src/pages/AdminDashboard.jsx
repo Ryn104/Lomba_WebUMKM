@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Routes, Route, Navigate, Link } from 'react-router-dom'
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { LayoutDashboard, Users, Home, Crown, Receipt, TrendingUp } from 'lucide-react'
 import { supabase, PLATFORM_DOMAIN, BUCKET } from '../lib/supabase'
@@ -15,7 +15,6 @@ import DeleteAccountModal from '../components/admin/DeleteAccountModal'
 import AccountProfilePage from './AccountProfilePage'
 import AccountSecurityPage from './AccountSecurityPage'
 import { ThemeIconButton } from '../components/ui/ThemeToggle'
-import { divIcon } from 'leaflet'
 
 const links = [
   { to: '/admin', label: 'Ringkasan', icon: LayoutDashboard, end: true },
@@ -25,7 +24,41 @@ const links = [
   { to: '/admin/pertumbuhan', label: 'Grafik Pendaftar', icon: TrendingUp },
 ]
 
+// Animasi halus yang sama gayanya dengan landing page
+const adminCss = `
+@keyframes ad-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes ad-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 18px) scale(1.08); } }
+@keyframes ad-pop { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+.ad-fade-up { animation: ad-fade-up .55s cubic-bezier(.2,.7,.2,1) both; }
+.ad-drift { animation: ad-drift 12s ease-in-out infinite; }
+.ad-pop { animation: ad-pop .28s cubic-bezier(.2,.7,.2,1) both; }
+
+/* Elemen halaman muncul berurutan: header -> kartu statistik -> grafik -> tabel */
+.ad-stagger > div > *:not(.grid) { animation: ad-fade-up .6s cubic-bezier(.2,.7,.2,1) both; }
+.ad-stagger > div > *:nth-child(2) { animation-delay: 70ms; }
+.ad-stagger > div > *:nth-child(3) { animation-delay: 140ms; }
+.ad-stagger > div > *:nth-child(4) { animation-delay: 210ms; }
+.ad-stagger > div > *:nth-child(5) { animation-delay: 280ms; }
+.ad-stagger > div > *:nth-child(n+6) { animation-delay: 350ms; }
+.ad-stagger > div > .grid > * { animation: ad-fade-up .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: 100ms; }
+.ad-stagger > div > .grid > *:nth-child(2) { animation-delay: 160ms; }
+.ad-stagger > div > .grid > *:nth-child(3) { animation-delay: 220ms; }
+.ad-stagger > div > .grid > *:nth-child(n+4) { animation-delay: 280ms; }
+
+/* Sentuhan halus pada kartu & tabel */
+.ad-scope .card { transition: box-shadow .25s ease, border-color .25s ease; }
+.ad-scope .card:hover { box-shadow: 0 14px 34px -16px rgba(2, 6, 23, .28); }
+.ad-scope thead th { font-weight: 600; letter-spacing: .05em; }
+.ad-scope tbody tr { transition: background-color .15s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-fade-up, .ad-drift, .ad-pop,
+  .ad-stagger > div > *, .ad-stagger > div > .grid > * { animation: none !important; }
+}
+`
+
 export default function AdminDashboard() {
+  const location = useLocation()
   const [stores, setStores] = useState(null)
   const [users, setUsers] = useState([])
   const [selectedStore, setSelectedStore] = useState(null)
@@ -149,22 +182,44 @@ export default function AdminDashboard() {
       title="Admin Platform"
       subtitle={PLATFORM_DOMAIN}
       links={links}
-      headerRight={<div className='flex gap-3'><ThemeIconButton className='btn-secondary'/><Link to="/" className="btn-secondary"><Home size={16} /><span className="hidden sm:inline">Beranda</span></Link></div>}
-      >
-      {!stores ? (
-        <Spinner />
-      ) : (
-        <Routes>
-          <Route index element={<AdminOverview stores={stores} users={users} />} />
-          <Route path="pengguna" element={<AdminUsers users={users} stores={stores} onChangeRole={changeRole} toggleActive={toggleActive} remove={remove} onManageSubscription={setSelectedStore} onDeleteAccount={setAccountToDelete} />} />
-          <Route path="langganan" element={<AdminSubscriptions stores={stores} onManageSubscription={setSelectedStore} />} />
-          <Route path="pembelian" element={<AdminPurchases stores={stores} />} />
-          <Route path="pertumbuhan" element={<AdminGrowth users={users} stores={stores} />} />
-          <Route path="profil" element={<AccountProfilePage />} />
-          <Route path="pengaturan" element={<AccountSecurityPage />} />
-          <Route path="*" element={<Navigate to="/admin" replace />} />
-        </Routes>
-      )}
+      headerRight={
+        <div className="flex items-center gap-2">
+          <ThemeIconButton className="btn-secondary !rounded-full" />
+          <Link to="/" className="btn-secondary !rounded-full">
+            <Home size={16} />
+            <span className="hidden sm:inline">Beranda</span>
+          </Link>
+        </div>
+      }
+    >
+      <style>{adminCss}</style>
+
+      {/* Latar konten: pola titik tipis + cahaya hijau lembut, sama seperti hero landing page */}
+      <div className="ad-scope relative isolate min-h-full">
+        <div className="pointer-events-none absolute inset-0 -z-10 [background-image:radial-gradient(rgba(148,163,184,0.22)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_55%)]" />
+        <div className="ad-drift pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
+
+        {!stores ? (
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          // key = path, jadi tiap pindah menu konten muncul dengan animasi halus
+          <div key={location.pathname} className="ad-stagger">
+            <Routes>
+              <Route index element={<AdminOverview stores={stores} users={users} />} />
+              <Route path="pengguna" element={<AdminUsers users={users} stores={stores} onChangeRole={changeRole} toggleActive={toggleActive} remove={remove} onManageSubscription={setSelectedStore} onDeleteAccount={setAccountToDelete} />} />
+              <Route path="langganan" element={<AdminSubscriptions stores={stores} onManageSubscription={setSelectedStore} />} />
+              <Route path="pembelian" element={<AdminPurchases stores={stores} />} />
+              <Route path="pertumbuhan" element={<AdminGrowth users={users} stores={stores} />} />
+              <Route path="profil" element={<AccountProfilePage />} />
+              <Route path="pengaturan" element={<AccountSecurityPage />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Routes>
+          </div>
+        )}
+      </div>
+
       {selectedStore && (
         <SubscriptionAdminModal
           store={selectedStore}

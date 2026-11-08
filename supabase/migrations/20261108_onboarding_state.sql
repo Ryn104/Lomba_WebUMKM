@@ -8,3 +8,5 @@ update public.stores
 set theme = jsonb_set(coalesce(theme, '{}'::jsonb), '{onboarding_done}', 'true'::jsonb, true)
 where coalesce(theme, '{}'::jsonb)->'onboarding_done' is null
   and created_at < now();
+
+alter table public.categories add column if not exists icon text;

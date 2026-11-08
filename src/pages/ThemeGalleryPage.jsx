@@ -1,15 +1,32 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Check, Crown, Eye, Monitor, Palette, Smartphone, Sparkles, Store as StoreIcon } from 'lucide-react'
+import { ArrowLeft, Check, Crown, Eye, Monitor, Palette, Smartphone, Sparkles, Tablet } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { useMyStore } from '../hooks/useMyStore'
 import { Spinner } from '../components/ui/Field'
 import CreateStore from '../components/builder/CreateStore'
+import DevicePreview from '../components/builder/DevicePreview'
 import SectionRenderer from '../components/store-front/SectionRenderer'
 import LayoutThumb from '../components/store-front/layoutThumbs'
 import { StorefrontFooter, StorefrontHeader } from '../components/store-front/HeaderFooter'
 import { BUILDER_THEMES, findActiveTheme } from '../components/builder/themes'
+
+// Animasi masuk kartu tema. Tanpa fill akhir, jadi efek hover (terangkat) tetap berfungsi.
+const galleryCss = `
+@keyframes tg-in { from { opacity: 0; transform: translateY(18px); } }
+@keyframes tg-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 18px) scale(1.08); } }
+.tg-in { animation: tg-in .6s cubic-bezier(.2,.7,.2,1) backwards; }
+.tg-drift { animation: tg-drift 12s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .tg-in, .tg-drift { animation: none; } }
+`
+
+// Pilihan ukuran preview (lebar virtual tiap perangkat ada di DevicePreview)
+const DEVICE_BUTTONS = [
+  { id: 'desktop', label: 'Tampilan desktop', icon: Monitor },
+  { id: 'tablet', label: 'Tampilan tablet', icon: Tablet },
+  { id: 'mobile', label: 'Tampilan mobile', icon: Smartphone },
+]
 
 export default function ThemeGalleryPage() {
   const { store, setStore, loading, reload } = useMyStore()
@@ -89,29 +106,38 @@ function Gallery({ store, setStore }) {
 
   return (
     <>
-      <div className="min-h-screen bg-slate-50">
+      <style>{galleryCss}</style>
+      <div className="app-bg relative isolate min-h-screen overflow-hidden bg-slate-50">
+        {/* Dekorasi latar: pola titik tipis + cahaya hijau lembut, sama seperti hero landing page */}
+        <div className="pointer-events-none absolute inset-0 -z-10 [background-image:radial-gradient(rgba(148,163,184,0.25)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_60%)]" />
+        <div className="tg-drift pointer-events-none absolute left-1/2 top-0 -z-10 h-80 w-[48rem] -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />
+
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <Link to="/builder" className="btn-ghost -ml-2 px-2 text-sm">
+          <Link to="/builder" className="btn-ghost !rounded-full -ml-2 px-3 text-sm">
             <ArrowLeft size={18} /> Kembali ke Web Builder
           </Link>
 
           {/* Header galeri */}
-          <header className="mt-4 text-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-800">
-              <Palette size={13} /> Galeri Tema
+          <header className="mt-6 text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-500/20 bg-slate-500/10 px-3.5 py-1.5 text-xs font-semibold text-slate-600">
+              <Palette size={13} className="text-brand-600" /> Galeri Tema
             </span>
-            <h1 className="mt-3 text-2xl font-extrabold text-slate-900 sm:text-3xl">Temukan Tampilan Website Impianmu</h1>
-            <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600">
+            <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">
+              Temukan Tampilan{' '}
+              <span className="bg-gradient-to-r from-brand-600 to-sky-400 bg-clip-text text-transparent">Website Impianmu</span>
+            </h1>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
               Setiap kategori bisnis punya karakter desain sendiri — struktur section, komposisi layout, dan dalamnya
               warna &amp; tipografi. Pratinjau dengan datamu sendiri, terapkan kapan saja. Konten tokomu tetap tersimpan.
             </p>
           </header>
 
           {/* Grid kartu tema */}
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {BUILDER_THEMES.map((theme) => (
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            {BUILDER_THEMES.map((theme, i) => (
               <ThemeCard
                 key={theme.id}
+                index={i}
                 theme={theme}
                 storeName={store.name}
                 active={activeTheme?.id === theme.id}
@@ -122,7 +148,7 @@ function Gallery({ store, setStore }) {
             ))}
           </div>
 
-          <p className="mt-6 text-center text-xs text-slate-500">
+          <p className="mx-auto mt-8 max-w-3xl rounded-2xl border border-slate-500/20 bg-slate-500/10 px-4 py-3 text-center text-xs leading-relaxed text-slate-500">
             Semua tema bawaan gratis sesuai hak akses paketmu. Setelah tema diterapkan, kamu tetap bebas mengganti layar
             (layout) tiap section lewat <b>Ubah Layout</b> di editor Web Builder.
           </p>
@@ -132,6 +158,7 @@ function Gallery({ store, setStore }) {
       {/* Fullscreen Preview */}
       {previewTheme && (
         <ThemePreview
+          key={previewTheme.id}
           theme={previewTheme}
           store={store}
           data={data}
@@ -146,17 +173,20 @@ function Gallery({ store, setStore }) {
   )
 }
 
-function ThemeCard({ theme, storeName, active, busy, onPreview, onApply }) {
+function ThemeCard({ theme, storeName, active, busy, onPreview, onApply, index = 0 }) {
   return (
     <article
-      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg ${
-        active ? 'border-brand-600 ring-2 ring-brand-100' : 'border-slate-200'
+      style={{ animationDelay: `${index * 80}ms` }}
+      className={`tg-in group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl ${
+        active ? 'border-brand-600 ring-2 ring-brand-500/30' : 'border-slate-200 hover:border-brand-500/40'
       }`}
     >
-      <div className="relative">
-        <ThemeThumb theme={theme} storeName={storeName} />
+      <div className="relative overflow-hidden">
+        <div className="transition-transform duration-500 group-hover:scale-[1.03]">
+          <ThemeThumb theme={theme} storeName={storeName} />
+        </div>
         {active && (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-[10px] font-bold text-white shadow">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg">
             <Check size={11} /> Sedang Digunakan
           </span>
         )}
@@ -168,14 +198,14 @@ function ThemeCard({ theme, storeName, active, busy, onPreview, onApply }) {
           <span className="font-bold text-slate-700">Cocok untuk:</span> {theme.suitedFor}
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" onClick={onPreview} className="btn-secondary justify-center px-2 py-2 text-xs font-semibold">
+          <button type="button" onClick={onPreview} className="btn-secondary !rounded-full justify-center px-2 py-2 text-xs font-semibold">
             <Eye size={14} /> Preview
           </button>
           <button
             type="button"
             onClick={onApply}
             disabled={active || busy}
-            className="btn-primary justify-center px-2 py-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn-primary !rounded-full justify-center px-2 py-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-70"
           >
             {active ? 'Sedang Digunakan' : 'Gunakan Tema'}
           </button>
@@ -223,56 +253,78 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
   const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
 
   const visibleSections = sections.filter((s) => s.is_visible)
-  // Layout efektif: pilihan kustom pengguna (content.layout) menang; selain itu default tema kandidat.
-  const effective = (s) => s.content?.layout || theme.layouts[s.type]
+  // Preview harus sama persis dengan hasil "Gunakan Tema": applyTheme menimpa content.layout SEMUA section
+  // dengan layout tema. Karena itu layout tema yang dipakai di sini. Layout tersimpan di section hanya
+  // menjadi cadangan kalau tema tidak punya layout untuk tipe section tersebut.
+  const themed = (s) => {
+    const layout = theme.layouts[s.type] || s.content?.layout
+    // content.layout ikut ditimpa agar preview benar apa pun prioritas yang dipakai SectionRenderer
+    return { layout, section: { ...s, content: { ...(s.content || {}), layout } } }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-slate-200">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5 shadow-sm sm:px-4">
-        <button type="button" onClick={onClose} className="btn-ghost px-2 text-sm">
+        <button type="button" onClick={onClose} className="btn-ghost !rounded-full px-3 text-sm">
           <ArrowLeft size={18} /> Kembali ke Galeri Tema
         </button>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-slate-900">Preview · {theme.name}</p>
+          <p className="flex items-center gap-2 truncate text-sm font-bold text-slate-900">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-brand-500" /> Preview · {theme.name}
+          </p>
           <p className="hidden text-[11px] text-slate-500 sm:block">Memakai data tokomu sendiri — tidak mengubah tema aktif maupun konten tersimpan.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <div className="flex rounded-lg border border-slate-200 p-0.5">
-            <button type="button" onClick={() => onDevice('desktop')} aria-pressed={device === 'desktop'} className={`rounded p-1.5 ${device === 'desktop' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Monitor size={16} /></button>
-            <button type="button" onClick={() => onDevice('mobile')} aria-pressed={device === 'mobile'} className={`rounded p-1.5 ${device === 'mobile' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`}><Smartphone size={16} /></button>
+          {/* Di HP, preview otomatis mengikuti lebar layar, jadi pilihan perangkat disembunyikan */}
+          <div className="hidden rounded-full border border-slate-500/20 bg-slate-500/10 p-0.5 sm:flex">
+            {DEVICE_BUTTONS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onDevice(id)}
+                aria-pressed={device === id}
+                aria-label={label}
+                title={label}
+                className={`rounded-full p-1.5 transition ${device === id ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                <Icon size={16} />
+              </button>
+            ))}
           </div>
-          <button type="button" onClick={onApply} disabled={applying} className="btn-primary px-4 py-2 text-xs font-bold shadow-sm sm:text-sm">
+          <button type="button" onClick={onApply} disabled={applying} className="btn-primary !rounded-full px-4 py-2 text-xs font-bold shadow-sm sm:text-sm">
             <Crown size={16} /> {applying ? 'Menerapkan…' : 'Gunakan Tema Ini'}
           </button>
         </div>
       </div>
 
-      {/* Konten preview */}
-      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-6">
-        <div
-          className={`mx-auto overflow-hidden rounded-xl bg-white shadow-xl transition-all ${device === 'mobile' ? 'max-w-[390px]' : 'max-w-6xl'}`}
-          style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}
-        >
-          {loading ? (
-            <div className="py-32 text-center text-sm text-slate-400">Memuat pratinjau…</div>
-          ) : (
-            <>
-              <StorefrontHeader store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.header} />
-              {visibleSections.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-                  <Sparkles size={40} className="text-slate-300" />
-                  <p className="text-sm text-slate-400">Website toko ini belum memiliki section. Tambahkan di Web Builder untuk melihat preview lebih lengkap.</p>
-                </div>
-              ) : (
-                visibleSections.map((s) => (
-                  <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={theme.primary} layout={effective(s)} />
-                ))
-              )}
-              <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
-            </>
-          )}
-        </div>
+      {/* Konten preview: dirender di dalam iframe agar breakpoint (sm/md/lg) mengikuti lebar perangkat yang dipilih */}
+      <main className="min-h-0 flex-1 overflow-hidden p-3 sm:p-6">
+        <DevicePreview device={device}>
+          <div data-light-zone className="bg-white" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>
+            {loading ? (
+              <div className="py-32 text-center text-sm text-slate-400">Memuat pratinjau…</div>
+            ) : (
+              <>
+                <StorefrontHeader store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.header} />
+                {visibleSections.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
+                    <Sparkles size={40} className="text-slate-300" />
+                    <p className="text-sm text-slate-400">Website toko ini belum memiliki section. Tambahkan di Web Builder untuk melihat preview lebih lengkap.</p>
+                  </div>
+                ) : (
+                  visibleSections.map((s) => {
+                    const { layout, section } = themed(s)
+                    return (
+                      <SectionRenderer key={s.id} section={section} store={store} products={products} discounts={discounts} primary={theme.primary} layout={layout} />
+                    )
+                  })
+                )}
+                <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
+              </>
+            )}
+          </div>
+        </DevicePreview>
       </main>
     </div>
   )

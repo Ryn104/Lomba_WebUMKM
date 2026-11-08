@@ -7,6 +7,22 @@ import { supabase } from '../lib/supabase'
 import PasswordInput from '../components/ui/PasswordInput'
 import StoreSettings from '../components/store-dashboard/StoreSettings'
 
+/** Judul kartu: ikon dalam tile hijau + judul + deskripsi, gaya yang sama dengan seluruh dashboard */
+function SectionHead({ icon: Icon, title, desc, right, children }) {
+  return (
+    <div className="flex items-start gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
+      {children || (
+        <span className="rounded-xl bg-brand-500/10 p-2.5 text-brand-600"><Icon size={19} /></span>
+      )}
+      <div className="min-w-0 flex-1">
+        <h2 className="font-semibold text-slate-900">{title}</h2>
+        <p className="mt-1 text-sm text-slate-500">{desc}</p>
+      </div>
+      {right}
+    </div>
+  )
+}
+
 export default function AccountSecurityPage({ store, setStore }) {
   const { user, updatePassword, isAdmin } = useAuth()
   const location = useLocation()
@@ -213,18 +229,13 @@ export default function AccountSecurityPage({ store, setStore }) {
     <div className="mx-auto max-w-4xl space-y-6">
       {store && <StoreSettings store={store} setStore={setStore} />}
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Pengaturan Akun</h1>
+        <p className="text-sm font-semibold text-brand-600">Akun</p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Pengaturan Akun</h1>
         <p className="mt-1 text-sm text-slate-600">Atur pengaturan toko, keamanan login, dan periksa status email akun Anda.</p>
       </header>
 
       <section className="card overflow-hidden">
-        <div className="flex items-start gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
-          <span className="rounded-lg bg-brand-50 p-2 text-brand-700"><KeyRound size={19} /></span>
-          <div>
-            <h2 className="font-semibold text-slate-900">Ganti password</h2>
-            <p className="mt-1 text-sm text-slate-500">Gunakan password yang kuat dan tidak dipakai di akun lain.</p>
-          </div>
-        </div>
+        <SectionHead icon={KeyRound} title="Ganti password" desc="Gunakan password yang kuat dan tidak dipakai di akun lain." />
         <form onSubmit={submit} className="max-w-xl space-y-4 p-5 sm:p-6">
           <label className="block">
             <span className="label">Password baru</span>
@@ -236,25 +247,24 @@ export default function AccountSecurityPage({ store, setStore }) {
             <PasswordInput autoComplete="new-password" minLength={8} placeholder="Ulangi kata sandi baru" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required />
             {confirmation && password !== confirmation && <span className="mt-1 block text-xs text-red-700">Password belum cocok.</span>}
           </label>
-          <button type="submit" disabled={saving || password.length < 8 || password !== confirmation} className="btn-primary min-w-40 justify-center">
+          <button type="submit" disabled={saving || password.length < 8 || password !== confirmation} className="btn-primary min-w-40 justify-center !rounded-full">
             {saving ? 'Menyimpan…' : 'Perbarui password'}
           </button>
         </form>
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex items-start gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700" aria-hidden="true">
-            <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" transform="translate(0 4)" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.42 37.9 46.98 31.8 46.98 24.55Z" transform="translate(0 -1)" /><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19Z" transform="translate(1)" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.45-4.88 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" transform="translate(0 -3)" /></svg>
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-semibold text-slate-900">Akun Terhubung</h2>
-            <p className="mt-1 text-sm text-slate-500">Hubungkan akun Google untuk memudahkan login ke UMKM Builder.</p>
-          </div>
-          {!identitiesLoading && (
+        <SectionHead
+          title="Akun Terhubung"
+          desc="Hubungkan akun Google untuk memudahkan login ke UMKM Builder."
+          right={!identitiesLoading && (
             <span className={identitiesError ? 'badge-warning shrink-0' : googleIdentity ? 'badge-success shrink-0' : 'badge-neutral shrink-0'}>{identitiesError ? 'Status tidak tersedia' : googleIdentity ? 'Terhubung' : 'Belum terhubung'}</span>
           )}
-        </div>
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700" aria-hidden="true">
+            <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" transform="translate(0 4)" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.42 37.9 46.98 31.8 46.98 24.55Z" transform="translate(0 -1)" /><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19Z" transform="translate(1)" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.45-4.88 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" transform="translate(0 -3)" /></svg>
+          </span>
+        </SectionHead>
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           {identitiesLoading ? (
             <div className="flex items-center gap-2 text-sm text-slate-500"><span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-700" /> Memeriksa akun terhubung…</div>
@@ -265,39 +275,33 @@ export default function AccountSecurityPage({ store, setStore }) {
             </div>
           )}
           {!identitiesLoading && identitiesError && (
-            <button type="button" onClick={loadIdentities} className="btn-secondary shrink-0 justify-center">Periksa lagi</button>
+            <button type="button" onClick={loadIdentities} className="btn-secondary shrink-0 justify-center !rounded-full">Periksa lagi</button>
           )}
           {!identitiesLoading && !identitiesError && !googleIdentity && (
-            <button type="button" onClick={connectGoogle} disabled={linkingGoogle} className="btn-secondary shrink-0 justify-center border-slate-300 px-4">
+            <button type="button" onClick={connectGoogle} disabled={linkingGoogle} className="btn-secondary shrink-0 justify-center !rounded-full border-slate-300 px-4">
               {linkingGoogle ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-brand-700" /> : <Link2 size={16} />}
               {linkingGoogle ? 'Menghubungkan…' : 'Sambungkan Google'}
             </button>
           )}
           {!identitiesLoading && !identitiesError && canUnlinkGoogle && (
-            <button type="button" onClick={disconnectGoogle} disabled={unlinkingGoogle} className="btn-secondary shrink-0 justify-center border-slate-300 text-red-700 hover:bg-red-50 hover:text-red-800">
+            <button type="button" onClick={disconnectGoogle} disabled={unlinkingGoogle} className="btn-secondary shrink-0 justify-center !rounded-full border-slate-300 text-red-700 hover:bg-red-50 hover:text-red-800">
               {unlinkingGoogle ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-200 border-t-red-700" /> : <ExternalLink size={16} />}
               {unlinkingGoogle ? 'Memutuskan…' : 'Putuskan Sambungan'}
             </button>
           )}
           {!identitiesLoading && !identitiesError && googleIdentity && !canUnlinkGoogle && (
-            <span className="shrink-0 text-xs text-slate-500">Metode login satu-satunya</span>
+            <span className="shrink-0 rounded-full border border-slate-500/20 bg-slate-500/10 px-3 py-1 text-xs font-medium text-slate-500">Metode login satu-satunya</span>
           )}
         </div>
         {!identitiesLoading && !identitiesError && googleIdentity && !canUnlinkGoogle && (
-          <p className="border-t border-slate-100 bg-slate-50 px-5 py-3 text-xs leading-relaxed text-slate-600 sm:px-6">
+          <p className="border-t border-slate-500/20 bg-slate-500/10 px-5 py-3 text-xs leading-relaxed text-slate-600 sm:px-6">
             Google adalah satu-satunya metode login yang terhubung. Sambungkan metode login lain sebelum memutus Google agar akses akun tetap tersedia.
           </p>
         )}
       </section>
 
       <section className="card overflow-hidden">
-        <div className="flex items-start gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
-          <span className="rounded-lg bg-brand-50 p-2 text-brand-700"><MailCheck size={19} /></span>
-          <div>
-            <h2 className="font-semibold text-slate-900">Email akun</h2>
-            <p className="mt-1 text-sm text-slate-500">Email tidak dapat diubah dari halaman ini.</p>
-          </div>
-        </div>
+        <SectionHead icon={MailCheck} title="Email akun" desc="Email tidak dapat diubah dari halaman ini." />
         <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:px-6">
           <div>
             <p className="break-all text-sm font-semibold text-slate-900">{user?.email || '—'}</p>

@@ -1,5 +1,3 @@
-import { Sparkles } from 'lucide-react'
-
 export default function UsageNudge({ currentCount = 9, maxCount = 10, onUpgrade }) {
   const remaining = Math.max(maxCount - currentCount, 0)
   const percent = Math.min(Math.round((currentCount / maxCount) * 100), 100)
@@ -17,9 +15,8 @@ export default function UsageNudge({ currentCount = 9, maxCount = 10, onUpgrade 
           </div>
           <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                currentCount >= maxCount ? 'bg-red-600' : currentCount >= 8 ? 'bg-amber-500' : 'bg-brand-600'
-              }`}
+              className={`h-full rounded-full transition-all duration-300 ${currentCount >= maxCount ? 'bg-red-600' : currentCount >= 8 ? 'bg-amber-500' : 'bg-brand-600'
+                }`}
               style={{ width: `${percent}%` }}
             />
           </div>

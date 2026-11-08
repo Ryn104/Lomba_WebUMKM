@@ -4,7 +4,7 @@ export const PLAN_LABEL = { gratis: 'Gratis', bisnis: 'Bisnis', pro: 'Pro' }
 export const PLAN_COLOR = { gratis: '#94A3B8', bisnis: '#3B82F6', pro: '#10B981' }
 
 // Harga per bulan — satu sumber dengan useSubscription (src/lib/plans.js)
-export { PLAN_PRICE } from '../../lib/plans'
+import { PLAN_PRICE } from '../../lib/plans'
 
 const DAY_MS = 86400000
 

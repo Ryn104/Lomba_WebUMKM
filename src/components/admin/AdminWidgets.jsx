@@ -21,16 +21,19 @@ export function PlanBadge({ plan }) {
 }
 
 export function StateBadge({ state }) {
+  if (state === 'free') return null
   const tone = state === 'paid' ? 'success' : state === 'complimentary' ? 'info' : state === 'expired' ? 'danger' : 'neutral'
   return <Badge tone={tone}>{STATE_LABEL[state] || '-'}</Badge>
 }
 
-export function PageHeader({ title, desc, actions }) {
+/** Judul halaman: eyebrow hijau kecil + judul tebal, gaya yang sama dengan section di landing page */
+export function PageHeader({ eyebrow = 'Admin', title, desc, actions }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-        {desc && <p className="text-sm text-slate-500">{desc}</p>}
+        {eyebrow && <p className="text-sm font-semibold text-brand-600">{eyebrow}</p>}
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
+        {desc && <p className="mt-1 text-sm text-slate-500">{desc}</p>}
       </div>
       {actions}
     </div>
@@ -40,8 +43,11 @@ export function PageHeader({ title, desc, actions }) {
 export function ChartCard({ title, desc, children, className = '' }) {
   return (
     <div className={`card p-5 ${className}`}>
-      <h2 className="font-semibold text-slate-900">{title}</h2>
-      {desc && <p className="text-xs text-slate-500">{desc}</p>}
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-brand-500" />
+        <h2 className="font-semibold text-slate-900">{title}</h2>
+      </div>
+      {desc && <p className="mt-0.5 pl-4 text-xs text-slate-500">{desc}</p>}
       <div className="mt-4 h-64">{children}</div>
     </div>
   )
@@ -79,20 +85,27 @@ export function PlanDonut({ counts }) {
   )
 }
 
-/** Tab pilihan (rentang waktu / filter) */
+/** Tab pilihan berbentuk pill (rentang waktu / filter); tab aktif berwarna hijau brand */
 export function Tabs({ value, onChange, options }) {
   return (
-    <div className="inline-flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${value === o.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-        >
-          {o.label}{o.count !== undefined && <span className="ml-1 text-slate-400">{o.count}</span>}
-        </button>
-      ))}
+    <div className="inline-flex flex-wrap gap-1 rounded-full border border-slate-500/20 bg-slate-500/10 p-1">
+      {options.map((o) => {
+        const active = value === o.value
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            aria-pressed={active}
+            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 ${
+              active ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-500/10 hover:text-slate-800'
+            }`}
+          >
+            {o.label}
+            {o.count !== undefined && <span className={`ml-1 ${active ? 'text-white/70' : 'text-slate-400'}`}>{o.count}</span>}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -105,9 +118,9 @@ export function Pagination({ page, pageCount, total, pageSize, onChange }) {
     <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
       <span>{from}–{to} dari {total}</span>
       <div className="flex items-center gap-1">
-        <button type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Halaman sebelumnya" className="rounded p-1.5 hover:bg-slate-100 disabled:opacity-40"><ChevronLeft size={16} /></button>
-        <span className="px-2 font-medium text-slate-700">{page} / {pageCount}</span>
-        <button type="button" disabled={page >= pageCount} onClick={() => onChange(page + 1)} aria-label="Halaman berikutnya" className="rounded p-1.5 hover:bg-slate-100 disabled:opacity-40"><ChevronRight size={16} /></button>
+        <button type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Halaman sebelumnya" className="rounded-full p-1.5 transition hover:bg-slate-100 disabled:opacity-40"><ChevronLeft size={16} /></button>
+        <span className="rounded-full bg-slate-500/10 px-3 py-1 font-medium text-slate-700">{page} / {pageCount}</span>
+        <button type="button" disabled={page >= pageCount} onClick={() => onChange(page + 1)} aria-label="Halaman berikutnya" className="rounded-full p-1.5 transition hover:bg-slate-100 disabled:opacity-40"><ChevronRight size={16} /></button>
       </div>
     </div>
   )

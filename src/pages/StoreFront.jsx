@@ -21,7 +21,7 @@ export default function StoreFront() {
 
       const [sec, prod, disc] = await Promise.all([
         supabase.from('store_sections').select('*').eq('store_id', store.id).eq('is_visible', true).order('position'),
-        supabase.from('products').select('*').eq('store_id', store.id).eq('is_active', true).order('created_at', { ascending: false }),
+        supabase.from('products').select('*, categories(name, icon)').eq('store_id', store.id).eq('is_active', true).order('created_at', { ascending: false }),
         supabase.from('discounts').select('*').eq('store_id', store.id).eq('is_active', true),
       ])
       if (!alive) return

@@ -1,62 +1,68 @@
-import { useEffect, useState, useCallback } from 'react'
-import toast from 'react-hot-toast'
-import { Plus, Pencil, Trash2, Package, Search, Tags } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
-import { rupiah } from '../../lib/utils'
-import Modal from '../ui/Modal'
-import ImageUpload from '../ui/ImageUpload'
-import MoneyInput from '../ui/MoneyInput'
-import { Field, EmptyState, Spinner } from '../ui/Field'
-import { useSubscription } from '../../hooks/useSubscription'
-import UsageNudge from '../subscription/UsageNudge'
-import LimitReachedModal from '../subscription/LimitReachedModal'
-import UpgradeModal from '../subscription/UpgradeModal'
+import { useEffect, useState, useCallback } from "react";
+import toast from "react-hot-toast";
+import { Plus, Pencil, Trash2, Package, Search, Tags } from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import { rupiah } from "../../lib/utils";
+import Modal from "../ui/Modal";
+import ImageUpload from "../ui/ImageUpload";
+import MoneyInput from "../ui/MoneyInput";
+import { Field, EmptyState, Spinner } from "../ui/Field";
+import { useSubscription } from "../../hooks/useSubscription";
+import UsageNudge from "../subscription/UsageNudge";
+import LimitReachedModal from "../subscription/LimitReachedModal";
+import UpgradeModal from "../subscription/UpgradeModal";
+import CategoryIconPicker from "../ui/CategoryIconPicker";
+import { CATEGORY_ICON_MAP } from "../store-front/categoryIcons";
 
-const empty = { name: '', description: '', price: '', cost_price: '', stock: '', category_id: '', image_url: '', is_active: true }
+const empty = { name: "", description: "", price: "", cost_price: "", stock: "", category_id: "", image_url: "", is_active: true };
 
 export default function Products({ store, setStore }) {
-  const { plan, upgrade } = useSubscription(store, setStore)
-  const isFree = plan === 'gratis'
+  const { plan, upgrade } = useSubscription(store, setStore);
+  const isFree = plan === "gratis";
 
-  const [products, setProducts] = useState(null)
-  const [categories, setCategories] = useState([])
-  const [q, setQ] = useState('')
-  const [form, setForm] = useState(null) // null = tertutup
-  const [catOpen, setCatOpen] = useState(false)
-  const [newCat, setNewCat] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [limitModalOpen, setLimitModalOpen] = useState(false)
-  const [upgradeOpen, setUpgradeOpen] = useState(false)
+  const [products, setProducts] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [q, setQ] = useState("");
+  const [form, setForm] = useState(null);
+  const [catOpen, setCatOpen] = useState(false);
+  const [newCat, setNewCat] = useState("");
+  const [newCatIcon, setNewCatIcon] = useState("utensils");
+  const [editIconId, setEditIconId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const load = useCallback(async () => {
     const [p, c] = await Promise.all([
-      supabase.from('products').select('*, categories(name)').eq('store_id', store.id).order('created_at', { ascending: false }),
-      supabase.from('categories').select('*').eq('store_id', store.id).order('name'),
-    ])
-    setProducts(p.data || [])
-    setCategories(c.data || [])
-  }, [store.id])
+      supabase.from("products").select("*, categories(name, icon)").eq("store_id", store.id).order("created_at", { ascending: false }),
+      supabase.from("categories").select("*").eq("store_id", store.id).order("name"),
+    ]);
+    setProducts(p.data || []);
+    setCategories(c.data || []);
+  }, [store.id]);
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const handleAddClick = () => {
     // Cek batasan 10 produk untuk paket gratis (Mockup 3)
     if (isFree && (products?.length || 0) >= 10) {
-      setLimitModalOpen(true)
-      return
+      setLimitModalOpen(true);
+      return;
     }
-    setForm({ ...empty })
-  }
+    setForm({ ...empty });
+  };
 
   const save = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     // Cek batasan jika insert produk baru
     if (!form.id && isFree && (products?.length || 0) >= 10) {
-      setLimitModalOpen(true)
-      return
+      setLimitModalOpen(true);
+      return;
     }
 
-    setSaving(true)
+    setSaving(true);
     const payload = {
       store_id: store.id,
       name: form.name,
@@ -67,43 +73,49 @@ export default function Products({ store, setStore }) {
       category_id: form.category_id || null,
       image_url: form.image_url || null,
       is_active: form.is_active,
-    }
-    const { error } = form.id
-      ? await supabase.from('products').update(payload).eq('id', form.id)
-      : await supabase.from('products').insert(payload)
-    setSaving(false)
-    if (error) return toast.error(error.message)
-    toast.success(form.id ? 'Produk diperbarui' : 'Produk ditambahkan — otomatis tampil di website')
-    setForm(null)
-    load()
-  }
+    };
+    const { error } = form.id ? await supabase.from("products").update(payload).eq("id", form.id) : await supabase.from("products").insert(payload);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success(form.id ? "Produk diperbarui" : "Produk ditambahkan — otomatis tampil di website");
+    setForm(null);
+    load();
+  };
 
   const remove = async (p) => {
-    if (!confirm(`Hapus produk “${p.name}”?`)) return
-    const { error } = await supabase.from('products').delete().eq('id', p.id)
-    if (error) return toast.error(error.message)
-    toast.success('Produk dihapus')
-    load()
-  }
+    if (!confirm(`Hapus produk “${p.name}”?`)) return;
+    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    if (error) return toast.error(error.message);
+    toast.success("Produk dihapus");
+    load();
+  };
 
   const addCategory = async (e) => {
-    e.preventDefault()
-    if (!newCat.trim()) return
-    const { error } = await supabase.from('categories').insert({ store_id: store.id, name: newCat.trim() })
-    if (error) return toast.error(error.message)
-    setNewCat('')
-    load()
-  }
+    e.preventDefault();
+    if (!newCat.trim()) return;
+    const { error } = await supabase.from("categories").insert({ store_id: store.id, name: newCat.trim(), icon: newCatIcon });
+    if (error) return toast.error(error.message);
+    setNewCat("");
+    setNewCatIcon("utensils");
+    load();
+  };
 
   const removeCategory = async (id) => {
-    await supabase.from('categories').delete().eq('id', id)
-    load()
-  }
+    await supabase.from("categories").delete().eq("id", id);
+    load();
+  };
 
-  if (!products) return <Spinner />
+  const updateCategoryIcon = async (id, icon) => {
+    const { error } = await supabase.from("categories").update({ icon }).eq("id", id);
+    if (error) return toast.error(error.message);
+    setEditIconId(null);
+    load();
+  };
 
-  const list = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()))
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  if (!products) return <Spinner />;
+
+  const list = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   return (
     <div className="space-y-5">
@@ -113,19 +125,17 @@ export default function Products({ store, setStore }) {
           <p className="text-sm text-slate-500">Produk yang aktif otomatis tampil di section Produk website Anda.</p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-secondary" onClick={() => setCatOpen(true)}><Tags size={16} /> Kategori</button>
-          <button className="btn-primary" onClick={handleAddClick}><Plus size={16} /> Tambah Produk</button>
+          <button className="btn-secondary" onClick={() => setCatOpen(true)}>
+            <Tags size={16} /> Kategori
+          </button>
+          <button className="btn-primary" onClick={handleAddClick}>
+            <Plus size={16} /> Tambah Produk
+          </button>
         </div>
       </div>
 
       {/* Usage Nudge untuk Paket Gratis saat mendekati atau mencapai limit 10 produk (Mockup 3) */}
-      {isFree && products.length >= 7 && (
-        <UsageNudge
-          currentCount={products.length}
-          maxCount={10}
-          onUpgrade={() => setUpgradeOpen(true)}
-        />
-      )}
+      {isFree && products.length >= 7 && <UsageNudge currentCount={products.length} maxCount={10} onUpgrade={() => setUpgradeOpen(true)} />}
 
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
@@ -159,17 +169,20 @@ export default function Products({ store, setStore }) {
                         <span className="font-medium text-slate-900">{p.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">{p.categories?.name || '-'}</td>
+                    <td className="px-4 py-3 text-slate-500">{p.categories?.name || "-"}</td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-900">{rupiah(p.price)}</td>
-                    <td className={`px-4 py-3 text-right font-medium ${p.stock <= 5 ? 'font-bold text-red-600' : 'text-slate-800'}`}>{p.stock}</td>
+                    <td className={`px-4 py-3 text-right font-medium ${p.stock <= 5 ? "font-bold text-red-600" : "text-slate-800"}`}>{p.stock}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.is_active ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F1F5F9] text-[#334155]'}`}>
-                        {p.is_active ? 'Aktif' : 'Nonaktif'}
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.is_active ? "bg-[#DCFCE7] text-[#166534]" : "bg-[#F1F5F9] text-[#334155]"}`}>
+                        {p.is_active ? "Aktif" : "Nonaktif"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <button className="rounded p-1.5 hover:bg-slate-100" onClick={() => setForm({ ...p, category_id: p.category_id || '', description: p.description || '', image_url: p.image_url || '' })}>
+                        <button
+                          className="rounded p-1.5 hover:bg-slate-100"
+                          onClick={() => setForm({ ...p, category_id: p.category_id || "", description: p.description || "", image_url: p.image_url || "" })}
+                        >
                           <Pencil size={15} />
                         </button>
                         <button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => remove(p)}>
@@ -186,39 +199,67 @@ export default function Products({ store, setStore }) {
       </div>
 
       {/* Modal produk */}
-      <Modal open={!!form} onClose={() => setForm(null)} title={form?.id ? 'Edit Produk' : 'Tambah Produk'} size="lg">
+      <Modal open={!!form} onClose={() => setForm(null)} title={form?.id ? "Edit Produk" : "Tambah Produk"} size="lg">
         {form && (
           <form id="product-form" onSubmit={save} className="space-y-4">
             <Field label="Foto produk">
               <ImageUpload value={form.image_url} onChange={(v) => setForm({ ...form, image_url: v })} folder={`products/${store.id}`} />
             </Field>
-            <Field label="Nama produk"><input className="input" required value={form.name} onChange={set('name')} placeholder="Contoh: Kopi Susu Gula Aren" /></Field>
-            <Field label="Deskripsi"><textarea rows={3} className="input" value={form.description} onChange={set('description')} placeholder="Masukkan deskripsi produk..." /></Field>
+            <Field label="Nama produk">
+              <input className="input" required value={form.name} onChange={set("name")} placeholder="Contoh: Kopi Susu Gula Aren" />
+            </Field>
+            <Field label="Deskripsi">
+              <textarea rows={3} className="input" value={form.description} onChange={set("description")} placeholder="Masukkan deskripsi produk..." />
+            </Field>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Harga jual (Rp)"><MoneyInput required min="0" maxLength={15} value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" /></Field>
-              <Field label="Harga modal (Rp)"><MoneyInput min="0" maxLength={15} value={form.cost_price} onChange={(value) => setForm({ ...form, cost_price: value })} placeholder="Contoh: 30.000" /></Field>
+              <Field label="Harga jual (Rp)">
+                <MoneyInput required min="0" maxLength={15} value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" />
+              </Field>
+              <Field label="Harga modal (Rp)">
+                <MoneyInput min="0" maxLength={15} value={form.cost_price} onChange={(value) => setForm({ ...form, cost_price: value })} placeholder="Contoh: 30.000" />
+              </Field>
               <Field label="Stok">
-                <input type="tel"
-                  inputMode="numeric" maxLength={9} required className="input" placeholder="Contoh: 100"
-                  value={form.stock} onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, '').slice(0, 9);
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={9}
+                  required
+                  className="input"
+                  placeholder="Contoh: 100"
+                  value={form.stock}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 9);
                     setForm({ ...form, stock: v });
-                  }} />
+                  }}
+                />
               </Field>
             </div>
             <Field label="Kategori">
-              <select className="input" value={form.category_id} onChange={set('category_id')}>
+              <select className="input" value={form.category_id} onChange={set("category_id")}>
                 <option value="">Tanpa kategori</option>
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </Field>
             <label className="flex items-center gap-2 text-sm text-slate-800">
-              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500"
+                checked={form.is_active}
+                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+              />
               Tampilkan di website & kasir
             </label>
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" className="btn-secondary" onClick={() => setForm(null)}>Batal</button>
-              <button className="btn-primary" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan'}</button>
+              <button type="button" className="btn-secondary" onClick={() => setForm(null)}>
+                Batal
+              </button>
+              <button className="btn-primary" disabled={saving}>
+                {saving ? "Menyimpan…" : "Simpan"}
+              </button>
             </div>
           </form>
         )}
@@ -226,29 +267,49 @@ export default function Products({ store, setStore }) {
 
       {/* Modal kategori */}
       <Modal open={catOpen} onClose={() => setCatOpen(false)} title="Kelola Kategori" size="sm">
-        <form onSubmit={addCategory} className="flex gap-2">
+        <form onSubmit={addCategory} className="space-y-3">
           <input className="input" placeholder="Nama kategori baru" value={newCat} onChange={(e) => setNewCat(e.target.value)} />
-          <button className="btn-primary"><Plus size={16} /></button>
+          <p className="label">Pilih ikon</p>
+          <CategoryIconPicker value={newCatIcon} onChange={setNewCatIcon} />
+          <button className="btn-primary w-full justify-center">
+            <Plus size={16} /> Tambah Kategori
+          </button>
         </form>
         <ul className="mt-4 divide-y divide-slate-100">
-          {categories.map((c) => (
-            <li key={c.id} className="flex items-center justify-between py-2 text-sm text-slate-800">
-              {c.name}
-              <button className="text-red-600 hover:text-red-700" onClick={() => removeCategory(c.id)}><Trash2 size={15} /></button>
-            </li>
-          ))}
+          {categories.map((c) => {
+            const Icon = CATEGORY_ICON_MAP[c.icon] || CATEGORY_ICON_MAP.utensils;
+            return (
+              <li key={c.id} className="py-2 text-sm text-slate-800">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 hover:text-brand-700"
+                    onClick={() => setEditIconId(editIconId === c.id ? null : c.id)}
+                    title="Ganti ikon"
+                  >
+                    <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100">
+                      <Icon size={16} />
+                    </span>
+                    {c.name}
+                  </button>
+                  <button className="text-red-600 hover:text-red-700" onClick={() => removeCategory(c.id)}>
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+                {editIconId === c.id && (
+                  <div className="mt-2">
+                    <CategoryIconPicker value={c.icon} onChange={(k) => updateCategoryIcon(c.id, k)} />
+                  </div>
+                )}
+              </li>
+            );
+          })}
           {categories.length === 0 && <li className="py-4 text-center text-sm text-slate-400">Belum ada kategori.</li>}
         </ul>
       </Modal>
 
       {/* Modal Batas 10 Produk Tercapai (Mockup 3) */}
-      <LimitReachedModal
-        open={limitModalOpen}
-        onClose={() => setLimitModalOpen(false)}
-        currentCount={products.length}
-        maxCount={10}
-        onUpgrade={() => setUpgradeOpen(true)}
-      />
+      <LimitReachedModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} currentCount={products.length} maxCount={10} onUpgrade={() => setUpgradeOpen(true)} />
 
       {/* Upgrade Modal */}
       <UpgradeModal
@@ -258,5 +319,5 @@ export default function Products({ store, setStore }) {
         onSuccess={({ targetPlan, period, method, amount }) => upgrade({ targetPlan, period, method, amount })}
       />
     </div>
-  )
+  );
 }

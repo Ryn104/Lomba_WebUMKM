@@ -48,7 +48,7 @@ export default function Overview({ store }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Halo, selamat datang 👋</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Halo, selamat datang</h1>
         <p className="text-sm text-slate-500">Ringkasan toko {store.name} bulan ini.</p>
       </div>
 
