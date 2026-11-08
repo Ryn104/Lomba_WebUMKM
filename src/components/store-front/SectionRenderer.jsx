@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { MapPin, Phone, Mail, Clock, MessageCircle, Quote, ExternalLink, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { MapPin, Phone, Mail, Clock, MessageCircle, Quote, ExternalLink, ChevronLeft, ChevronRight, Star, List, X, Plus, ArrowLeft, LayoutGrid, Utensils, Coffee, Pizza, Cake, Sandwich, Cookie, Salad, Soup, Beef, Fish, Wine } from 'lucide-react'
 import { rupiah, getDiscountedPrice } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import ProductImage from '../ui/ProductImage'
@@ -229,11 +229,84 @@ function AboutSection({ c, style, color, layout }) {
 
 /* ============================ PRODUCTS ============================ */
 
+// Kunci filter untuk produk yang belum punya kategori
+const NO_CATEGORY = '__none'
+
+// Nama kategori sebuah produk. Mendukung kolom teks `category` atau relasi yang sudah di-join
+// (mis. category:categories(name)). Kalau kolom di tabel products-mu bernama lain, ubah di sini.
+const getCategory = (p) => {
+  const raw = p.category ?? p.category_name ?? p.categories ?? p.product_categories
+  const first = Array.isArray(raw) ? raw[0] : raw
+  const name = first && typeof first === 'object' ? first.name : first
+  return typeof name === 'string' && name.trim() ? name.trim() : null
+}
+
+// Ikon tombol kategori di modal menu, dipilih dari kata kunci nama kategori (default: Utensils)
+const CATEGORY_ICONS = [
+  [/\b(minum|minuman|drink|beverage|kopi|coffee|teh|tea|jus|juice|es|latte)\b/, Coffee],
+  [/pizza/, Pizza],
+  [/(dessert|kue|cake|manis|sweet|bakery|roti|pastry)/, Cake],
+  [/(burger|sandwich|kebab)/, Sandwich],
+  [/(snack|camilan|cemilan|gorengan|cookie|keripik)/, Cookie],
+  [/(salad|sayur|vegetarian|vegan)/, Salad],
+  [/(sup|soup|soto|bakso)/, Soup],
+  [/(ayam|daging|beef|steak|grill|bbq|sate)/, Beef],
+  [/(ikan|seafood|fish|udang)/, Fish],
+  [/(wine|bir|beer|cocktail)/, Wine],
+]
+const categoryIcon = (label) => {
+  const s = label.toLowerCase()
+  return CATEGORY_ICONS.find(([re]) => re.test(s))?.[1] || Utensils
+}
+
 function ProductsSection({ c, style, store, products, discounts, color, layout }) {
+  const rootRef = useRef(null)
   const [selected, setSelected] = useState(null)
+  const [activeCat, setActiveCat] = useState('all')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuItem, setMenuItem] = useState(null) // produk yang sedang dilihat di dalam modal menu
+  const [menuCat, setMenuCat] = useState('all')
+
   const wa = (store?.whatsapp || '').replace(/\D/g, '')
   const all = products.filter((p) => p.is_active)
-  const list = all.slice(0, c.limit || 8)
+
+  // Kategori diambil otomatis dari produk; filter tidak muncul kalau belum ada produk berkategori
+  const named = [...new Set(all.map(getCategory).filter(Boolean))]
+  const hasUncategorized = all.some((p) => !getCategory(p))
+  const categories = named.length ? [...named, ...(hasUncategorized ? [NO_CATEGORY] : [])] : []
+  const categoryLabel = (key) => (key === NO_CATEGORY ? 'Lainnya' : key)
+  const inCategory = (p, key) => key === 'all' || (key === NO_CATEGORY ? !getCategory(p) : getCategory(p) === key)
+  const validCat = (key) => (key === 'all' || categories.includes(key) ? key : 'all')
+
+  const currentCat = validCat(activeCat)
+  const list = all.filter((p) => inCategory(p, currentCat)).slice(0, c.limit || 8)
+
+  const currentMenuCat = validCat(menuCat)
+  const menuList = all.filter((p) => inCategory(p, currentMenuCat))
+
+  const closeMenu = () => {
+    setMenuOpen(false)
+    setMenuItem(null)
+  }
+
+  // Modal menu: kunci scroll halaman + tombol Escape (Escape dari detail kembali ke daftar)
+  useEffect(() => {
+    if (!menuOpen) return undefined
+    const doc = rootRef.current?.ownerDocument || document
+    const root = doc.documentElement
+    const prevOverflow = root.style.overflow
+    root.style.overflow = 'hidden'
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return
+      if (menuItem) setMenuItem(null)
+      else setMenuOpen(false)
+    }
+    doc.addEventListener('keydown', onKey)
+    return () => {
+      root.style.overflow = prevOverflow
+      doc.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen, menuItem])
 
   const waLink = (p) =>
     `https://wa.me/${wa}?text=${encodeURIComponent(`Halo, saya ingin memesan *${p.name}* (${rupiah(getDiscountedPrice(p, discounts).final)})`)}`
@@ -245,15 +318,88 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
       </span>
     ) : null
 
-  const Price = ({ p, size = '' }) => {
+  const Price = ({ p, size = 'text-sm sm:text-base', className = '' }) => {
     const d = getDiscountedPrice(p, discounts)
     return (
-      <div className="flex items-baseline gap-2">
+      <div className={`flex flex-wrap items-baseline gap-x-2 ${className}`}>
         <span className={`font-bold ${size}`} style={{ color }}>{rupiah(d.final)}</span>
-        {d.discount && <span className="text-sm text-slate-400 line-through">{rupiah(p.price)}</span>}
+        {d.discount && <span className="text-xs text-slate-400 line-through sm:text-sm">{rupiah(p.price)}</span>}
       </div>
     )
   }
+
+  // Isi detail produk — dipakai di Modal detail (klik produk di section) dan di dalam modal menu
+  const renderDetail = (p) => {
+    const d = getDiscountedPrice(p, discounts)
+    return (
+      <div className="space-y-4 text-slate-800">
+        <ProductImage src={p.image_url} alt={p.name} className="max-h-72 w-full rounded-lg object-cover" />
+        <div>
+          <span className="text-2xl font-bold" style={{ color }}>{rupiah(d.final)}</span>
+          {d.discount && <span className="ml-2 text-slate-400 line-through">{rupiah(p.price)}</span>}
+        </div>
+        <p className="whitespace-pre-line text-sm text-slate-600">{p.description || 'Tidak ada deskripsi.'}</p>
+        <p className="text-sm text-slate-500">Stok: {p.stock}</p>
+        {wa && p.stock > 0 && (
+          <a
+            href={waLink(p)}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700"
+          >
+            <MessageCircle size={18} /> Pesan via WhatsApp
+          </a>
+        )}
+      </div>
+    )
+  }
+
+  // Deretan tombol kategori. Dipanggil sebagai fungsi (bukan komponen) supaya tidak di-mount ulang tiap render.
+  //  - variant 'section': tombol kotak membulat (outline), tampil di bawah subjudul produk
+  //  - variant 'modal'  : tombol pil dengan ikon, tampil di atas daftar menu pada modal
+  const categoryBar = (value, onChange, variant = 'section') => {
+    if (categories.length === 0) return null
+    const modal = variant === 'modal'
+    return (
+      <div
+        role="group"
+        aria-label="Filter kategori"
+        className={`hide-scrollbar flex gap-2 overflow-x-auto py-1 ${modal ? '' : 'sm:flex-wrap sm:justify-center sm:overflow-visible'}`}
+      >
+        {['all', ...categories].map((key) => {
+          const active = value === key
+          const label = key === 'all' ? 'Semua' : categoryLabel(key)
+          const Icon = key === 'all' ? LayoutGrid : categoryIcon(label)
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onChange(key)}
+              aria-pressed={active}
+              className={
+                modal
+                  ? `inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      active ? 'text-white shadow-md' : 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200 hover:ring-slate-300'
+                    }`
+                  : `shrink-0 rounded-lg border px-4 py-1.5 text-sm font-semibold transition ${
+                      active ? 'border-transparent text-white shadow-sm' : 'border-slate-300 bg-white text-slate-800 hover:border-slate-400'
+                    }`
+              }
+              style={active ? { background: color } : undefined}
+            >
+              {modal && <Icon size={16} />}
+              {label}
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const hasFilter = categories.length > 0
+  const bodyTop = hasFilter ? 'mt-6' : 'mt-10'
+  // Layout horizontal tidak punya padding samping di <section>, jadi elemen tambahan perlu px sendiri
+  const pad = layout === 'horizontal' ? 'px-6' : ''
 
   const header = (
     <div className="mx-auto max-w-6xl">
@@ -261,7 +407,12 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
       {c.subtitle && <p className="mt-2 text-center opacity-70">{c.subtitle}</p>}
     </div>
   )
-  const empty = list.length === 0 ? <p className="mt-10 text-center opacity-60">Belum ada produk. Tambahkan produk dari Dashboard Toko.</p> : null
+  const empty =
+    list.length === 0 ? (
+      <p className="mt-10 text-center opacity-60">
+        {all.length === 0 ? 'Belum ada produk. Tambahkan produk dari Dashboard Toko.' : 'Belum ada produk di kategori ini.'}
+      </p>
+    ) : null
 
   let body = null
   if (list.length === 0) {
@@ -270,7 +421,7 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
     const [featured, ...rest] = list
     const fd = getDiscountedPrice(featured, discounts)
     body = (
-      <div className="mx-auto mt-10 grid max-w-6xl gap-6 lg:grid-cols-[3fr_2fr]">
+      <div className={`mx-auto ${bodyTop} grid max-w-6xl gap-6 lg:grid-cols-[3fr_2fr]`}>
         <button
           type="button"
           onClick={() => setSelected(featured)}
@@ -314,7 +465,7 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
     )
   } else if (layout === 'horizontal') {
     body = (
-      <div className="hide-scrollbar mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
+      <div className={`hide-scrollbar ${bodyTop} flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4`}>
         {list.map((p) => {
           const d = getDiscountedPrice(p, discounts)
           return (
@@ -340,34 +491,31 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
     )
   } else if (layout === 'compact') {
     body = (
-      <div className="mx-auto mt-8 max-w-3xl divide-y divide-slate-100 overflow-hidden rounded-2xl bg-white shadow-sm">
-        {list.map((p) => {
-          const d = getDiscountedPrice(p, discounts)
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setSelected(p)}
-              className="flex w-full items-center gap-4 p-3 text-left transition hover:bg-slate-50"
-            >
-              <div className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100`}>
-                <ProductImage src={p.image_url} alt={p.name} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-slate-900">{p.name}</p>
-                <span className="text-xs text-slate-500">{p.stock > 0 ? `Stok ${p.stock}` : 'Stok habis'}</span>
-              </div>
-              <Price p={p} />
-            </button>
-          )
-        })}
+      <div className={`mx-auto ${hasFilter ? 'mt-6' : 'mt-8'} max-w-3xl divide-y divide-slate-100 overflow-hidden rounded-2xl bg-white shadow-sm`}>
+        {list.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => setSelected(p)}
+            className="flex w-full items-center gap-4 p-3 text-left transition hover:bg-slate-50"
+          >
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+              <ProductImage src={p.image_url} alt={p.name} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold text-slate-900">{p.name}</p>
+              <span className="text-xs text-slate-500">{p.stock > 0 ? `Stok ${p.stock}` : 'Stok habis'}</span>
+            </div>
+            <Price p={p} />
+          </button>
+        ))}
       </div>
     )
   } else {
-    // grid (default)
+    // grid (default) — 2 kolom di mobile, jumlah kolom pilihan pengguna berlaku mulai tablet
     const cols = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-2 lg:grid-cols-3', 4: 'sm:grid-cols-2 lg:grid-cols-4' }[c.columns] || 'sm:grid-cols-3'
     body = (
-      <div className={`mx-auto mt-10 grid max-w-6xl grid-cols-1 gap-5 ${cols}`} style={{ width: '100%' }}>
+      <div className={`mx-auto ${bodyTop} grid max-w-6xl grid-cols-2 gap-3 sm:gap-5 ${cols}`} style={{ width: '100%' }}>
         {list.map((p) => {
           const d = getDiscountedPrice(p, discounts)
           return (
@@ -382,8 +530,8 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
                 <DiscountBadge d={d} />
                 {p.stock <= 0 && <span className="absolute inset-0 flex items-center justify-center bg-black/50 font-bold text-white">Habis</span>}
               </div>
-              <div className="p-4">
-                <p className="font-semibold text-slate-900">{p.name}</p>
+              <div className="p-3 sm:p-4">
+                <p className="line-clamp-2 text-sm font-semibold text-slate-900 sm:text-base">{p.name}</p>
                 <Price p={p} />
               </div>
             </button>
@@ -394,36 +542,132 @@ function ProductsSection({ c, style, store, products, discounts, color, layout }
   }
 
   return (
-    <section id="products" style={style} className={layout === 'horizontal' ? 'py-16' : 'px-6 py-16'}>
+    <section ref={rootRef} id="products" style={style} className={layout === 'horizontal' ? 'py-16' : 'px-4 py-16 sm:px-6'}>
       {header}
+
+      {/* Filter kategori: tepat di bawah subjudul produk */}
+      {hasFilter && <div className={`mx-auto mt-6 max-w-6xl ${pad}`}>{categoryBar(currentCat, setActiveCat)}</div>}
+
       {empty}
       {body}
-      <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.name}>
-        {selected && (
-          <div className="space-y-4 text-slate-800">
-            <ProductImage src={selected.image_url} alt={selected.name} className="max-h-72 w-full rounded-lg object-cover" />
-            <div>
-              <span className="text-2xl font-bold" style={{ color }}>
-                {rupiah(getDiscountedPrice(selected, discounts).final)}
-              </span>
-              {getDiscountedPrice(selected, discounts).discount && (
-                <span className="ml-2 text-slate-400 line-through">{rupiah(selected.price)}</span>
+
+      {/* Tombol menampilkan seluruh menu toko */}
+      {all.length > 0 && (
+        <div className={`mx-auto mt-8 flex max-w-6xl justify-center ${pad}`}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-semibold text-white shadow transition hover:opacity-90"
+            style={{ background: color }}
+          >
+            <List size={18} /> Lihat Semua Menu
+            <span className="rounded-full bg-white/25 px-2 py-0.5 text-xs">{all.length}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Modal menu: header + filter kategori (pil dengan ikon) + daftar kartu menu.
+          Dibuat sendiri (bukan <Modal>) agar tampilannya bebas diatur; detail produk dibuka di dalam panel yang sama. */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Semua menu">
+          <div className="absolute inset-0 bg-black/50" onClick={closeMenu} />
+          <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-white text-slate-900 shadow-2xl sm:rounded-3xl">
+            {/* Header */}
+            <div className="flex shrink-0 items-start gap-3 px-4 pt-5 sm:px-6">
+              {menuItem ? (
+                <button
+                  type="button"
+                  onClick={() => setMenuItem(null)}
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                >
+                  <ArrowLeft size={16} /> Kembali ke menu
+                </button>
+              ) : (
+                <>
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl" style={{ background: `${color}26`, color }}>
+                    <Utensils size={26} />
+                  </div>
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <h3 className="text-2xl font-extrabold leading-tight">Menu Kami</h3>
+                    <p className="text-sm text-slate-500">Nikmati berbagai pilihan menu lezat kami</p>
+                  </div>
+                </>
               )}
-            </div>
-            <p className="whitespace-pre-line text-sm text-slate-600">{selected.description || 'Tidak ada deskripsi.'}</p>
-            <p className="text-sm text-slate-500">Stok: {selected.stock}</p>
-            {wa && selected.stock > 0 && (
-              <a
-                href={waLink(selected)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700"
+              <button
+                type="button"
+                onClick={closeMenu}
+                aria-label="Tutup menu"
+                className="ml-auto shrink-0 rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
               >
-                <MessageCircle size={18} /> Pesan via WhatsApp
-              </a>
+                <X size={20} />
+              </button>
+            </div>
+
+            {menuItem ? (
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 pt-4 sm:px-6">
+                <h3 className="mb-3 text-xl font-bold">{menuItem.name}</h3>
+                {renderDetail(menuItem)}
+              </div>
+            ) : (
+              <>
+                {hasFilter && <div className="shrink-0 px-4 pt-4 sm:px-6">{categoryBar(currentMenuCat, setMenuCat, 'modal')}</div>}
+
+                {/* Daftar menu */}
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 pt-4 sm:px-6">
+                  {menuList.length === 0 ? (
+                    <p className="py-10 text-center text-sm text-slate-500">Belum ada menu di kategori ini.</p>
+                  ) : (
+                    <ul className="space-y-3">
+                      {menuList.map((p) => {
+                        const d = getDiscountedPrice(p, discounts)
+                        const soldOut = p.stock <= 0
+                        return (
+                          <li key={p.id}>
+                            <button
+                              type="button"
+                              onClick={() => setMenuItem(p)}
+                              className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:shadow-md sm:gap-4"
+                            >
+                              <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:h-24 sm:w-32">
+                                <ProductImage src={p.image_url} alt={p.name} />
+                                {d.discount && (
+                                  <span className="absolute left-1.5 top-1.5 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                    {d.discount.type === 'percent' ? `-${Number(d.discount.value)}%` : 'Diskon'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 sm:text-base">{p.name}</p>
+                                {p.description && <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 sm:text-sm">{p.description}</p>}
+                                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+                                  <span className="text-base font-extrabold text-slate-900 sm:text-lg">{rupiah(d.final)}</span>
+                                  {d.discount && <span className="text-xs text-slate-400 line-through">{rupiah(p.price)}</span>}
+                                  {soldOut && <span className="text-xs font-semibold text-red-600">Habis</span>}
+                                </div>
+                              </div>
+                              <span
+                                aria-hidden="true"
+                                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white shadow-sm sm:h-11 sm:w-11"
+                                style={{ background: soldOut ? '#cbd5e1' : color }}
+                              >
+                                <Plus size={22} />
+                              </span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </>
             )}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Detail produk saat produk di section diklik */}
+      <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.name}>
+        {selected && renderDetail(selected)}
       </Modal>
     </section>
   )

@@ -3,11 +3,6 @@ import { Check, LayoutGrid, RotateCcw } from 'lucide-react'
 import LayoutThumb from '../store-front/layoutThumbs'
 import { LAYOUT_OPTIONS, layoutLabel } from '../store-front/sectionDefs'
 
-/**
- * Ubah Layout — ganti variant layout satu section tanpa menyentuh kontennya.
- * • Indikator layout aktif ditampilkan di pojok kanan atas.
- * • Thumbnail = pratinjau struktur sebelum diterapkan; Terapkan baru menulis layout.
- */
 export default function LayoutPicker({ type, current, themeLayout, onApply, themeColor = '#0f766e', themeSoft = '#ecfdf5' }) {
   const [picked, setPicked] = useState(current || '')
   const effective = picked || current || themeLayout

@@ -1,17 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-/**
- * Preview responsif untuk Web Builder.
- *
- * Kenapa iframe? Kelas Tailwind seperti sm:/md:/lg: bereaksi terhadap lebar VIEWPORT, bukan lebar
- * elemen. Kalau preview hanya dipersempit dengan max-width, layout tetap terlihat "desktop".
- * Di dalam iframe, viewport-nya adalah lebar iframe itu sendiri, jadi breakpoint ikut berubah.
- *
- * Lebar perangkat bersifat virtual: kalau panel preview lebih sempit dari lebar perangkat,
- * iframe diperkecil dengan transform: scale() sehingga layout tetap akurat.
- */
-
 export const DEVICES = {
   desktop: { label: 'Desktop', width: 1280 },
   tablet: { label: 'Tablet', width: 768 },

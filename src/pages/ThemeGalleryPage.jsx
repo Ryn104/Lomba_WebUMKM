@@ -158,6 +158,7 @@ function Gallery({ store, setStore }) {
       {/* Fullscreen Preview */}
       {previewTheme && (
         <ThemePreview
+          key={previewTheme.id}
           theme={previewTheme}
           store={store}
           data={data}
@@ -252,8 +253,14 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
   const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
 
   const visibleSections = sections.filter((s) => s.is_visible)
-  // Layout efektif: pilihan kustom pengguna (content.layout) menang; selain itu default tema kandidat.
-  const effective = (s) => s.content?.layout || theme.layouts[s.type]
+  // Preview harus sama persis dengan hasil "Gunakan Tema": applyTheme menimpa content.layout SEMUA section
+  // dengan layout tema. Karena itu layout tema yang dipakai di sini. Layout tersimpan di section hanya
+  // menjadi cadangan kalau tema tidak punya layout untuk tipe section tersebut.
+  const themed = (s) => {
+    const layout = theme.layouts[s.type] || s.content?.layout
+    // content.layout ikut ditimpa agar preview benar apa pun prioritas yang dipakai SectionRenderer
+    return { layout, section: { ...s, content: { ...(s.content || {}), layout } } }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-slate-200">
@@ -306,9 +313,12 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
                     <p className="text-sm text-slate-400">Website toko ini belum memiliki section. Tambahkan di Web Builder untuk melihat preview lebih lengkap.</p>
                   </div>
                 ) : (
-                  visibleSections.map((s) => (
-                    <SectionRenderer key={s.id} section={s} store={store} products={products} discounts={discounts} primary={theme.primary} layout={effective(s)} />
-                  ))
+                  visibleSections.map((s) => {
+                    const { layout, section } = themed(s)
+                    return (
+                      <SectionRenderer key={s.id} section={section} store={store} products={products} discounts={discounts} primary={theme.primary} layout={layout} />
+                    )
+                  })
                 )}
                 <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
               </>

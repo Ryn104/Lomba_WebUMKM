@@ -78,7 +78,7 @@ function Builder({ store, setStore }) {
     ; (async () => {
       const [s, p, d] = await Promise.all([
         supabase.from('store_sections').select('*').eq('store_id', store.id).order('position'),
-        supabase.from('products').select('*').eq('store_id', store.id).order('created_at', { ascending: false }),
+        supabase.from('products').select('*, categories(name)').eq('store_id', store.id).order('created_at', { ascending: false }),
         supabase.from('discounts').select('*').eq('store_id', store.id).eq('is_active', true),
       ])
       setSections(s.data || [])
