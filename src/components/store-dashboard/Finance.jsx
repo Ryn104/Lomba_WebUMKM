@@ -27,6 +27,15 @@ import { EXPENSE_CATS, INCOME_CATS } from './finance/financeUtils'
 
 const PIE = ['#047857', '#10b981', '#059669', '#34d399', '#0d9488', '#0284c7', '#f59e0b', '#64748b']
 
+// Format ringkas untuk label di tengah donut: 537.300 -> "Rp 537rb", 5.500.000 -> "Rp 5,5jt"
+const compactRupiah = (n) => {
+  const trim = (v) => v.toFixed(1).replace(/\.0$/, '').replace('.', ',')
+  if (n >= 1e9) return `Rp ${trim(n / 1e9)}M`
+  if (n >= 1e6) return `Rp ${trim(n / 1e6)}jt`
+  if (n >= 1e3) return `Rp ${Math.round(n / 1e3)}rb`
+  return `Rp ${Math.round(n)}`
+}
+
 export default function Finance({ store, setStore }) {
   const { plan, isTrial, upgrade } = useSubscription(store, setStore)
   const isPro = plan === 'pro' || isTrial
@@ -91,7 +100,8 @@ export default function Finance({ store, setStore }) {
     monthRows.filter((r) => r.type === 'expense').forEach((r) => {
       m[r.category] = (m[r.category] || 0) + Number(r.amount)
     })
-    return Object.entries(m).map(([name, value]) => ({ name, value }))
+    // urut dari yang terbesar agar daftar di bawah donut rapi
+    return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value)
   }, [monthRows])
 
   const save = async (e) => {
@@ -196,22 +206,55 @@ export default function Finance({ store, setStore }) {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="card p-5">
-              <h2 className="mb-4 font-semibold text-slate-900">Pengeluaran per kategori</h2>
+
+            {/* Donut + daftar persentase, gaya yang sama dengan kartu "Metode pembayaran" di Ringkasan */}
+            <div className="card flex flex-col p-5">
+              <h2 className="font-semibold text-slate-900">Pengeluaran per kategori</h2>
+              <p className="mt-0.5 text-xs text-slate-500">Bagian dari total pengeluaran bulan ini</p>
+
               {expenseByCat.length === 0 ? (
                 <p className="py-16 text-center text-sm text-slate-400">Belum ada pengeluaran.</p>
               ) : (
-                <div className="h-64">
-                  <ResponsiveContainer>
-                    <PieChart>
-                      <Pie data={expenseByCat} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80}>
-                        {expenseByCat.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
-                      </Pie>
-                      <Tooltip formatter={(v) => rupiah(v)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="relative mt-3 h-44">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={expenseByCat}
+                          dataKey="value"
+                          nameKey="name"
+                          innerRadius="62%"
+                          outerRadius="92%"
+                          paddingAngle={2}
+                          stroke="none"
+                        >
+                          {expenseByCat.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
+                        </Pie>
+                        <Tooltip formatter={(v) => rupiah(v)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {/* Total di tengah donut */}
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                      <p className="text-base font-bold leading-tight text-slate-900">{compactRupiah(expense)}</p>
+                      <p className="text-[11px] text-slate-500">Pengeluaran</p>
+                    </div>
+                  </div>
+
+                  <ul className="hide-scrollbar mt-4 max-h-44 space-y-2.5 overflow-y-auto pr-1">
+                    {expenseByCat.map((c, i) => (
+                      <li key={c.name} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="flex min-w-0 items-center gap-2 text-slate-800">
+                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: PIE[i % PIE.length] }} />
+                          <span className="truncate">{c.name}</span>
+                        </span>
+                        <span className="shrink-0 text-right leading-tight">
+                          <span className="block text-sm font-bold text-slate-900">{expense ? Math.round((c.value / expense) * 100) : 0}%</span>
+                          <span className="block text-[11px] text-slate-500">{rupiah(c.value)}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </div>
           </div>
