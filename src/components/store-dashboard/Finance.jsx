@@ -19,6 +19,7 @@ import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import { Field, StatCard, EmptyState, Spinner } from '../ui/Field'
 import MoneyInput from '../ui/MoneyInput'
+import { useConfirm } from '../ui/ConfirmModal'  
 import { useSubscription } from '../../hooks/useSubscription'
 import LockedFeatureCard from '../subscription/LockedFeatureCard'
 import UpgradeModal from '../subscription/UpgradeModal'
@@ -48,6 +49,7 @@ export default function Finance({ store, setStore }) {
   const [form, setForm] = useState(null)
   const [saving, setSaving] = useState(false)
   const [receiptMap, setReceiptMap] = useState({})
+  const [askConfirm, confirmDialog] = useConfirm()
 
   const load = useCallback(async () => {
     const year = month.slice(0, 4)
@@ -124,7 +126,13 @@ export default function Finance({ store, setStore }) {
   }
 
   const remove = async (r) => {
-    if (!confirm('Hapus catatan ini?')) return
+    const ok = await askConfirm({
+      title: 'Hapus catatan?',
+      message: 'Catatan keuangan ini akan dihapus.',
+      confirmLabel: 'Hapus',
+      tone: 'danger',
+    })
+    if (!ok) return
     await supabase.from('finances').delete().eq('id', r.id)
     toast.success('Catatan dihapus')
     load()
@@ -364,6 +372,7 @@ export default function Finance({ store, setStore }) {
           return activated
         }}
       />
+      {confirmDialog}
     </div>
   )
 }
