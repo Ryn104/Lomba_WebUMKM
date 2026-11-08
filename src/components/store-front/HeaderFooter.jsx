@@ -83,8 +83,9 @@ export function StorefrontHeader({ store, sections = [], primary, layout = 'spli
 export function StorefrontFooter({ store, sections = [], primary, layout = 'minimal', hasWatermark = false }) {
   const year = new Date().getFullYear()
   const wa = (store.whatsapp || '').replace(/\D/g, '')
+  const address = sections.find((s) => s.type === 'contact')?.content?.address
   const contact = [
-    { icon: MapPin, value: store.description, hidden: !store.description },
+    { icon: MapPin, value: address, hidden: !address },
     { icon: Phone, value: store.whatsapp, hidden: !store.whatsapp },
   ].filter((x) => !x.hidden)
 
