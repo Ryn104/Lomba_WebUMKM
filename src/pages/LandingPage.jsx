@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Blocks, LayoutDashboard, ReceiptText, Wallet, Globe, MousePointerClick, ArrowRight, Check, ShoppingBag, TrendingUp, Star } from "lucide-react";
+import { Blocks, LayoutDashboard, ReceiptText, Wallet, Globe, MousePointerClick, ArrowRight, Check, ShoppingBag, TrendingUp, Star, LogIn, UserPlus } from "lucide-react";
 import Logo from "../components/ui/Logo";
 import { useAuth } from "../context/AuthContext";
 import { PLATFORM_DOMAIN } from "../lib/supabase";
@@ -174,14 +174,15 @@ function Navbar({ user, isAdmin }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 px-4 pt-4">
+    <header className="sticky top-0 z-30 px-3 pt-3 sm:px-4 sm:pt-4">
       <div
-        className={`relative mx-auto flex max-w-5xl items-center justify-between rounded-full border border-white/10 bg-slate-900/10 py-2 pl-5 pr-2 backdrop-blur-md transition-all duration-300 ${
-          scrolled ? 'shadow-lg shadow-black/20' : 'shadow-sm'
+        className={`relative mx-auto flex max-w-5xl items-center justify-between gap-2 rounded-full border border-white/10 bg-slate-900/10 py-1.5 pl-3 pr-1.5 backdrop-blur-md transition-all duration-300 sm:py-2 sm:pl-5 sm:pr-2 ${
+          scrolled ? "shadow-lg shadow-black/20" : "shadow-sm"
         }`}
       >
-        {/* div overlay bg-slate-900/80 dihapus */}
-        <Link to="/" className="text-slate-900"><Logo /></Link>
+        <Link to="/" className="shrink-0 text-slate-900">
+          <Logo />
+        </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
           {navLinks.map((l) => (
@@ -191,22 +192,27 @@ function Navbar({ user, isAdmin }) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           {user ? (
             <>
-              <Link to={isAdmin ? "/admin" : "/dashboard"} className="btn-primary !rounded-full">
-                {isAdmin ? "Dashboard Admin" : "Buka Dashboard"}
+              <Link to={isAdmin ? "/admin" : "/dashboard"} className="btn-primary !rounded-full !px-3.5 !py-2 text-sm whitespace-nowrap sm:!px-5">
+                <LayoutDashboard size={16} className="shrink-0" />
+                <span className="sm:hidden">Dashboard</span>
+                <span className="hidden sm:inline">{isAdmin ? "Dashboard Admin" : "Buka Dashboard"}</span>
               </Link>
               <AccountMenu />
             </>
           ) : (
             <>
               <ThemeIconButton />
-              <Link to="/login" className="btn-ghost !rounded-full">
+              <Link to="/login" className="btn-ghost !rounded-full !px-3 !py-2 text-sm whitespace-nowrap sm:!px-4">
+                <LogIn size={16} className="shrink-0" />
                 Masuk
               </Link>
-              <Link to="/register" className="btn-primary !rounded-full">
-                Daftar Gratis
+              <Link to="/register" className="btn-primary !rounded-full !px-3.5 !py-2 text-sm whitespace-nowrap sm:!px-5">
+                <UserPlus size={16} className="shrink-0" />
+                <span className="sm:hidden">Daftar</span>
+                <span className="hidden sm:inline">Daftar Gratis</span>
               </Link>
             </>
           )}
@@ -521,8 +527,7 @@ export default function LandingPage() {
 
           <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row">
             <p>
-              © {new Date().getFullYear()} UMKITA · {' '}
-              <span className="font-semibold text-slate-700">Kata Sandi Bebas</span>, RTRW Studio
+              © {new Date().getFullYear()} UMKITA · <span className="font-semibold text-slate-700">Kata Sandi Bebas</span>, RTRW Studio
             </p>
             <p className="font-mono">{PLATFORM_DOMAIN}</p>
           </div>
