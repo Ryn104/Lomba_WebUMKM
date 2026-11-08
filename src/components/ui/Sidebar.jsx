@@ -72,7 +72,7 @@ const NavLinkItem = ({ to, label, icon: Icon, end, onClick, t, index = 0 }) => (
     onClick={onClick}
     style={{ animationDelay: `${index * 45}ms` }}
     className={({ isActive }) =>
-      `sb-in group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+      `sb-in group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ${
         isActive
           ? "bg-gradient-to-r from-brand-700 to-brand-600 text-white shadow-md shadow-brand-700/25"
           : `${t.item} hover:translate-x-0.5`
@@ -83,7 +83,7 @@ const NavLinkItem = ({ to, label, icon: Icon, end, onClick, t, index = 0 }) => (
       <>
         <Icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
         <span className="min-w-0 flex-1 truncate">{label}</span>
-        {isActive && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/90" />}
+        {isActive && <span className="sb-dot h-1.5 w-1.5 shrink-0 rounded-full bg-white/90" />}
       </>
     )}
   </NavLink>
@@ -95,7 +95,7 @@ const DockItem = ({ to, label, icon: Icon, end, onClick, t }) => (
     {({ isActive }) => (
       <span
         className={`flex h-10 w-12 items-center justify-center rounded-xl transition-all duration-300 group-active:scale-90 ${
-          isActive ? "bg-brand-500/15 text-brand-500" : t.dockIdle
+          isActive ? "sb-dock bg-brand-500/15 text-brand-500" : t.dockIdle
         }`}
       >
         <Icon size={20} />
@@ -129,7 +129,7 @@ const SheetTile = ({ to, label, icon: Icon, end, onClick, t }) => (
     end={end}
     onClick={onClick}
     className={({ isActive }) =>
-      `flex flex-col items-center gap-2 rounded-2xl border p-3 text-center text-xs font-medium transition active:scale-95 ${
+      `sb-tile flex flex-col items-center gap-2 rounded-2xl border p-3 text-center text-xs font-medium transition active:scale-95 ${
         isActive ? "border-transparent bg-gradient-to-br from-brand-700 to-brand-500 text-white shadow-md shadow-brand-700/25" : t.tile
       }`
     }
@@ -153,7 +153,13 @@ const layoutCss = `
 @keyframes sb-pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
 .sb-in { animation: sb-in .45s cubic-bezier(.2,.7,.2,1) backwards; }
 .sb-pop { animation: sb-pop .18s ease-out both; }
-@media (prefers-reduced-motion: reduce) { .sb-in, .sb-pop { animation: none; } }
+@keyframes sb-dot { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+@keyframes sb-dock { from { opacity: 0; transform: translateY(6px) scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes sb-tile { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+.sb-dot { animation: sb-dot .35s cubic-bezier(.34,1.56,.64,1) both; }
+.sb-dock { animation: sb-dock .3s cubic-bezier(.34,1.56,.64,1) both; }
+.sb-tile { animation: sb-tile .32s cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .sb-in, .sb-pop, .sb-dot, .sb-dock, .sb-tile { animation: none; } }
 `;
 
 // Jam digital (WIB) yang berdetak tiap detik. Dipisah jadi komponen sendiri agar
@@ -559,7 +565,7 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
               </div>
             )}
 
-            {headerRight && <div className="ml-auto shrink-0">{headerRight}</div>}
+            {headerRight && <div className="ml-auto min-w-0">{headerRight}</div>}
           </header>
 
           {/* pb-28 memberi ruang agar konten paling bawah tidak tertutup dock (hanya di mobile) */}

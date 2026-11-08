@@ -130,25 +130,25 @@ export default function Finance({ store, setStore }) {
           <h1 className="text-2xl font-bold text-slate-900">Keuangan</h1>
           <p className="text-sm text-slate-500">Catat pemasukan kasir dan pengeluaran operasional toko.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <input
             type="month"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
             className="input w-auto font-medium"
           />
-          <button className="btn-primary" onClick={() => setForm({ type: 'expense', category: EXPENSE_CATS[0], amount: '', date: todayISO(), note: '' })}>
+          <button className="btn-primary flex-1 justify-center sm:flex-none" onClick={() => setForm({ type: 'expense', category: EXPENSE_CATS[0], amount: '', date: todayISO(), note: '' })}>
             <Plus size={16} /> Catat Keuangan
           </button>
         </div>
       </div>
 
       {/* Tabs: Ringkasan vs Laporan Lanjutan (Mockup 3) */}
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="hide-scrollbar -mx-1 flex gap-2 overflow-x-auto border-b border-slate-200 px-1">
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
-          className={`border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === 'overview'
+          className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === 'overview'
             ? 'border-brand-700 text-brand-700'
             : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
@@ -158,7 +158,7 @@ export default function Finance({ store, setStore }) {
         <button
           type="button"
           onClick={() => setActiveTab('advanced')}
-          className={`border-b-2 px-4 py-2 text-sm font-semibold transition flex items-center gap-1.5 ${activeTab === 'advanced'
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === 'advanced'
             ? 'border-brand-700 text-brand-700'
             : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
@@ -172,14 +172,14 @@ export default function Finance({ store, setStore }) {
 
       {activeTab === 'overview' ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard icon={TrendingUp} tone="green" label={`Pemasukan (${month})`} value={rupiah(income)} />
             <StatCard icon={TrendingDown} tone="red" label={`Pengeluaran (${month})`} value={rupiah(expense)} />
             <StatCard icon={Scale} tone="brand" label="Laba bersih bulan ini" value={rupiah(income - expense)} />
             <StatCard icon={Wallet} tone="amber" label="Total transaksi" value={monthRows.length} sub={`${monthRows.filter((r) => r.type === 'income').length} masuk, ${monthRows.filter((r) => r.type === 'expense').length} keluar`} />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
             <div className="card p-5 lg:col-span-2">
               <h2 className="mb-4 font-semibold text-slate-900">Tahun {month.slice(0, 4)}</h2>
               <div className="h-64">
@@ -231,7 +231,8 @@ export default function Finance({ store, setStore }) {
             {shown.length === 0 ? (
               <EmptyState icon={Wallet} title="Belum ada catatan" desc="Catat pengeluaran atau pemasukan lain di bulan ini." />
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-4 py-3">Tanggal</th>
@@ -263,6 +264,7 @@ export default function Finance({ store, setStore }) {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </>

@@ -90,7 +90,7 @@ export default function Discounts({ store }) {
           <EmptyState icon={Percent} title="Belum ada diskon" desc="Buat diskon persen atau nominal untuk semua produk atau produk tertentu." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Nama</th>
@@ -161,7 +161,7 @@ export default function Discounts({ store }) {
                 {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Mulai (opsional)"><input type="date" className="input" value={form.start_date} onChange={set('start_date')} /></Field>
               <Field label="Berakhir (opsional)"><input type="date" className="input" value={form.end_date} onChange={set('end_date')} /></Field>
             </div>

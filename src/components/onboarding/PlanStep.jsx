@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react'
 import PlanCards from '../subscription/PlanCards'
+import SegmentedControl from '../ui/SegmentedControl'
 import { YEARLY_SAVING_LABEL } from '../../lib/plans'
 
 /** Langkah 2 onboarding: pilih paket (Gratis/Bisnis/Pro) atau lewati ke Gratis. */
@@ -14,22 +15,16 @@ export default function PlanStep({ period, setPeriod, onPick, onBack, busy = fal
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
-          {[
+        <SegmentedControl
+          className="w-full sm:w-auto"
+          ariaLabel="Periode penagihan"
+          value={period}
+          onChange={setPeriod}
+          options={[
             { id: 'monthly', label: 'Bulanan' },
             { id: 'yearly', label: 'Tahunan' },
-          ].map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              aria-pressed={period === option.id}
-              onClick={() => setPeriod(option.id)}
-              className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${period === option.id ? 'bg-brand-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+          ]}
+        />
         <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800">
           {YEARLY_SAVING_LABEL} dengan paket tahunan
         </span>

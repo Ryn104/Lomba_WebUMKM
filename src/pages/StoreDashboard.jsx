@@ -61,6 +61,10 @@ const storeCss = `
 .sd-stagger > div > .grid > *:nth-child(3) { animation-delay: 220ms; }
 .sd-stagger > div > .grid > *:nth-child(n+4) { animation-delay: 280ms; }
 
+/* Pindah menu di sidebar: seluruh isi halaman bergeser halus */
+@keyframes sd-page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.sd-page-in { animation: sd-page-in .35s cubic-bezier(.2,.7,.2,1) both; }
+
 /* Kartu, tabel, dan tombol */
 .store-scope .card { transition: box-shadow .25s ease, border-color .25s ease; }
 .store-scope .card:hover { box-shadow: 0 14px 34px -16px rgba(2, 6, 23, .28); }
@@ -82,7 +86,7 @@ const storeCss = `
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sd-drift, .sd-stagger > div > *, .sd-stagger > div > .grid > * { animation: none !important; }
+  .sd-drift, .sd-page-in, .sd-stagger > div > *, .sd-stagger > div > .grid > * { animation: none !important; }
 }
 `
 
@@ -173,7 +177,7 @@ export default function StoreDashboard() {
         specialLinks={specialLinks}
         sidebarWidget={sidebarSubscriptionWidget}
         headerRight={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {/* Badge status paket */}
             <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold sm:gap-1.5 sm:px-3 sm:text-xs ${planBadge}`}>
               {!isFree && <Crown size={12} />}
@@ -210,7 +214,7 @@ export default function StoreDashboard() {
           <div className="sd-drift pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
 
           {/* key = path, jadi tiap pindah menu konten muncul dengan animasi halus */}
-          <div key={location.pathname} className="sd-stagger">
+          <div key={location.pathname} className="sd-stagger sd-page-in">
             <Routes>
               <Route index element={<Overview store={store} />} />
               <Route path="produk" element={<Products store={store} setStore={setStore} />} />

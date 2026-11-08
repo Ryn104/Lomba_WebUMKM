@@ -1,11 +1,40 @@
-import { X, Check, Minus } from 'lucide-react'
+import { Fragment, useState } from 'react'
+import { Check, Minus, Sparkles, X } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
 import { planLimits, planPrice } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
+import SegmentedControl from '../ui/SegmentedControl'
 
 const freeLimits = planLimits('gratis')
+const PLAN_IDS = ['gratis', 'bisnis', 'pro']
+const GRID = { gridTemplateColumns: 'minmax(0,1.25fr) repeat(3, minmax(0, 1fr))' }
+
+/** Nilai sel perbandingan: centang/minus untuk boolean, teks untuk nilai lain. */
+const ValueCell = ({ value, highlight = false }) => {
+  if (typeof value === 'boolean') {
+    return value ? (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#DCFCE7] text-[#166534]">
+        <Check size={13} />
+      </span>
+    ) : (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+        <Minus size={13} />
+      </span>
+    )
+  }
+  return <span className={`text-xs ${highlight ? 'font-semibold text-brand-800' : 'text-slate-800'}`}>{value}</span>
+}
+
+const ctaClass = (plan) =>
+  plan.disabled
+    ? 'cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 text-slate-400'
+    : plan.highlight
+      ? 'btn-primary rounded-lg shadow-sm'
+      : 'btn-secondary rounded-lg'
 
 export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis', onSelectPlan }) {
+  const [mobilePlan, setMobilePlan] = useState(currentPlan === 'gratis' ? 'bisnis' : currentPlan)
+
   if (!open) return null
 
   const plans = [
@@ -15,7 +44,7 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
       price: 'Rp0',
       period: 'selamanya',
       desc: 'Untuk UMKM yang baru mulai go-online',
-      btnText: currentPlan === 'gratis' ? 'Paket Aktif Saat Ini' : 'Pilih Gratis',
+      btnText: currentPlan === 'gratis' ? 'Paket aktif saat ini' : 'Pilih Gratis',
       disabled: currentPlan === 'gratis',
       highlight: false,
     },
@@ -24,9 +53,9 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
       name: 'Paket Bisnis',
       price: rupiah(planPrice('bisnis')),
       period: 'per bulan',
-      badge: 'Paling Populer',
+      badge: 'Paling populer',
       desc: 'Produk tidak terbatas, tanpa watermark, custom domain',
-      btnText: currentPlan === 'bisnis' ? 'Paket Aktif Saat Ini' : 'Pilih Bisnis',
+      btnText: currentPlan === 'bisnis' ? 'Paket aktif saat ini' : 'Pilih Bisnis',
       disabled: currentPlan === 'bisnis',
       highlight: true,
     },
@@ -36,140 +65,162 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'gratis
       price: rupiah(planPrice('pro')),
       period: 'per bulan',
       desc: 'Laporan keuangan lanjutan, ekspor CSV & POS tanpa batas',
-      btnText: currentPlan === 'pro' ? 'Paket Aktif Saat Ini' : 'Pilih Pro',
+      btnText: currentPlan === 'pro' ? 'Paket aktif saat ini' : 'Pilih Pro',
       disabled: currentPlan === 'pro',
       highlight: false,
     },
   ]
 
   const features = [
-    {
-      name: 'Batas produk',
-      values: { gratis: `${freeLimits.maxProducts} produk`, bisnis: 'Tanpa batas', pro: 'Tanpa batas' },
-    },
-    {
-      name: 'Section Web Builder',
-      values: { gratis: `${freeLimits.maxSections} section`, bisnis: 'Semua section', pro: 'Semua section + template premium' },
-    },
-    {
-      name: 'Watermark platform',
-      values: { gratis: 'Ada watermark', bisnis: 'Tanpa watermark', pro: 'Tanpa watermark' },
-    },
-    {
-      name: 'Custom domain sendiri',
-      values: { gratis: false, bisnis: true, pro: true },
-    },
-    {
-      name: 'Penyimpanan media & foto',
-      values: { gratis: '500 MB', bisnis: '5 GB', pro: '20 GB' },
-    },
-    {
-      name: 'Transaksi Kasir POS / bln',
-      values: { gratis: '50 transaksi', bisnis: '500 transaksi', pro: 'Tanpa batas' },
-    },
-    {
-      name: 'Laporan keuangan lanjutan & ekspor',
-      values: { gratis: false, bisnis: false, pro: true },
-    },
-    {
-      name: 'Multi-cabang & staff kasir',
-      values: { gratis: false, bisnis: false, pro: true },
-    },
+    { name: 'Batas produk', values: { gratis: `${freeLimits.maxProducts} produk`, bisnis: 'Tanpa batas', pro: 'Tanpa batas' } },
+    { name: 'Section Web Builder', values: { gratis: `${freeLimits.maxSections} section`, bisnis: 'Semua section', pro: 'Semua section + template premium' } },
+    { name: 'Watermark platform', values: { gratis: 'Ada watermark', bisnis: 'Tanpa watermark', pro: 'Tanpa watermark' } },
+    { name: 'Custom domain sendiri', values: { gratis: false, bisnis: true, pro: true } },
+    { name: 'Penyimpanan media & foto', values: { gratis: '500 MB', bisnis: '5 GB', pro: '20 GB' } },
+    { name: 'Transaksi Kasir POS / bln', values: { gratis: '50 transaksi', bisnis: '500 transaksi', pro: 'Tanpa batas' } },
+    { name: 'Laporan keuangan lanjutan & ekspor', values: { gratis: false, bisnis: false, pro: true } },
+    { name: 'Multi-cabang & staff kasir', values: { gratis: false, bisnis: false, pro: true } },
   ]
+
+  const selected = plans.find((plan) => plan.id === mobilePlan) || plans[1]
+
+  const pick = (id) => {
+    onClose()
+    onSelectPlan?.(id)
+  }
 
   return (
     <ModalLayer open={open} onClose={onClose} label="Bandingkan Paket UMKM Builder" backdropLabel="Tutup perbandingan paket">
-      <div className="relative z-10 flex max-h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">Bandingkan Paket UMKM Builder</h2>
-            <p className="text-xs text-slate-500">Pilih paket yang sesuai dengan kebutuhan toko Anda.</p>
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-slate-900 sm:text-xl">Bandingkan paket UMKM Builder</h2>
+            <p className="mt-0.5 text-xs text-slate-500">Pilih paket yang paling sesuai dengan kebutuhan toko Anda.</p>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup"
+            className="shrink-0 rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          >
             <X size={20} />
           </button>
         </div>
 
-        {/* Content Table */}
-        <div className="hide-scrollbar min-h-0 overflow-x-hidden overflow-y-auto overscroll-contain p-3 sm:p-6">
-          {/* Card Headers */}
-          <div className="grid grid-cols-[minmax(5rem,1.25fr)_repeat(3,minmax(0,1fr))] gap-1 pb-6 border-b border-slate-200 sm:gap-4">
-            <div className="flex flex-col justify-end">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fitur & Manfaat</span>
-            </div>
-            {plans.map((p) => (
-              <div
-                key={p.id}
-                className={`min-w-0 rounded-xl p-2 flex flex-col justify-between sm:p-4 ${
-                  p.highlight
-                    ? 'border-2 border-brand-700 bg-brand-50/40 relative'
-                    : 'border border-slate-200 bg-slate-50/50'
-                }`}
-              >
-                {p.badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-700 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
-                    {p.badge}
+        <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
+          {/* ---------- Mobile: satu paket sekaligus lewat switch ---------- */}
+          <div className="md:hidden">
+            <SegmentedControl
+              className="w-full"
+              ariaLabel="Pilih paket untuk dibandingkan"
+              value={mobilePlan}
+              onChange={setMobilePlan}
+              options={plans.map((plan) => ({ id: plan.id, label: plan.name.replace('Paket ', '') }))}
+            />
+
+            <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="text-base font-extrabold text-slate-900">{selected.name}</h3>
+                  <p className="mt-0.5 text-xs leading-snug text-slate-500">{selected.desc}</p>
+                </div>
+                {selected.badge && (
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
+                    <Sparkles size={9} /> {selected.badge}
                   </span>
                 )}
-                <div>
-                  <h3 className="break-words font-bold text-slate-900 text-xs sm:text-sm">{p.name}</h3>
-                  <div className="mt-2 flex flex-wrap items-baseline gap-1">
-                    <span className="break-all text-base font-extrabold text-slate-900 sm:text-2xl">{p.price}</span>
-                    <span className="break-words text-[10px] text-slate-500 sm:text-[11px]">/{p.period}</span>
-                  </div>
-                  <p className="mt-1 text-[11px] text-slate-500 line-clamp-2">{p.desc}</p>
-                </div>
-                <button
-                  type="button"
-                  disabled={p.disabled}
-                  onClick={() => {
-                    onClose()
-                    onSelectPlan?.(p.id)
-                  }}
-                  className={`mt-4 w-full min-w-0 whitespace-normal break-words px-1 py-2 text-[10px] rounded-lg font-bold transition sm:px-2 sm:text-xs ${
-                    p.disabled
-                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                      : p.highlight
-                      ? 'btn-primary shadow-sm'
-                      : 'btn-secondary'
+              </div>
+
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-2xl font-extrabold tracking-tight text-slate-900">{selected.price}</span>
+                <span className="text-xs text-slate-500">/{selected.period}</span>
+              </div>
+
+              <button
+                type="button"
+                disabled={selected.disabled}
+                onClick={() => pick(selected.id)}
+                className={`mt-3 w-full py-2.5 text-xs font-bold ${ctaClass(selected)}`}
+              >
+                {selected.btnText}
+              </button>
+            </div>
+
+            <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Rincian fitur</p>
+            <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              {features.map((feature, index) => (
+                <div
+                  key={feature.name}
+                  className={`flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 last:border-0 ${
+                    index % 2 ? 'bg-slate-50/60' : ''
                   }`}
                 >
-                  {p.btnText}
-                </button>
-              </div>
-            ))}
+                  <span className="min-w-0 text-xs font-medium text-slate-700">{feature.name}</span>
+                  <span className="flex shrink-0 justify-end text-right">
+                    <ValueCell value={feature.values[mobilePlan]} highlight={mobilePlan === 'bisnis'} />
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Features Comparison Rows */}
-          <div className="divide-y divide-slate-100">
-            {features.map((f, i) => (
-              <div key={i} className="grid grid-cols-[minmax(5rem,1.25fr)_repeat(3,minmax(0,1fr))] items-center gap-1 py-3 text-xs hover:bg-slate-50/60 sm:gap-4 sm:text-sm">
-                <span className="min-w-0 break-words font-medium text-slate-700">{f.name}</span>
-                {['gratis', 'bisnis', 'pro'].map((planKey) => {
-                  const val = f.values[planKey]
-                  return (
-                    <div key={planKey} className="min-w-0 break-words text-center font-medium">
-                      {typeof val === 'boolean' ? (
-                        val ? (
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#DCFCE7] text-[#166534]">
-                            <Check size={13} />
-                          </span>
-                        ) : (
-                          <span className="inline-flex h-5 w-5 items-center justify-center text-slate-300">
-                            <Minus size={14} />
-                          </span>
-                        )
-                      ) : (
-                        <span className={`break-words ${planKey === 'bisnis' ? 'font-semibold text-brand-800' : 'text-slate-800'}`}>
-                          {val}
-                        </span>
-                      )}
-                    </div>
-                  )
-                })}
+          {/* ---------- Desktop: matriks perbandingan ---------- */}
+          <div className="hidden md:block">
+            <div className="grid gap-x-3" style={GRID}>
+              <div className="flex items-end pb-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Fitur &amp; benefit
               </div>
-            ))}
+
+              {plans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`relative mb-3 flex flex-col rounded-2xl border p-3.5 ${
+                    plan.highlight ? 'border-brand-700 bg-brand-50/50 ring-1 ring-brand-700' : 'border-slate-200 bg-slate-50/60'
+                  }`}
+                >
+                  {plan.badge && (
+                    <span className="absolute -top-2.5 left-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
+                      <Sparkles size={9} /> {plan.badge}
+                    </span>
+                  )}
+                  <h3 className="text-sm font-extrabold text-slate-900">{plan.name}</h3>
+                  <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{plan.desc}</p>
+                  <div className="mt-2.5 flex flex-wrap items-baseline gap-1">
+                    <span className="text-lg font-extrabold tracking-tight text-slate-900">{plan.price}</span>
+                    <span className="text-[10px] text-slate-500">/{plan.period}</span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={plan.disabled}
+                    onClick={() => pick(plan.id)}
+                    className={`mt-auto w-full px-2 py-2 text-[11px] font-bold transition ${ctaClass(plan)}`}
+                  >
+                    {plan.btnText}
+                  </button>
+                </div>
+              ))}
+
+              {features.map((feature, index) => (
+                <Fragment key={feature.name}>
+                  <div
+                    className={`flex items-center border-t border-slate-100 py-3 pr-2 text-xs font-medium text-slate-700 ${
+                      index % 2 ? 'bg-slate-50/50' : ''
+                    }`}
+                  >
+                    {feature.name}
+                  </div>
+                  {PLAN_IDS.map((planId) => (
+                    <div
+                      key={planId}
+                      className={`flex items-center justify-center border-t border-slate-100 py-3 ${index % 2 ? 'bg-slate-50/50' : ''}`}
+                    >
+                      <ValueCell value={feature.values[planId]} highlight={planId === 'bisnis'} />
+                    </div>
+                  ))}
+                </Fragment>
+              ))}
+            </div>
           </div>
         </div>
       </div>
