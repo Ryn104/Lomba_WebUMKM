@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ImagePlus, RotateCcw, Save, Trash2 } from 'lucide-react'
+import { CalendarDays, ImagePlus, Mail, RotateCcw, Save, ShieldCheck, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { Spinner } from '../components/ui/Field'
@@ -208,32 +208,37 @@ export default function AccountProfilePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Profil Saya</h1>
+        <p className="text-sm font-semibold text-brand-600">Akun</p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Profil Saya</h1>
         <p className="mt-1 text-sm text-slate-600">Kelola informasi yang digunakan untuk mengenali akun Anda.</p>
       </header>
 
       <form onSubmit={submit} className="space-y-6">
         <section className="card overflow-hidden">
-          <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
-            <h2 className="font-semibold text-slate-900">Informasi profil</h2>
-            <p className="mt-1 text-sm text-slate-500">Informasi ini hanya berlaku untuk akun Anda.</p>
+          {/* Banner hijau dengan pola titik, sama seperti gaya hero landing page */}
+          <div className="relative h-28 overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 sm:h-32">
+            <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.28)_1px,transparent_1px)] [background-size:18px_18px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
+            <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-white/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 left-1/4 h-40 w-64 rounded-full bg-sky-300/20 blur-3xl" />
           </div>
-          <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-[180px_1fr]">
-            <div className="flex flex-col items-center gap-3">
+
+          <div className="grid gap-6 px-5 pb-6 sm:px-6 md:grid-cols-[180px_1fr]">
+            <div className="relative z-10 -mt-14 flex flex-col items-center gap-3 sm:-mt-16">
               <Avatar
                 name={displayName}
                 src={currentAvatar}
                 alt={`Foto profil ${displayName}`}
-                className="h-28 w-28 text-3xl ring-1 ring-slate-200"
+                className="h-28 w-28 text-3xl shadow-lg ring-4 ring-slate-500/25"
                 onError={() => setAvatar((a) => ({ ...a, url: '' }))}
               />
+              <p className="max-w-full truncate text-center text-sm font-semibold text-slate-900">{displayName}</p>
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={updateAvatar} className="sr-only" />
-              <div className="flex gap-2">
-                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || deletingAvatar} className="btn-secondary px-3 py-2 text-xs">
+              <div className="flex flex-wrap justify-center gap-2">
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={saving || deletingAvatar} className="btn-secondary !rounded-full px-3 py-2 text-xs">
                   <ImagePlus size={15} /> Pilih foto
                 </button>
                 {avatar.path && (
-                  <button type="button" onClick={deleteAvatar} disabled={saving || deletingAvatar} className="btn-ghost px-3 py-2 text-xs text-red-600 hover:text-red-700">
+                  <button type="button" onClick={deleteAvatar} disabled={saving || deletingAvatar} className="btn-ghost !rounded-full px-3 py-2 text-xs text-red-600 hover:text-red-700">
                     <Trash2 size={15} /> Hapus Foto
                   </button>
                 )}
@@ -241,7 +246,11 @@ export default function AccountProfilePage() {
               <p className="text-center text-xs text-slate-500">JPEG, PNG, atau WebP · maks. 5 MB</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 md:pt-5">
+              <div>
+                <h2 className="font-semibold text-slate-900">Informasi profil</h2>
+                <p className="mt-1 text-sm text-slate-500">Informasi ini hanya berlaku untuk akun Anda.</p>
+              </div>
               <label className="block">
                 <span className="label">Nama lengkap</span>
                 <input className="input" autoComplete="name" maxLength={80} placeholder="Masukkan nama lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -251,24 +260,38 @@ export default function AccountProfilePage() {
                 <input className="input" type="tel" autoComplete="tel" inputMode="numeric" maxLength={13} placeholder="Contoh: 628123456789" value={form.phone} onChange={(e) => setForm({ ...form, phone: sanitizePhone(e.target.value) })} />
                 <span className={`mt-1 block text-xs ${form.phone && !phoneValid ? 'text-red-600' : 'text-slate-500'}`}>Wajib. Dipakai sebagai kontak WhatsApp toko Anda (10–13 digit, awali dengan kode negara 62).</span>
               </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <span className="label">Email akun</span>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-500/20 bg-slate-500/10 p-3">
+                  <span className="label flex items-center gap-1.5"><Mail size={13} className="text-brand-600" /> Email akun</span>
                   <p className="break-all text-sm font-medium text-slate-800">{user?.email || '—'}</p>
                 </div>
-                <div>
-                  <span className="label">Peran</span>
+                <div className="rounded-xl border border-slate-500/20 bg-slate-500/10 p-3">
+                  <span className="label flex items-center gap-1.5"><ShieldCheck size={13} className="text-brand-600" /> Peran</span>
                   <p><span className="badge-neutral">{roleLabel}</span></p>
                 </div>
               </div>
-              {joinedAt && <p className="text-xs text-slate-500">Bergabung sejak {formatDate(joinedAt)}</p>}
+              {joinedAt && (
+                <p className="inline-flex items-center gap-1.5 rounded-full border border-slate-500/20 bg-slate-500/10 px-3 py-1 text-xs text-slate-500">
+                  <CalendarDays size={13} className="text-brand-600" /> Bergabung sejak {formatDate(joinedAt)}
+                </p>
+              )}
             </div>
           </div>
-          <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6">
-            <button type="button" disabled={!dirty || saving} onClick={cancelChanges} className="btn-secondary"><RotateCcw size={16} /> Batal</button>
-            <button type="submit" disabled={!dirty || saving || !phoneValid} className="btn-primary min-w-40 justify-center">
-              {saving ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Menyimpan…</> : <><Save size={16} /> Simpan Perubahan</>}
-            </button>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-500/20 bg-slate-500/10 px-5 py-4 sm:px-6">
+            <span className={`inline-flex items-center gap-2 text-xs font-medium transition-opacity ${dirty ? 'text-amber-600 opacity-100' : 'opacity-0'}`} aria-live="polite">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+              </span>
+              Ada perubahan yang belum disimpan
+            </span>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button type="button" disabled={!dirty || saving} onClick={cancelChanges} className="btn-secondary !rounded-full"><RotateCcw size={16} /> Batal</button>
+              <button type="submit" disabled={!dirty || saving || !phoneValid} className="btn-primary min-w-40 justify-center !rounded-full">
+                {saving ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Menyimpan…</> : <><Save size={16} /> Simpan Perubahan</>}
+              </button>
+            </div>
           </div>
         </section>
       </form>

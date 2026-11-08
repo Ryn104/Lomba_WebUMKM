@@ -108,7 +108,7 @@ export default function SubscriptionPage({ store, setStore }) {
       )}
 
       {/* Paket Bisnis & Pro berdampingan; perbandingan detail tetap di modal */}
-      <section className="card relative overflow-hidden border-brand-200 bg-gradient-to-br from-brand-50/60 via-white to-white p-5 shadow-sm sm:p-6">
+      <section className="card relative overflow-hidden  shadow-sm sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-slate-900">Pilih paket yang sesuai kebutuhan toko</h2>
