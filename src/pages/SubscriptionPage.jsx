@@ -41,15 +41,15 @@ export default function SubscriptionPage({ store, setStore }) {
   useEffect(() => {
     if (!store?.id) return
     let alive = true
-    ;(async () => {
-      const [p, s] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
-        supabase.from('store_sections').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
-      ])
-      if (!alive) return
-      if (typeof p.count === 'number') setProductsCount(p.count)
-      if (typeof s.count === 'number') setSectionsCount(s.count)
-    })()
+      ; (async () => {
+        const [p, s] = await Promise.all([
+          supabase.from('products').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
+          supabase.from('store_sections').select('id', { count: 'exact', head: true }).eq('store_id', store.id),
+        ])
+        if (!alive) return
+        if (typeof p.count === 'number') setProductsCount(p.count)
+        if (typeof s.count === 'number') setSectionsCount(s.count)
+      })()
     return () => {
       alive = false
     }
@@ -181,13 +181,12 @@ export default function SubscriptionPage({ store, setStore }) {
             {/* Header Status */}
             <div className="flex items-start gap-3.5">
               <span
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
-                  isPaid
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${isPaid
                     ? 'bg-brand-50 text-brand-700 border border-brand-200'
                     : isTrial
                       ? 'bg-blue-50 text-blue-700 border border-blue-200'
                       : 'bg-amber-50 text-amber-700 border border-amber-200'
-                }`}
+                  }`}
               >
                 {isPaid ? <Crown size={24} /> : isTrial ? <Clock size={24} /> : <CreditCard size={24} />}
               </span>
@@ -197,13 +196,12 @@ export default function SubscriptionPage({ store, setStore }) {
                     {isPaid ? `Paket ${activePlanName}` : isTrial ? 'Trial 1 Bulan' : 'Masa Uji Coba Berakhir'}
                   </h2>
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      isPaid
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${isPaid
                         ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                         : isTrial
                           ? 'border border-blue-200 bg-blue-50 text-blue-800'
                           : 'border border-amber-200 bg-amber-50 text-amber-800'
-                    }`}
+                      }`}
                   >
                     {isPaid ? 'Aktif' : isTrial ? 'Masa Uji Coba' : 'Kedaluwarsa'}
                   </span>
