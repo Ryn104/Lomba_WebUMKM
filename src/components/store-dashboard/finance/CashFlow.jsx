@@ -24,7 +24,7 @@ export default function CashFlow({ report }) {
         </span>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
           <p className="text-xs font-medium text-slate-500">Total pemasukan</p>
           <p className="mt-1 text-lg font-extrabold text-brand-700">{rupiah(totalIn)}</p>

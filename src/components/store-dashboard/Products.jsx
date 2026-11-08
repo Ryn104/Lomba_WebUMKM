@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Plus, Pencil, Trash2, Package, Search, Tags } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -31,6 +32,8 @@ export default function Products({ store, setStore }) {
   const [saving, setSaving] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const location = useLocation();
+  const createFromLink = useRef(false);
 
   const load = useCallback(async () => {
     const [p, c] = await Promise.all([
@@ -53,6 +56,13 @@ export default function Products({ store, setStore }) {
     }
     setForm({ ...empty });
   };
+
+  // Tombol "Buat produk baru" di Ringkasan mengarah ke sini dengan state.create
+  useEffect(() => {
+    if (!location.state?.create || createFromLink.current || !products) return;
+    createFromLink.current = true;
+    handleAddClick();
+  }, [location.state, products]);
 
   const save = async (e) => {
     e.preventDefault();
@@ -147,7 +157,7 @@ export default function Products({ store, setStore }) {
           <EmptyState icon={Package} title="Belum ada produk" desc="Klik “Tambah Produk” untuk mulai berjualan." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Produk</th>
@@ -211,7 +221,7 @@ export default function Products({ store, setStore }) {
             <Field label="Deskripsi">
               <textarea rows={3} className="input" value={form.description} onChange={set("description")} placeholder="Masukkan deskripsi produk..." />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Harga jual (Rp)">
                 <MoneyInput required min="0" maxLength={15} value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" />
               </Field>

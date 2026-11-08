@@ -8,6 +8,7 @@ import UpgradeModal from '../components/subscription/UpgradeModal'
 import ComparePlansModal from '../components/subscription/ComparePlansModal'
 import InvoiceReceiptModal from '../components/subscription/InvoiceReceiptModal'
 import PlanCards from '../components/subscription/PlanCards'
+import SegmentedControl from '../components/ui/SegmentedControl'
 
 export default function SubscriptionPage({ store, setStore }) {
   const {
@@ -108,41 +109,35 @@ export default function SubscriptionPage({ store, setStore }) {
       )}
 
       {/* Paket Bisnis & Pro berdampingan; perbandingan detail tetap di modal */}
-      <section className="card relative overflow-hidden  shadow-sm sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <section className="card relative overflow-hidden p-4 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Pilih paket yang sesuai kebutuhan toko</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <h2 className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">Pilih paket yang sesuai kebutuhan toko</h2>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
               Bisnis untuk tampil profesional tanpa batas, Pro untuk laporan keuangan lengkap.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setCompareOpen(true)}
-            className="btn-secondary px-4 py-2 text-xs font-semibold"
+            className="btn-secondary w-full justify-center px-4 py-2 text-xs font-semibold sm:w-auto"
           >
             Bandingkan paket
           </button>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
-            {[
+        <div className="mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:items-center">
+          <SegmentedControl
+            className="w-full sm:w-auto"
+            ariaLabel="Periode penagihan"
+            value={billingPeriod}
+            onChange={setBillingPeriod}
+            options={[
               { id: 'monthly', label: 'Bulanan' },
               { id: 'yearly', label: 'Tahunan' },
-            ].map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                aria-pressed={billingPeriod === option.id}
-                onClick={() => setBillingPeriod(option.id)}
-                className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${billingPeriod === option.id ? 'bg-brand-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800">
+            ]}
+          />
+          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-center text-[11px] font-bold text-emerald-800">
             {YEARLY_SAVING_LABEL} dengan paket tahunan
           </span>
         </div>

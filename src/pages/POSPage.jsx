@@ -24,6 +24,38 @@ const METHODS = [
   { id: 'transfer', label: 'Transfer', icon: Landmark },
 ]
 
+// Input jumlah langsung di keranjang: bisa diketik, bukan hanya menekan tombol tambah berulang.
+function QtyInput({ qty, max, onChange, label }) {
+  const [draft, setDraft] = useState(String(qty))
+
+  useEffect(() => { setDraft(String(qty)) }, [qty])
+
+  const commit = () => {
+    const parsed = Number(String(draft).replace(/\D/g, ''))
+    const limit = Math.max(Number(max) || 1, 1)
+    const next = Math.min(Math.max(parsed || 1, 1), limit)
+    setDraft(String(next))
+    if (next !== qty) onChange(next)
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      aria-label={label}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value.replace(/\D/g, '').slice(0, 4))}
+      onFocus={(e) => e.target.select()}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() }
+      }}
+      className="w-12 rounded-lg border border-slate-200 bg-white py-1 text-center text-sm font-semibold text-slate-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+    />
+  )
+}
+
 // Bottom sheet mobile: terpasang dulu (mounted), lalu digeser naik (shown). Saat ditutup, geser turun baru dilepas.
 function useSheet() {
   const [mounted, setMounted] = useState(false)
@@ -116,6 +148,16 @@ function POS({ store }) {
         .filter((i) => i.qty > 0)
     )
 
+  // Isi jumlah langsung dari input keranjang (selalu dibatasi stok produk)
+  const setQtyValue = (id, value) =>
+    setCart((c) =>
+      c.map((i) => {
+        if (i.product.id !== id) return i
+        const limit = Math.max(Number(i.product.stock) || 1, 1)
+        return { ...i, qty: Math.min(Math.max(Math.round(value) || 1, 1), limit) }
+      })
+    )
+
   const lines = useMemo(
     () =>
       cart.map((i) => {
@@ -195,7 +237,12 @@ function POS({ store }) {
                 >
                   {l.qty === 1 ? <Trash2 size={14} className="text-red-600" /> : <Minus size={14} />}
                 </button>
-                <span className="w-8 text-center text-sm font-semibold text-slate-800">{l.qty}</span>
+                <QtyInput
+                  qty={l.qty}
+                  max={l.product.stock}
+                  label={`Jumlah ${l.product.name}`}
+                  onChange={(next) => setQtyValue(l.product.id, next)}
+                />
                 <button
                   type="button"
                   aria-label="Tambah"

@@ -44,7 +44,7 @@ function useCountUp(target, duration = 800) {
   return val
 }
 
-export function StatCard({ icon: Icon, label, value, sub, tone = 'brand' }) {
+export function StatCard({ icon: Icon, label, value, sub, tone = 'brand', subTone = 'text-slate-500' }) {
   const tones = {
     brand: 'bg-brand-50 text-brand-700',
     green: 'bg-[#DCFCE7] text-[#166534]',
@@ -56,20 +56,20 @@ export function StatCard({ icon: Icon, label, value, sub, tone = 'brand' }) {
   const shown = useCountUp(value)
 
   return (
-    <div className="card group relative overflow-hidden p-5 transition-colors duration-200 hover:border-brand-500/40">
+    <div className="card group relative overflow-hidden p-4 transition-colors duration-200 hover:border-brand-500/40 sm:p-5">
       {/* Cahaya hijau halus di pojok, menyala sedikit saat kartu disorot */}
       <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-brand-500/10 blur-2xl transition-colors duration-300 group-hover:bg-brand-500/25" />
 
       <div className="relative flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <p className="text-xs font-medium text-slate-500 sm:text-sm">{label}</p>
         {Icon && (
-          <span className={`shrink-0 rounded-xl p-2.5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${tones[tone] || tones.brand}`}>
-            <Icon size={18} />
+          <span className={`shrink-0 rounded-xl p-2 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 sm:p-2.5 ${tones[tone] || tones.brand}`}>
+            <Icon size={16} className="sm:h-[18px] sm:w-[18px]" />
           </span>
         )}
       </div>
-      <p className="relative mt-3 text-2xl font-bold tracking-tight text-slate-900 tabular-nums sm:text-[1.7rem]">{shown}</p>
-      {sub && <p className="relative mt-1 text-xs text-slate-500">{sub}</p>}
+      <p className="relative mt-2 break-words text-lg font-bold tracking-tight text-slate-900 tabular-nums sm:mt-3 sm:text-[1.7rem]">{shown}</p>
+      {sub && <p className={`relative mt-1 break-words text-[11px] leading-snug ${subTone} sm:text-xs`}>{sub}</p>}
     </div>
   )
 }
