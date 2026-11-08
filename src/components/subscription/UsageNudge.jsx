@@ -1,4 +1,4 @@
-export default function UsageNudge({ currentCount = 9, maxCount = 10, onUpgrade }) {
+export default function UsageNudge({ currentCount = 40, maxCount = 50, onUpgrade }) {
   const remaining = Math.max(maxCount - currentCount, 0)
   const percent = Math.min(Math.round((currentCount / maxCount) * 100), 100)
 
@@ -15,8 +15,9 @@ export default function UsageNudge({ currentCount = 9, maxCount = 10, onUpgrade 
           </div>
           <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${currentCount >= maxCount ? 'bg-red-600' : currentCount >= 8 ? 'bg-amber-500' : 'bg-brand-600'
-                }`}
+              className={`h-full rounded-full transition-all duration-300 ${
+                currentCount >= maxCount ? 'bg-red-600' : currentCount >= maxCount * 0.8 ? 'bg-amber-500' : 'bg-brand-600'
+              }`}
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -25,9 +26,9 @@ export default function UsageNudge({ currentCount = 9, maxCount = 10, onUpgrade 
         {/* Text */}
         <div className="min-w-0">
           <p className="text-xs font-bold text-slate-900">
-            {remaining === 0 ? 'Batas produk paket Gratis telah tercapai' : `Sisa ${remaining} slot produk di paket Gratis`}
+            {remaining === 0 ? `Batas ${maxCount} produk telah tercapai` : `Sisa ${remaining} slot produk di paket Anda`}
           </p>
-          <p className="text-[11px] text-slate-500 truncate">Upgrade ke Bisnis untuk produk tidak terbatas.</p>
+          <p className="text-[11px] text-slate-500 truncate">Upgrade ke Bisnis atau Pro untuk produk tanpa batas.</p>
         </div>
       </div>
 

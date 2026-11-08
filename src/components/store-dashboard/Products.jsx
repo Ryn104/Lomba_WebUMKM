@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Plus, Pencil, Trash2, Package, Search, Tags } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -17,8 +18,9 @@ import { CATEGORY_ICON_MAP } from "../store-front/categoryIcons";
 const empty = { name: "", description: "", price: "", cost_price: "", stock: "", category_id: "", image_url: "", is_active: true };
 
 export default function Products({ store, setStore }) {
-  const { plan, upgrade } = useSubscription(store, setStore);
-  const isFree = plan === "gratis";
+  const { plan, isTrial, isExpired, isPaid, limits, upgrade } = useSubscription(store, setStore);
+  const maxProducts = limits?.maxProducts ?? Infinity;
+  const hasLimit = Number.isFinite(maxProducts);
 
   const [products, setProducts] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -31,6 +33,8 @@ export default function Products({ store, setStore }) {
   const [saving, setSaving] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const location = useLocation();
+  const createFromLink = useRef(false);
 
   const load = useCallback(async () => {
     const [p, c] = await Promise.all([
@@ -47,17 +51,24 @@ export default function Products({ store, setStore }) {
 
   const handleAddClick = () => {
     // Cek batasan 10 produk untuk paket gratis (Mockup 3)
-    if (isFree && (products?.length || 0) >= 10) {
+    if (hasLimit && (products?.length || 0) >= maxProducts) {
       setLimitModalOpen(true);
       return;
     }
     setForm({ ...empty });
   };
 
+  // Tombol "Buat produk baru" di Ringkasan mengarah ke sini dengan state.create
+  useEffect(() => {
+    if (!location.state?.create || createFromLink.current || !products) return;
+    createFromLink.current = true;
+    handleAddClick();
+  }, [location.state, products]);
+
   const save = async (e) => {
     e.preventDefault();
     // Cek batasan jika insert produk baru
-    if (!form.id && isFree && (products?.length || 0) >= 10) {
+    if (!form.id && hasLimit && (products?.length || 0) >= maxProducts) {
       setLimitModalOpen(true);
       return;
     }
@@ -135,7 +146,7 @@ export default function Products({ store, setStore }) {
       </div>
 
       {/* Usage Nudge untuk Paket Gratis saat mendekati atau mencapai limit 10 produk (Mockup 3) */}
-      {isFree && products.length >= 7 && <UsageNudge currentCount={products.length} maxCount={10} onUpgrade={() => setUpgradeOpen(true)} />}
+      {hasLimit && products.length >= Math.floor(maxProducts * 0.8) && <UsageNudge currentCount={products.length} maxCount={maxProducts} onUpgrade={() => setUpgradeOpen(true)} />}
 
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
@@ -147,7 +158,7 @@ export default function Products({ store, setStore }) {
           <EmptyState icon={Package} title="Belum ada produk" desc="Klik “Tambah Produk” untuk mulai berjualan." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Produk</th>
@@ -211,7 +222,7 @@ export default function Products({ store, setStore }) {
             <Field label="Deskripsi">
               <textarea rows={3} className="input" value={form.description} onChange={set("description")} placeholder="Masukkan deskripsi produk..." />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Harga jual (Rp)">
                 <MoneyInput required min="0" maxLength={15} value={form.price} onChange={(value) => setForm({ ...form, price: value })} placeholder="Contoh: 50.000" />
               </Field>
@@ -309,7 +320,7 @@ export default function Products({ store, setStore }) {
       </Modal>
 
       {/* Modal Batas 10 Produk Tercapai (Mockup 3) */}
-      <LimitReachedModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} currentCount={products.length} maxCount={10} onUpgrade={() => setUpgradeOpen(true)} />
+      <LimitReachedModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} currentCount={products?.length || 0} maxCount={maxProducts} onUpgrade={() => setUpgradeOpen(true)} />
 
       {/* Upgrade Modal */}
       <UpgradeModal

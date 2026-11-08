@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Check, CreditCard, Landmark, QrCode, Smartphone, X } from 'lucide-react'
+import { Check, CreditCard, Landmark, QrCode, Smartphone, X, AlertCircle } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
-import { planOf, planPrice } from '../../lib/plans'
+import { planOf, planPrice, isLowerPlan } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
 
 const paymentMethods = [
@@ -10,7 +10,14 @@ const paymentMethods = [
   { id: 'ewallet', label: 'E-wallet', detail: 'GoPay, OVO, DANA, atau ShopeePay', icon: Smartphone },
 ]
 
-export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', currentPeriod = 'monthly', onSuccess }) {
+export default function UpgradeModal({
+  open,
+  onClose,
+  targetPlan = 'bisnis',
+  currentPlan = '',
+  currentPeriod = 'monthly',
+  onSuccess,
+}) {
   const [period, setPeriod] = useState(currentPeriod === 'yearly' ? 'yearly' : 'monthly')
   const [method, setMethod] = useState('qris')
   const [processing, setProcessing] = useState(false)
@@ -21,6 +28,7 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
   const yearlyMonthlyPrice = planPrice(targetPlan, 'yearly')
   const total = period === 'yearly' ? yearlyMonthlyPrice * 12 : monthlyPrice
   const selectedMethod = paymentMethods.find((item) => item.id === method)
+  const isLower = isLowerPlan(currentPlan, targetPlan)
 
   useEffect(() => {
     if (open) {
@@ -34,7 +42,7 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
   if (!open) return null
 
   const confirmSubscription = async () => {
-    if (processing) return
+    if (processing || isLower) return
     setProcessing(true)
     try {
       const activated = await onSuccess?.({
@@ -66,6 +74,18 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
 
         {step === 'checkout' ? (
         <div className="hide-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto overflow-x-hidden overscroll-contain p-6">
+          {isLower && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">
+              <AlertCircle size={18} className="shrink-0 text-amber-600" />
+              <div>
+                <p className="font-bold">Paket tidak dapat dibeli</p>
+                <p className="mt-0.5">
+                  Anda saat ini telah memiliki paket <b>{planOf(currentPlan).name}</b> yang memiliki tingkatan lebih tinggi dari {planName}.
+                </p>
+              </div>
+            </div>
+          )}
+
           <section>
             <h3 className="text-sm font-semibold text-slate-800">Periode langganan</h3>
             <div className="mt-3 grid grid-cols-2 gap-3">
@@ -76,9 +96,14 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
                 <button
                   key={option.id}
                   type="button"
+                  disabled={isLower}
                   aria-pressed={period === option.id}
                   onClick={() => setPeriod(option.id)}
-                  className={`relative rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-700 ${period === option.id ? 'border-brand-700 bg-brand-50/50 ring-1 ring-brand-700' : 'border-slate-200 hover:border-slate-300'}`}
+                  className={`relative rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-700 ${
+                    period === option.id
+                      ? 'border-brand-700 bg-brand-50/50 ring-1 ring-brand-700'
+                      : 'border-slate-200 hover:border-slate-300'
+                  } ${isLower ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {option.badge && <span className="absolute -top-2.5 right-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">{option.badge}</span>}
                   <span className="block text-sm font-semibold text-slate-900">{option.name}</span>
@@ -93,12 +118,27 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
             <h3 className="text-sm font-semibold text-slate-800">Metode pembayaran</h3>
             <div className="mt-3 space-y-2">
               {paymentMethods.map(({ id, label, detail, icon: Icon }) => (
-                <label key={id} className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition ${method === id ? 'border-brand-700 bg-brand-50/40 ring-1 ring-brand-700' : 'border-slate-200 hover:border-slate-300'}`}>
+                <label
+                  key={id}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition ${
+                    method === id
+                      ? 'border-brand-700 bg-brand-50/40 ring-1 ring-brand-700'
+                      : 'border-slate-200 hover:border-slate-300'
+                  } ${isLower ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                >
                   <span className="flex items-center gap-3">
                     <span className="rounded-lg bg-slate-100 p-2 text-slate-700"><Icon size={18} /></span>
                     <span><span className="block text-sm font-semibold text-slate-900">{label}</span><span className="mt-0.5 block text-xs text-slate-500">{detail}</span></span>
                   </span>
-                  <input type="radio" name="subscription-payment-method" value={id} checked={method === id} onChange={() => setMethod(id)} className="h-4 w-4 accent-emerald-700" />
+                  <input
+                    type="radio"
+                    name="subscription-payment-method"
+                    value={id}
+                    disabled={isLower}
+                    checked={method === id}
+                    onChange={() => setMethod(id)}
+                    className="h-4 w-4 accent-emerald-700"
+                  />
                 </label>
               ))}
             </div>
@@ -115,10 +155,23 @@ export default function UpgradeModal({ open, onClose, targetPlan = 'bisnis', cur
             </div>
           </section>
 
-          <button type="button" onClick={confirmSubscription} disabled={processing} className="btn-primary flex w-full justify-center py-3 font-bold shadow-sm disabled:cursor-wait disabled:opacity-70">
-            {processing ? 'Memproses…' : <><CreditCard size={17} /> Konfirmasi pembayaran</>}
+          <button
+            type="button"
+            onClick={confirmSubscription}
+            disabled={processing || isLower}
+            className={`flex w-full justify-center py-3 font-bold shadow-sm ${
+              isLower
+                ? 'cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 text-slate-400'
+                : 'btn-primary disabled:cursor-wait disabled:opacity-70'
+            }`}
+          >
+            {processing ? 'Memproses…' : isLower ? 'Tidak dapat membeli paket di bawahnya' : <><CreditCard size={17} /> Konfirmasi pembayaran</>}
           </button>
-          <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500"><Check size={14} className="text-emerald-700" /> Akses paket dimulai setelah konfirmasi.</p>
+          {!isLower && (
+            <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+              <Check size={14} className="text-emerald-700" /> Akses paket dimulai setelah konfirmasi.
+            </p>
+          )}
         </div>
         ) : (
           <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain p-8 text-center">

@@ -59,7 +59,7 @@ export default function SalesTrend({ report }) {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Metric
           icon={ReceiptText}
           label="Rata-rata nilai transaksi"

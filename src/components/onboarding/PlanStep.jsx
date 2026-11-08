@@ -1,42 +1,37 @@
-import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react'
 import PlanCards from '../subscription/PlanCards'
+import SegmentedControl from '../ui/SegmentedControl'
 import { YEARLY_SAVING_LABEL } from '../../lib/plans'
 
-/** Langkah 2 onboarding: pilih paket (Gratis/Bisnis/Pro) atau lewati ke Gratis. */
+/** Langkah 2 onboarding: pilih paket (Basic/Bisnis/Pro) atau mulai dengan Trial 1 Bulan. */
 export default function PlanStep({ period, setPeriod, onPick, onBack, busy = false }) {
   return (
     <div className="space-y-5">
       <div>
         <h2 className="text-lg font-bold text-slate-900">Pilih paket langganan</h2>
         <p className="text-sm text-slate-500">
-          Mulai dengan Gratis, atau aktifkan Bisnis/Pro sekarang. Paket bisa diubah kapan saja dari halaman Langganan.
+          Semua pendaftaran baru mendapatkan <b>Trial 1 Bulan Gratis</b> dengan fitur Pro. Anda juga bisa langsung mengaktifkan paket Basic (10k), Bisnis (30k), atau Pro (50k).
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
-          {[
+        <SegmentedControl
+          className="w-full sm:w-auto"
+          ariaLabel="Periode penagihan"
+          value={period}
+          onChange={setPeriod}
+          options={[
             { id: 'monthly', label: 'Bulanan' },
             { id: 'yearly', label: 'Tahunan' },
-          ].map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              aria-pressed={period === option.id}
-              onClick={() => setPeriod(option.id)}
-              className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${period === option.id ? 'bg-brand-700 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+          ]}
+        />
         <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800">
           {YEARLY_SAVING_LABEL} dengan paket tahunan
         </span>
       </div>
 
       <PlanCards
-        planIds={['gratis', 'bisnis', 'pro']}
+        planIds={['basic', 'bisnis', 'pro']}
         period={period}
         activePlan=""
         onSelect={onPick}
@@ -50,17 +45,17 @@ export default function PlanStep({ period, setPeriod, onPick, onBack, busy = fal
         </button>
         <button
           type="button"
-          onClick={() => onPick('gratis')}
+          onClick={() => onPick('trial')}
           disabled={busy}
-          className="btn-ghost px-3 py-2 text-sm font-semibold text-slate-600 disabled:opacity-60"
+          className="btn-primary px-4 py-2 text-sm font-bold shadow-sm disabled:opacity-60"
         >
-          <SkipForward size={16} /> Lewati, pakai Gratis
+          <Sparkles size={16} /> Mulai Trial 1 Bulan Gratis
         </button>
       </div>
 
       <p className="flex items-start gap-1.5 text-xs text-slate-500">
         <ArrowRight size={14} className="mt-0.5 shrink-0" />
-        Langkah ini bisa dilewati. Toko Anda tetap aktif dengan paket Gratis dan bisa di-upgrade nanti.
+        Nikmati masa uji coba 1 bulan gratis tanpa kartu kredit. Paket langganan dapat diubah atau diaktifkan kapan saja dari dashboard.
       </p>
     </div>
   )

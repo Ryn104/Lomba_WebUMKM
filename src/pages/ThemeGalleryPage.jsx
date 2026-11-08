@@ -248,9 +248,14 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
   const { sections, products, discounts, loading } = data
 
   const sub = store.theme?.subscription || {}
+  const now = Date.now()
   const hasActiveSubscription = ['active', 'complimentary'].includes(sub.billingMode)
-    && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > Date.now())
-  const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
+    && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > now)
+  const trialEndMs = sub.trialEndsAt
+    ? new Date(sub.trialEndsAt).getTime()
+    : (store.created_at ? new Date(store.created_at).getTime() + 30 * 24 * 60 * 60 * 1000 : 0)
+  const isTrialActive = !hasActiveSubscription && trialEndMs > now
+  const hasWatermark = !hasActiveSubscription && !isTrialActive
 
   const visibleSections = sections.filter((s) => s.is_visible)
   // Preview harus sama persis dengan hasil "Gunakan Tema": applyTheme menimpa content.layout SEMUA section

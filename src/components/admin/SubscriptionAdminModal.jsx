@@ -3,16 +3,15 @@ import { X } from 'lucide-react'
 import ModalLayer from '../ui/ModalLayer'
 
 const PLANS = [
-  { value: 'gratis', label: 'Gratis' },
+  { value: 'basic', label: 'Basic' },
   { value: 'bisnis', label: 'Bisnis' },
   { value: 'pro', label: 'Pro' },
 ]
 
 export default function SubscriptionAdminModal({ store, saving, onClose, onSave }) {
   const currentSubscription = store.theme?.subscription || {}
-  const [plan, setPlan] = useState(['gratis', 'bisnis', 'pro'].includes(currentSubscription.plan) ? currentSubscription.plan : 'gratis')
+  const [plan, setPlan] = useState(['basic', 'bisnis', 'pro'].includes(currentSubscription.plan) ? currentSubscription.plan : 'basic')
   const [renewalDate, setRenewalDate] = useState(currentSubscription.renewsAt ? currentSubscription.renewsAt.slice(0, 10) : '')
-  const isPaid = plan !== 'gratis'
 
   return (
     <ModalLayer open onClose={onClose} labelledBy="admin-subscription-title" label="Kelola langganan" canClose={!saving}>
@@ -57,19 +56,19 @@ export default function SubscriptionAdminModal({ store, saving, onClose, onSave 
               })}
             </div>
           </div>
-          {isPaid && (
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-800">Akses berlaku sampai</span>
-              <input
-                className="input mt-2"
-                type="date"
-                min={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })}
-                value={renewalDate}
-                onChange={(event) => setRenewalDate(event.target.value)}
-              />
-              <span className="mt-1 block text-xs text-slate-500">Kosongkan untuk akses tanpa batas waktu.</span>
-            </label>
-          )}
+
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-800">Akses berlaku sampai</span>
+            <input
+              className="input mt-2"
+              type="date"
+              min={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })}
+              value={renewalDate}
+              onChange={(event) => setRenewalDate(event.target.value)}
+            />
+            <span className="mt-1 block text-xs text-slate-500">Kosongkan untuk akses tanpa batas waktu (complimentary permanen).</span>
+          </label>
+
           <p className="rounded-xl border border-slate-500/20 bg-slate-500/10 px-3 py-2.5 text-xs leading-relaxed text-slate-600">
             Perubahan paket langsung diterapkan pada fitur toko. Pengelolaan ini tidak membuat tagihan atau invoice.
           </p>
