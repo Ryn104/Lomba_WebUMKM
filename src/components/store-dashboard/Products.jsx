@@ -14,6 +14,7 @@ import LimitReachedModal from "../subscription/LimitReachedModal";
 import UpgradeModal from "../subscription/UpgradeModal";
 import CategoryIconPicker from "../ui/CategoryIconPicker";
 import { CATEGORY_ICON_MAP } from "../store-front/categoryIcons";
+import { useConfirm } from '../ui/ConfirmModal'   
 
 const empty = { name: "", description: "", price: "", cost_price: "", stock: "", category_id: "", image_url: "", is_active: true };
 
@@ -33,6 +34,7 @@ export default function Products({ store, setStore }) {
   const [saving, setSaving] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [askConfirm, confirmDialog] = useConfirm() 
   const location = useLocation();
   const createFromLink = useRef(false);
 
@@ -94,12 +96,18 @@ export default function Products({ store, setStore }) {
   };
 
   const remove = async (p) => {
-    if (!confirm(`Hapus produk “${p.name}”?`)) return;
-    const { error } = await supabase.from("products").delete().eq("id", p.id);
-    if (error) return toast.error(error.message);
-    toast.success("Produk dihapus");
-    load();
-  };
+    const ok = await askConfirm({
+      title: 'Hapus produk?',
+      message: `Produk “${p.name}” akan dihapus.`,
+      confirmLabel: 'Hapus',
+      tone: 'danger',
+    })
+    if (!ok) return
+    const { error } = await supabase.from("products").delete().eq("id", p.id)
+    if (error) return toast.error(error.message)
+    toast.success("Produk dihapus")
+    load()
+  }
 
   const addCategory = async (e) => {
     e.preventDefault();
@@ -329,6 +337,7 @@ export default function Products({ store, setStore }) {
         targetPlan="bisnis"
         onSuccess={({ targetPlan, period, method, amount }) => upgrade({ targetPlan, period, method, amount })}
       />
+      {confirmDialog}
     </div>
   );
 }

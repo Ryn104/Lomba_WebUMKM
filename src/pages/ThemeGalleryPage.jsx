@@ -11,6 +11,7 @@ import SectionRenderer from '../components/store-front/SectionRenderer'
 import LayoutThumb from '../components/store-front/layoutThumbs'
 import { StorefrontFooter, StorefrontHeader } from '../components/store-front/HeaderFooter'
 import { BUILDER_THEMES, findActiveTheme } from '../components/builder/themes'
+import { useConfirm } from '../../src/components/ui/ConfirmModal'     
 
 // Animasi masuk kartu tema. Tanpa fill akhir, jadi efek hover (terangkat) tetap berfungsi.
 const galleryCss = `
@@ -40,6 +41,7 @@ function Gallery({ store, setStore }) {
   const [device, setDevice] = useState('desktop')
   const [applying, setApplying] = useState(false)
   const [data, setData] = useState({ sections: [], products: [], discounts: [], loading: true })
+  const [askConfirm, confirmDialog] = useConfirm() 
 
   // Preview memakai data toko milik pengguna sendiri, bukan data demo.
   useEffect(() => {
@@ -66,10 +68,13 @@ function Gallery({ store, setStore }) {
   const applyTheme = async (theme) => {
     if (applying) return
     if (activeTheme && activeTheme.id !== theme.id) {
-      const ok = window.confirm(
-        `Ganti tema menjadi "${theme.name}"?\n\nKombinasi layout khas tema ini akan diterapkan pada semua section. ` +
-        'Teks, gambar, dan datamu tetap tersimpan — tampilannya yang disesuaikan. Tetap lanjut?'
-      )
+      const ok = await askConfirm({
+        title: `Ganti tema menjadi “${theme.name}”?`,
+        message: 'Layout khas tema ini akan diterapkan pada semua section.',
+        detail: 'Teks, gambar, dan datamu tetap tersimpan, hanya tampilannya yang disesuaikan.',
+        confirmLabel: 'Ganti tema',
+        tone: 'info',
+      })
       if (!ok) return
     }
     setApplying(true)
@@ -169,6 +174,7 @@ function Gallery({ store, setStore }) {
           applying={applying}
         />
       )}
+      {confirmDialog}   
     </>
   )
 }

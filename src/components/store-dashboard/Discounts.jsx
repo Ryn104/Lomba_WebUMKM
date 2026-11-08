@@ -6,6 +6,7 @@ import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
 import { Field, EmptyState, Spinner } from '../ui/Field'
 import MoneyInput from '../ui/MoneyInput'
+import { useConfirm } from '../ui/ConfirmModal'  
 
 const empty = { name: '', type: 'percent', value: '', product_id: '', start_date: '', end_date: '', is_active: true }
 
@@ -14,6 +15,7 @@ export default function Discounts({ store }) {
   const [products, setProducts] = useState([])
   const [form, setForm] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [askConfirm, confirmDialog] = useConfirm()
 
   const load = useCallback(async () => {
     const [d, p] = await Promise.all([
@@ -58,7 +60,13 @@ export default function Discounts({ store }) {
   }
 
   const remove = async (d) => {
-    if (!confirm(`Hapus diskon “${d.name}”?`)) return
+    const ok = await askConfirm({
+      title: 'Hapus diskon?',
+      message: `Diskon “${d.name}” akan dihapus.`,
+      confirmLabel: 'Hapus',
+      tone: 'danger',
+    })
+    if (!ok) return
     await supabase.from('discounts').delete().eq('id', d.id)
     toast.success('Diskon dihapus')
     load()
@@ -175,6 +183,7 @@ export default function Discounts({ store }) {
           </form>
         )}
       </Modal>
+      {confirmDialog}    
     </div>
   )
 }

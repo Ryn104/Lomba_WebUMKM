@@ -147,7 +147,7 @@ const MenuIcon = ({ icon: Icon, danger = false }) => (
 );
 
 // Animasi kecil: menu muncul bergeser dari kiri (tanpa fill akhir, jadi efek hover tetap jalan),
-// popup akun, serta bottom sheet & backdrop untuk mobile
+// popup akun, bottom sheet & backdrop untuk mobile, serta cahaya latar yang bergerak pelan
 const layoutCss = `
 @keyframes sb-in { from { opacity: 0; transform: translateX(-10px); } }
 @keyframes sb-pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
@@ -156,10 +156,12 @@ const layoutCss = `
 @keyframes sb-dot { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
 @keyframes sb-dock { from { opacity: 0; transform: translateY(6px) scale(.85); } to { opacity: 1; transform: none; } }
 @keyframes sb-tile { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes sb-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 18px) scale(1.08); } }
 .sb-dot { animation: sb-dot .35s cubic-bezier(.34,1.56,.64,1) both; }
 .sb-dock { animation: sb-dock .3s cubic-bezier(.34,1.56,.64,1) both; }
 .sb-tile { animation: sb-tile .32s cubic-bezier(.2,.7,.2,1) both; }
-@media (prefers-reduced-motion: reduce) { .sb-in, .sb-pop, .sb-dot, .sb-dock, .sb-tile { animation: none; } }
+.sb-drift { animation: sb-drift 12s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .sb-in, .sb-pop, .sb-dot, .sb-dock, .sb-tile, .sb-drift { animation: none; } }
 `;
 
 // Jam digital (WIB) yang berdetak tiap detik. Dipisah jadi komponen sendiri agar
@@ -190,6 +192,23 @@ function LiveClock() {
       {time}
       <span className="font-medium text-slate-400">WIB</span>
     </span>
+  );
+}
+
+// Latar seluruh halaman: pola titik + cahaya lembut. Dipasang di pembungkus setinggi seluruh isi
+// halaman, jadi menutupi semuanya (termasuk tepi dan area di bawah header kaca) dan ikut bergulir.
+function PageBackdrop({ isDark }) {
+  const dots = isDark ? "rgba(148,163,184,0.13)" : "rgba(100,116,139,0.20)";
+  return (
+    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      <div
+        className="absolute inset-0"
+        style={{ backgroundImage: `radial-gradient(${dots} 1px, transparent 1px)`, backgroundSize: "24px 24px" }}
+      />
+      <div className="sb-drift absolute left-1/2 top-0 h-72 w-[44rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
+      <div className="absolute -left-24 top-[30%] h-72 w-72 rounded-full bg-brand-500/[0.07] blur-3xl" />
+      <div className="absolute -right-24 top-[55%] h-80 w-80 rounded-full bg-sky-500/10 blur-3xl" />
+    </div>
   );
 }
 
@@ -539,37 +558,42 @@ export default function DashboardLayout({ title, subtitle, links, specialLinks =
       </nav>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <main data-dashboard-scroll className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-slate-50 app-bg">
-          {/* Header kaca: menempel di atas dan konten halaman bergulir di bawahnya, sehingga blur terlihat */}
-          <header
-            className={`sticky top-0 isolate z-20 flex shrink-0 min-h-16 items-center gap-4 overflow-hidden border-b border-slate-500/20 bg-slate-500/10 px-4 py-3 lg:px-8 ${headerRight ? "" : "lg:hidden"}`}
-            style={{ backdropFilter: "blur(20px) saturate(170%)", WebkitBackdropFilter: "blur(20px) saturate(170%)" }}
-          >
-            {/* Dekorasi: cahaya hijau di sisi kanan + garis gradien tipis di bawah header */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-2/3 bg-gradient-to-l from-brand-500/10 via-brand-500/5 to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-px bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
+        <main data-dashboard-scroll className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 app-bg">
+          {/* Pembungkus setinggi seluruh isi halaman: latar menutupi semuanya dan header sticky tetap bekerja */}
+          <div className="relative isolate flex min-h-full flex-col">
+            <PageBackdrop isDark={isDark} />
 
-            {/* Mobile: logo + judul menggantikan tombol hamburger lama */}
-            <div className="flex min-w-0 items-center gap-2.5 lg:hidden">
-              <img src={logo} alt="Logo UMKITA" className="h-8 w-auto shrink-0 object-contain" />
-              <p className="truncate text-base font-bold text-slate-900">{title}</p>
-            </div>
+            {/* Header kaca: menempel di atas dan konten halaman bergulir di bawahnya, sehingga blur terlihat */}
+            <header
+              className={`sticky top-0 isolate z-20 flex shrink-0 min-h-16 items-center gap-4 overflow-hidden border-b border-slate-500/20 bg-slate-500/10 px-4 py-3 lg:px-8 ${headerRight ? "" : "lg:hidden"}`}
+              style={{ backdropFilter: "blur(20px) saturate(170%)", WebkitBackdropFilter: "blur(20px) saturate(170%)" }}
+            >
+              {/* Dekorasi: cahaya hijau di sisi kanan + garis gradien tipis di bawah header */}
+              <div className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-2/3 bg-gradient-to-l from-brand-500/10 via-brand-500/5 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-px bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
 
-            {headerRight && (
-              <div className="hidden min-w-0 items-center gap-4 sm:flex">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900">Selamat {greeting}, {firstName}</p>
-                  <p className="truncate text-xs text-slate-500">{today}</p>
-                </div>
-                <LiveClock />
+              {/* Mobile: logo + judul menggantikan tombol hamburger lama */}
+              <div className="flex min-w-0 items-center gap-2.5 lg:hidden">
+                <img src={logo} alt="Logo UMKITA" className="h-8 w-auto shrink-0 object-contain" />
+                <p className="truncate text-base font-bold text-slate-900">{title}</p>
               </div>
-            )}
 
-            {headerRight && <div className="ml-auto min-w-0">{headerRight}</div>}
-          </header>
+              {headerRight && (
+                <div className="hidden min-w-0 items-center gap-4 sm:flex">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">Selamat {greeting}, {firstName}</p>
+                    <p className="truncate text-xs text-slate-500">{today}</p>
+                  </div>
+                  <LiveClock />
+                </div>
+              )}
 
-          {/* pb-28 memberi ruang agar konten paling bawah tidak tertutup dock (hanya di mobile) */}
-          <div className="flex-1 p-4 pb-28 lg:p-8">{children}</div>
+              {headerRight && <div className="ml-auto shrink-0">{headerRight}</div>}
+            </header>
+
+            {/* pb-28 memberi ruang agar konten paling bawah tidak tertutup dock (hanya di mobile) */}
+            <div className="flex-1 p-4 pb-28 lg:p-8">{children}</div>
+          </div>
         </main>
       </div>
     </div>

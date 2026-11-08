@@ -18,7 +18,7 @@ export default function DeleteAccountModal({ profile, stores, deleting, onClose,
       >
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div className="flex items-start gap-3">
-            <span className="rounded-full bg-red-100 p-2.5 text-red-600 ring-4 ring-red-50"><AlertTriangle size={20} /></span>
+            <span className="rounded-full bg-red-500/15 p-2.5 text-red-500"><AlertTriangle size={20} /></span>
             <div>
               <h2 id="delete-account-title" className="text-lg font-bold tracking-tight text-slate-900">Hapus akun permanen</h2>
               <p className="mt-1 text-sm text-slate-500">{profile.full_name || '-'} · {profile.email}</p>
