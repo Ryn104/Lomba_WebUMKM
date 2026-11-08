@@ -26,8 +26,9 @@ const greetingForHour = (hour) => {
   return 'Selamat malam'
 }
 
-export default function Overview({ store }) {
+export default function Overview({ store, isPaid, plan }) {
   const { profile } = useAuth()
+  const showGrowthBanner = !(isPaid && (plan === 'bisnis' || plan === 'pro'))
   const [range, setRange] = useState(7)
   const { loading, error, data } = useDashboardSummary(store.id)
 
@@ -59,7 +60,7 @@ export default function Overview({ store }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="break-words text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            {greetingForHour(now.getHours())}, {firstName} 👋
+            {greetingForHour(now.getHours())}, {firstName}
           </h1>
           <p className="text-xs text-slate-500 sm:text-sm">Berikut ringkasan bisnis {store.name} hari ini.</p>
         </div>
@@ -140,7 +141,7 @@ export default function Overview({ store }) {
             </div>
           </div>
 
-          <GrowthBanner />
+          {showGrowthBanner && <GrowthBanner />}
         </div>
 
         {/* Rail kanan */}
