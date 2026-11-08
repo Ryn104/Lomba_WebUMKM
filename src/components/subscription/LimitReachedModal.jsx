@@ -4,8 +4,8 @@ import ModalLayer from '../ui/ModalLayer'
 export default function LimitReachedModal({
   open,
   onClose,
-  currentCount = 10,
-  maxCount = 10,
+  currentCount = 50,
+  maxCount = 50,
   onUpgrade,
 }) {
   if (!open) return null
@@ -20,7 +20,7 @@ export default function LimitReachedModal({
 
         <h3 className="mt-4 text-lg font-bold text-slate-900">Batas {maxCount} produk tercapai</h3>
         <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-          Paket Gratis hanya mendukung {maxCount} produk. Upgrade ke Bisnis untuk produk tidak terbatas, atau nonaktifkan produk lama.
+          Paket Anda saat ini memiliki batas {maxCount} produk. Upgrade ke paket Bisnis atau Pro untuk produk tanpa batas, atau nonaktifkan produk lama.
         </p>
 
         {/* Progress Bar */}
@@ -44,12 +44,12 @@ export default function LimitReachedModal({
             }}
             className="btn-primary w-full py-2.5 font-bold shadow-sm"
           >
-            Upgrade ke Bisnis
+            Upgrade Paket
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition"
+            className="btn-secondary w-full py-2.5 font-semibold text-slate-600"
           >
             Nanti saja
           </button>

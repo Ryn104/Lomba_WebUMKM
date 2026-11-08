@@ -1,119 +1,159 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
-import { Package, TrendingUp, TrendingDown, ShoppingCart, AlertTriangle } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
-import { rupiah, formatDateTime } from '../../lib/utils'
+import { CalendarDays, Package, ReceiptText, TrendingUp, Wallet } from 'lucide-react'
 import { StatCard, Spinner } from '../ui/Field'
+import { useAuth } from '../../context/AuthContext'
+import { useDashboardSummary } from './overview/useDashboardSummary'
+import {
+  GrowthBanner,
+  LowStockCard,
+  NotificationsCard,
+  QuickActionsCard,
+  RecentTransactionsCard,
+  SalesSourceCard,
+  SalesTrendCard,
+  StoreStatusCard,
+  TopProductsCard,
+  growthSub,
+  growthTone,
+} from './overview/panels'
+import { rupiah } from '../../lib/utils'
+
+const greetingForHour = (hour) => {
+  if (hour < 11) return 'Selamat pagi'
+  if (hour < 15) return 'Selamat siang'
+  if (hour < 19) return 'Selamat sore'
+  return 'Selamat malam'
+}
 
 export default function Overview({ store }) {
-  const [data, setData] = useState(null)
+  const { profile } = useAuth()
+  const [range, setRange] = useState(7)
+  const { loading, error, data } = useDashboardSummary(store.id)
 
-  useEffect(() => {
-    ;(async () => {
-      const since = new Date()
-      since.setDate(since.getDate() - 6)
-      const sinceISO = since.toISOString().slice(0, 10)
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+  if (loading && !data) return <Spinner />
 
-      const [prod, fin, tx] = await Promise.all([
-        supabase.from('products').select('id,name,stock').eq('store_id', store.id),
-        supabase.from('finances').select('type,amount,date').eq('store_id', store.id).gte('date', monthStart < sinceISO ? monthStart : sinceISO),
-        supabase.from('transactions').select('id,invoice_no,total,created_at').eq('store_id', store.id).order('created_at', { ascending: false }).limit(5),
-      ])
-      setData({ products: prod.data || [], finances: fin.data || [], recent: tx.data || [], monthStart, sinceISO })
-    })()
-  }, [store.id])
+  if (error || !data) {
+    return (
+      <div className="card p-8 text-center">
+        <p className="text-sm font-semibold text-slate-900">Gagal memuat ringkasan toko</p>
+        <p className="mt-1 text-xs text-slate-500">Periksa koneksi lalu muat ulang halaman ini.</p>
+      </div>
+    )
+  }
 
-  if (!data) return <Spinner />
+  const now = new Date()
+  const firstName = (profile?.full_name || store.name || '').trim().split(' ')[0]
+  const dateLabel = new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(now)
 
-  const { products, finances, recent, monthStart } = data
-  const month = finances.filter((f) => f.date >= monthStart)
-  const income = month.filter((f) => f.type === 'income').reduce((a, b) => a + Number(b.amount), 0)
-  const expense = month.filter((f) => f.type === 'expense').reduce((a, b) => a + Number(b.amount), 0)
-  const lowStock = products.filter((p) => p.stock <= 5)
-
-  // grafik 7 hari terakhir
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (6 - i))
-    return d.toISOString().slice(0, 10)
-  })
-  const chart = days.map((d) => ({
-    hari: new Date(d).toLocaleDateString('id-ID', { weekday: 'short' }),
-    Pemasukan: finances.filter((f) => f.date === d && f.type === 'income').reduce((a, b) => a + Number(b.amount), 0),
-    Pengeluaran: finances.filter((f) => f.date === d && f.type === 'expense').reduce((a, b) => a + Number(b.amount), 0),
-  }))
+  const { stats, chart, sources, salesTotal, recent, topProducts, lowStock, notifications } = data
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Halo, selamat datang</h1>
-        <p className="text-sm text-slate-500">Ringkasan toko {store.name} bulan ini.</p>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Sapaan + tanggal hari ini */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="break-words text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+            {greetingForHour(now.getHours())}, {firstName} 👋
+          </h1>
+          <p className="text-xs text-slate-500 sm:text-sm">Berikut ringkasan bisnis {store.name} hari ini.</p>
+        </div>
+        <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[11px] font-semibold text-slate-600 shadow-sm sm:text-xs">
+          <CalendarDays size={14} className="text-brand-700" /> {dateLabel}
+        </span>
       </div>
 
+      {/* Peringatan draft (mobile; di desktop sudah ada kartu status di rail kanan) */}
       {!store.is_published && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-[#FEF3C7] p-4">
-          <p className="text-sm text-[#92400E]">Website toko Anda masih <b>draft</b>. Desain lalu publikasikan agar bisa diakses pelanggan.</p>
-          <Link to="/builder" className="btn-primary">Buka Web Builder</Link>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-[#FEF3C7] p-4 xl:hidden">
+          <p className="text-xs text-[#92400E] sm:text-sm">
+            Website toko Anda masih <b>draft</b>. Publikasikan agar bisa diakses pelanggan.
+          </p>
+          <Link to="/builder" className="btn-primary px-4 py-2 text-xs">
+            Buka Web Builder
+          </Link>
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={TrendingUp} tone="green" label="Pemasukan bulan ini" value={rupiah(income)} />
-        <StatCard icon={TrendingDown} tone="red" label="Pengeluaran bulan ini" value={rupiah(expense)} />
-        <StatCard icon={ShoppingCart} tone="brand" label="Laba bersih" value={rupiah(income - expense)} />
-        <StatCard icon={Package} tone="amber" label="Total produk" value={products.length} sub={`${lowStock.length} stok menipis`} />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-3">
-        <div className="card p-5 xl:col-span-2">
-          <h2 className="mb-4 font-semibold text-slate-900">Arus kas 7 hari terakhir</h2>
-          <div className="h-64">
-            <ResponsiveContainer>
-              <BarChart data={chart}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="hari" fontSize={12} />
-                <YAxis fontSize={12} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}rb` : v)} />
-                <Tooltip formatter={(v) => rupiah(v)} />
-                <Bar dataKey="Pemasukan" fill="#047857" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Pengeluaran" fill="#f87171" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="card p-5">
-            <h2 className="mb-3 font-semibold text-slate-900">Transaksi kasir terbaru</h2>
-            {recent.length === 0 ? (
-              <p className="text-sm text-slate-400">Belum ada transaksi.</p>
-            ) : (
-              <ul className="divide-y divide-slate-100 text-sm">
-                {recent.map((t) => (
-                  <li key={t.id} className="flex items-center justify-between py-2 text-slate-800">
-                    <div>
-                      <p className="font-medium text-slate-900">{t.invoice_no}</p>
-                      <p className="text-xs text-slate-500">{formatDateTime(t.created_at)}</p>
-                    </div>
-                    <b>{rupiah(t.total)}</b>
-                  </li>
-                ))}
-              </ul>
-            )}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        {/* Kolom utama */}
+        <div className="space-y-4 sm:space-y-6">
+          {/* Aksi cepat di atas untuk mobile; di desktop pindah ke rail kanan */}
+          <div className="xl:hidden">
+            <QuickActionsCard />
           </div>
 
-          {lowStock.length > 0 && (
-            <div className="card p-5">
-              <h2 className="mb-3 flex items-center gap-2 font-semibold text-slate-900"><AlertTriangle size={16} className="text-amber-600" /> Stok menipis</h2>
-              <ul className="space-y-1 text-sm">
-                {lowStock.slice(0, 5).map((p) => (
-                  <li key={p.id} className="flex justify-between text-slate-800"><span>{p.name}</span><b className={p.stock === 0 ? 'text-red-700' : 'text-amber-800'}>{p.stock}</b></li>
-                ))}
-              </ul>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 2xl:grid-cols-4">
+            <StatCard
+              icon={TrendingUp}
+              tone="green"
+              label="Penjualan bulan ini"
+              value={rupiah(stats.sales.total)}
+              sub={growthSub(stats.sales.growth)}
+              subTone={growthTone(stats.sales.growth)}
+            />
+            <StatCard
+              icon={ReceiptText}
+              tone="info"
+              label="Transaksi bulan ini"
+              value={stats.orders.total}
+              sub={growthSub(stats.orders.growth)}
+              subTone={growthTone(stats.orders.growth)}
+            />
+            <StatCard
+              icon={Package}
+              tone="brand"
+              label="Produk terjual"
+              value={stats.sold.total}
+              sub="30 hari terakhir"
+            />
+            <StatCard
+              icon={Wallet}
+              tone="amber"
+              label="Laba bersih bulan ini"
+              value={rupiah(stats.profit.total)}
+              sub={growthSub(stats.profit.growth)}
+              subTone={growthTone(stats.profit.growth)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-5">
+            <div className="lg:col-span-3">
+              <SalesTrendCard chart={chart} range={range} onRangeChange={setRange} />
             </div>
-          )}
+            <div className="lg:col-span-2">
+              <SalesSourceCard sources={sources} total={salesTotal} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-5">
+            <div className="lg:col-span-3">
+              <RecentTransactionsCard rows={recent} />
+            </div>
+            <div className="lg:col-span-2">
+              <TopProductsCard rows={topProducts} />
+            </div>
+          </div>
+
+          <GrowthBanner />
         </div>
+
+        {/* Rail kanan */}
+        <aside className="space-y-4 sm:space-y-6">
+          <div className="hidden xl:block">
+            <QuickActionsCard />
+          </div>
+          <div className="hidden xl:block">
+            <StoreStatusCard store={store} />
+          </div>
+          <NotificationsCard items={notifications} />
+          <LowStockCard items={lowStock} />
+        </aside>
       </div>
     </div>
   )

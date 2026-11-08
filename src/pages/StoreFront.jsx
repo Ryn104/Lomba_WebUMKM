@@ -57,11 +57,17 @@ export default function StoreFront() {
   const theme = resolveTheme(store)
   const primary = theme.primary
 
-  // Fitur Watermark: Ditampilkan pada paket Gratis; dihilangkan pada paket Bisnis / Pro / Trial
+  // Watermark: dihilangkan pada paket berbayar aktif (basic/bisnis/pro) dan selama masa trial 1 bulan.
+  // Hanya muncul jika trial sudah berakhir dan belum berlangganan.
   const sub = store.theme?.subscription || {}
+  const now = Date.now()
   const hasActiveSubscription = ['active', 'complimentary'].includes(sub.billingMode)
-    && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > Date.now())
-  const hasWatermark = !hasActiveSubscription || !['bisnis', 'pro'].includes(sub.plan || 'gratis')
+    && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > now)
+  const trialEndMs = sub.trialEndsAt
+    ? new Date(sub.trialEndsAt).getTime()
+    : (store.created_at ? new Date(store.created_at).getTime() + 30 * 24 * 60 * 60 * 1000 : 0)
+  const isTrialActive = !hasActiveSubscription && trialEndMs > now
+  const hasWatermark = !hasActiveSubscription && !isTrialActive
 
   return (
     <div data-light-zone className="min-h-screen bg-white" style={{ fontFamily: `${theme.font}, Inter, sans-serif` }}>

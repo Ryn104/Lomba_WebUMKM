@@ -1,7 +1,7 @@
 /** Helper data untuk halaman-halaman Admin Platform */
 
-export const PLAN_LABEL = { gratis: 'Gratis', bisnis: 'Bisnis', pro: 'Pro' }
-export const PLAN_COLOR = { gratis: '#94A3B8', bisnis: '#3B82F6', pro: '#10B981' }
+export const PLAN_LABEL = { basic: 'Basic', bisnis: 'Bisnis', pro: 'Pro', gratis: 'Basic' }
+export const PLAN_COLOR = { basic: '#6366F1', bisnis: '#3B82F6', pro: '#10B981', gratis: '#94A3B8' }
 
 // Harga per bulan — satu sumber dengan useSubscription (src/lib/plans.js)
 import { PLAN_PRICE } from '../../lib/plans'
@@ -16,36 +16,60 @@ export const jakartaDay = (d) =>
  * Baca langganan toko dengan aturan yang sama seperti useSubscription:
  * paket berbayar hanya dianggap aktif jika billingMode valid dan belum kedaluwarsa.
  *
- * state: 'free' | 'paid' (dibeli) | 'complimentary' (diberikan admin) | 'expired'
+ * state: 'trial' | 'paid' (dibeli) | 'complimentary' (diberikan admin) | 'expired'
  */
 export function getSubscription(store) {
   const raw = store?.theme?.subscription || {}
+  const now = Date.now()
   const endMs = raw.renewsAt ? new Date(raw.renewsAt).getTime() : null
-  const expired = endMs !== null && endMs <= Date.now()
-  const isPaidPlan = ['bisnis', 'pro'].includes(raw.plan)
-  const hasAccess = ['active', 'complimentary'].includes(raw.billingMode)
+  const paidExpired = endMs !== null && endMs <= now
+  const isPaidTier = ['basic', 'bisnis', 'pro'].includes(raw.plan)
+  const hasPaidAccess = isPaidTier && ['active', 'complimentary'].includes(raw.billingMode) && !paidExpired
 
-  const plan = isPaidPlan && hasAccess && !expired ? raw.plan : 'gratis'
-  let state = 'free'
-  if (plan !== 'gratis') state = raw.billingMode === 'active' ? 'paid' : 'complimentary'
-  else if (isPaidPlan && hasAccess && expired) state = 'expired'
+  const trialEndMs = raw.trialEndsAt
+    ? new Date(raw.trialEndsAt).getTime()
+    : (store?.created_at ? new Date(store.created_at).getTime() + 30 * DAY_MS : null)
+  const isTrialActive = !hasPaidAccess && trialEndMs !== null && trialEndMs > now
+  const isTrialExpired = !hasPaidAccess && trialEndMs !== null && trialEndMs <= now
+
+  let plan = isPaidTier ? raw.plan : 'basic'
+  let state = 'trial'
+
+  if (hasPaidAccess) {
+    state = raw.billingMode === 'active' ? 'paid' : 'complimentary'
+    plan = raw.plan
+  } else if (isTrialActive) {
+    state = 'trial'
+    plan = raw.plan && ['basic', 'bisnis', 'pro'].includes(raw.plan) ? raw.plan : 'pro'
+  } else if (paidExpired || isTrialExpired) {
+    state = 'expired'
+    plan = isPaidTier ? raw.plan : 'basic'
+  }
+
+  const daysLeft = hasPaidAccess && endMs
+    ? Math.ceil((endMs - now) / DAY_MS)
+    : isTrialActive && trialEndMs
+      ? Math.ceil((trialEndMs - now) / DAY_MS)
+      : null
 
   return {
     plan,
-    rawPlan: raw.plan || 'gratis',
+    rawPlan: raw.plan || 'basic',
     state,
     renewsAt: raw.renewsAt || null,
-    daysLeft: plan !== 'gratis' && endMs ? Math.ceil((endMs - Date.now()) / DAY_MS) : null,
+    trialEndsAt: raw.trialEndsAt || (trialEndMs ? new Date(trialEndMs).toISOString() : null),
+    daysLeft,
     period: raw.period === 'yearly' ? 'yearly' : 'monthly',
     invoices: Array.isArray(raw.invoices) ? raw.invoices : [],
   }
 }
 
 export const STATE_LABEL = {
-  free: 'Gratis',
+  trial: 'Trial 1 Bulan',
   paid: 'Berbayar',
   complimentary: 'Diberikan admin',
   expired: 'Kedaluwarsa',
+  free: 'Trial Berakhir',
 }
 
 /** Estimasi pendapatan bulanan berulang dari langganan yang benar-benar dibeli */
@@ -59,8 +83,12 @@ export function estimateMRR(stores) {
 
 /** Hitung jumlah toko per paket efektif */
 export function countByPlan(stores) {
-  const result = { gratis: 0, bisnis: 0, pro: 0 }
-  stores.forEach((store) => { result[getSubscription(store).plan] += 1 })
+  const result = { basic: 0, bisnis: 0, pro: 0 }
+  stores.forEach((store) => {
+    const p = getSubscription(store).plan
+    if (result[p] !== undefined) result[p] += 1
+    else result.basic += 1
+  })
   return result
 }
 

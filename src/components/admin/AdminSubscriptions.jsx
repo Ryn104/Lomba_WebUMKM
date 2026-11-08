@@ -19,7 +19,8 @@ export default function AdminSubscriptions({ stores, onManageSubscription }) {
     const term = q.trim().toLowerCase()
     return rows
       .filter(({ store, sub }) => {
-        if (tab === 'gratis' || tab === 'bisnis' || tab === 'pro') return sub.plan === tab
+        if (tab === 'basic' || tab === 'bisnis' || tab === 'pro') return sub.plan === tab
+        if (tab === 'trial') return sub.state === 'trial'
         if (tab === 'expiring') return sub.daysLeft !== null && sub.daysLeft <= 7
         if (tab === 'expired') return sub.state === 'expired'
         return true
@@ -34,10 +35,10 @@ export default function AdminSubscriptions({ stores, onManageSubscription }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Status Paket" desc="Pantau paket Gratis, Bisnis, dan Pro setiap toko." />
+      <PageHeader title="Status Paket" desc="Pantau paket Basic, Bisnis, Pro, dan masa Trial setiap toko." />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={StoreIcon} tone="neutral" label="Paket Gratis" value={counts.gratis} />
+        <StatCard icon={StoreIcon} tone="brand" label="Paket Basic" value={counts.basic || 0} />
         <StatCard icon={CreditCard} tone="info" label="Paket Bisnis" value={counts.bisnis} />
         <StatCard icon={Crown} tone="green" label="Paket Pro" value={counts.pro} />
         <StatCard icon={Wallet} tone="amber" label="Estimasi MRR" value={rupiah(estimateMRR(stores))} sub="Hanya langganan yang dibeli" />
@@ -55,7 +56,8 @@ export default function AdminSubscriptions({ stores, onManageSubscription }) {
               onChange={setTab}
               options={[
                 { value: 'all', label: 'Semua', count: rows.length },
-                { value: 'gratis', label: 'Gratis', count: counts.gratis },
+                { value: 'trial', label: 'Trial', count: rows.filter(({ sub }) => sub.state === 'trial').length },
+                { value: 'basic', label: 'Basic', count: counts.basic || 0 },
                 { value: 'bisnis', label: 'Bisnis', count: counts.bisnis },
                 { value: 'pro', label: 'Pro', count: counts.pro },
                 { value: 'expiring', label: 'Segera berakhir', count: expiring },
@@ -93,7 +95,7 @@ export default function AdminSubscriptions({ stores, onManageSubscription }) {
                           <PlanBadge plan={sub.plan} />
                           <StateBadge state={sub.state} />
                         </div>
-                        {sub.plan !== 'gratis' && <p className="mt-1 text-xs text-slate-500">{sub.period === 'yearly' ? 'Tahunan' : 'Bulanan'}</p>}
+                        {sub.state === 'paid' && <p className="mt-1 text-xs text-slate-500">{sub.period === 'yearly' ? 'Tahunan' : 'Bulanan'}</p>}
                       </td>
                       <td className="px-4 py-3">
                         {sub.renewsAt ? (
@@ -104,7 +106,7 @@ export default function AdminSubscriptions({ stores, onManageSubscription }) {
                             </p>
                           </>
                         ) : (
-                          <span className="text-slate-400">{sub.plan === 'gratis' ? '-' : 'Tanpa batas waktu'}</span>
+                          <span className="text-slate-400">{sub.state === 'expired' ? 'Kedaluwarsa' : sub.state === 'trial' ? 'Masa Trial' : 'Tanpa batas waktu'}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">

@@ -130,7 +130,7 @@ export default function AdvancedReport({ store, setStore }) {
       {loading && (
         <div className="space-y-6">
           <SkeletonCard lines={5} />
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
             <SkeletonCard lines={4} />
             <SkeletonCard lines={4} />
           </div>
@@ -157,7 +157,7 @@ export default function AdvancedReport({ store, setStore }) {
       {!loading && !error && report && hasData && (
         <>
           {insights.length > 0 && (
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {insights.map((insight, index) => {
                 const style = INSIGHT_STYLES[insight.tone] || INSIGHT_STYLES.info
                 const Icon = style.icon

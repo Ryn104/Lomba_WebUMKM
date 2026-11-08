@@ -32,6 +32,8 @@ const adminCss = `
 .ad-fade-up { animation: ad-fade-up .55s cubic-bezier(.2,.7,.2,1) both; }
 .ad-drift { animation: ad-drift 12s ease-in-out infinite; }
 .ad-pop { animation: ad-pop .28s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ad-page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.ad-page-in { animation: ad-page-in .35s cubic-bezier(.2,.7,.2,1) both; }
 
 /* Elemen halaman muncul berurutan: header -> kartu statistik -> grafik -> tabel */
 .ad-stagger > div > *:not(.grid) { animation: ad-fade-up .6s cubic-bezier(.2,.7,.2,1) both; }
@@ -52,7 +54,7 @@ const adminCss = `
 .ad-scope tbody tr { transition: background-color .15s ease; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ad-fade-up, .ad-drift, .ad-pop,
+  .ad-fade-up, .ad-drift, .ad-pop, .ad-page-in,
   .ad-stagger > div > *, .ad-stagger > div > .grid > * { animation: none !important; }
 }
 `
@@ -146,12 +148,12 @@ export default function AdminDashboard() {
     if (savingSubscription) return
     setSavingSubscription(true)
     const previous = store.theme?.subscription || {}
-    const isPaidPlan = plan !== 'gratis'
+    const isPaidPlan = ['basic', 'bisnis', 'pro'].includes(plan)
     const nextSubscription = {
       ...previous,
       plan,
       status: 'active',
-      billingMode: isPaidPlan ? 'complimentary' : 'free',
+      billingMode: isPaidPlan ? 'complimentary' : 'trial',
       activatedAt: isPaidPlan ? previous.activatedAt || new Date().toISOString() : null,
       renewsAt: isPaidPlan && renewalDate ? new Date(`${renewalDate}T23:59:59+07:00`).toISOString() : null,
       trialEndsAt: null,
@@ -169,7 +171,7 @@ export default function AdminDashboard() {
       if (error) throw error
       setStores((current) => current.map((item) => (item.id === store.id ? { ...item, theme: data.theme } : item)))
       setSelectedStore(null)
-      toast.success(`Akses paket ${plan === 'gratis' ? 'Gratis' : plan === 'pro' ? 'Pro' : 'Bisnis'} diperbarui.`)
+      toast.success(`Akses paket ${plan === 'basic' ? 'Basic' : plan === 'pro' ? 'Pro' : 'Bisnis'} diperbarui.`)
     } catch (error) {
       toast.error(`Paket gagal disimpan: ${error.message}`)
     } finally {
@@ -205,7 +207,7 @@ export default function AdminDashboard() {
           </div>
         ) : (
           // key = path, jadi tiap pindah menu konten muncul dengan animasi halus
-          <div key={location.pathname} className="ad-stagger">
+          <div key={location.pathname} className="ad-stagger ad-page-in">
             <Routes>
               <Route index element={<AdminOverview stores={stores} users={users} />} />
               <Route path="pengguna" element={<AdminUsers users={users} stores={stores} onChangeRole={changeRole} toggleActive={toggleActive} remove={remove} onManageSubscription={setSelectedStore} onDeleteAccount={setAccountToDelete} />} />

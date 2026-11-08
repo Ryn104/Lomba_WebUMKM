@@ -408,7 +408,7 @@ export default function LandingPage() {
           </div>
 
           <ul className="lp-fade-up mt-7 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-500" style={{ animationDelay: "650ms" }}>
-            {["Gratis mendaftar", "Tanpa coding", "Siap dalam menit"].map((t) => (
+            {["Trial 1 Bulan Gratis", "Tanpa coding", "Siap dalam menit"].map((t) => (
               <li key={t} className="flex items-center gap-1.5">
                 <Check size={15} className="text-brand-500" /> {t}
               </li>

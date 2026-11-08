@@ -267,9 +267,11 @@ export default function AdminUsers({
                                       ? sub.daysLeft === null
                                         ? `Berakhir ${formatDate(sub.renewsAt)}`
                                         : `Berlaku sampai ${formatDate(sub.renewsAt)}`
-                                      : sub.plan === "gratis"
-                                        ? ""
-                                        : "Tanpa batas waktu"}
+                                      : sub.state === "trial"
+                                        ? "Masa trial 1 bulan"
+                                        : sub.state === "expired"
+                                          ? "Trial berakhir"
+                                          : "Tanpa batas waktu"}
                                   </p>
                                 </div>
                               );
