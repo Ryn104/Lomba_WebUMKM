@@ -1,5 +1,6 @@
+import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Store as StoreIcon, MessageCircle, MapPin, Phone } from 'lucide-react'
+import { Store as StoreIcon, MessageCircle, MapPin, Phone, Menu, X } from 'lucide-react'
 
 /** Section nav yang dipakai storefront, preview builder, dan preview galeri — selalu sama. */
 function navItemsFor(sections = []) {
@@ -16,28 +17,58 @@ function navItemsFor(sections = []) {
 export function StorefrontHeader({ store, sections = [], primary, layout = 'split' }) {
   const nav = navItemsFor(sections)
   const wa = (store.whatsapp || '').replace(/\D/g, '')
+  const [open, setOpen] = useState(false)
+  const menuId = useId()
+  const closeMenu = () => setOpen(false)
 
   const brand = (
-    <div className="flex items-center gap-2 font-bold text-slate-900">
+    <div className="flex min-w-0 items-center gap-2 font-bold text-slate-900">
       {store.logo_url ? (
-        <img src={store.logo_url} alt="" className="h-8 w-8 rounded object-cover" />
+        <img src={store.logo_url} alt="" className="h-8 w-8 shrink-0 rounded object-cover" />
       ) : (
-        <span className="rounded-lg p-1.5 text-white" style={{ background: primary }}><StoreIcon size={16} /></span>
+        <span className="shrink-0 rounded-lg p-1.5 text-white" style={{ background: primary }}><StoreIcon size={16} /></span>
       )}
-      {store.name}
+      <span className="truncate">{store.name}</span>
     </div>
   )
   const navLinks = nav.map((item) => (
-    <a key={item.id} href={item.href} className="hover:text-slate-900">{item.label}</a>
+    <a key={item.id} href={item.href} onClick={closeMenu} className="hover:text-slate-900">{item.label}</a>
   ))
+
+  // Dropdown mobile sederhana: hamburger + panel di bawah header (hanya < sm).
+  const menuButton = nav.length > 0 && (
+    <button
+      type="button"
+      onClick={() => setOpen((v) => !v)}
+      aria-label={open ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+      aria-expanded={open}
+      aria-controls={menuId}
+      className="inline-flex shrink-0 items-center justify-center rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 sm:hidden"
+    >
+      {open ? <X size={18} /> : <Menu size={18} />}
+    </button>
+  )
+  const mobilePanel = nav.length > 0 && open && (
+    <div id={menuId} className="absolute inset-x-0 top-full z-40 border-b border-slate-100 bg-white shadow-lg sm:hidden">
+      <nav className="mx-auto flex max-w-6xl flex-col gap-0.5 px-4 py-2 text-sm font-medium text-slate-700">
+        {nav.map((item) => (
+          <a key={item.id} href={item.href} onClick={closeMenu} className="rounded-lg px-2 py-2 transition hover:bg-slate-50 hover:text-slate-900">{item.label}</a>
+        ))}
+      </nav>
+    </div>
+  )
+  const headerProps = {
+    className: 'relative sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur',
+    onKeyDown: (event) => { if (event.key === 'Escape') closeMenu() },
+  }
 
   if (layout === 'minimal') {
     return (
-      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5">
+      <header {...headerProps}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2.5">
           {brand}
-          {wa
-            ? (
+          {wa ? (
+            <div className="flex items-center gap-1">
               <a
                 href={`https://wa.me/${wa}`}
                 target="_blank"
@@ -47,34 +78,48 @@ export function StorefrontHeader({ store, sections = [], primary, layout = 'spli
               >
                 <MessageCircle size={16} /> Chat Kami
               </a>
-            ) : (
-              <nav className="flex gap-4 text-sm font-medium text-slate-600">{navLinks}</nav>
-            )}
+              {menuButton}
+            </div>
+          ) : (
+            <>
+              <nav className="hidden gap-4 text-sm font-medium text-slate-600 sm:flex">{navLinks}</nav>
+              {menuButton}
+            </>
+          )}
         </div>
+        {mobilePanel}
       </header>
     )
   }
 
   if (layout === 'center') {
     return (
-      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
+      <header {...headerProps}>
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-3">
-          {brand}
+          <div className="relative flex w-full items-center justify-center">
+            {brand}
+            <div className="absolute right-0 sm:hidden">{menuButton}</div>
+          </div>
           {nav.length > 0 && (
-            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-slate-600">{navLinks}</nav>
+            <nav className="hidden flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-slate-600 sm:flex">{navLinks}</nav>
           )}
         </div>
+        {mobilePanel}
       </header>
     )
   }
 
   // split (default)
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+    <header {...headerProps}>
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
         {brand}
-        {nav.length > 0 && <nav className="flex gap-5 text-sm font-medium text-slate-600 sm:flex">{navLinks}</nav>}
+        <div className="flex items-center gap-2">
+          <nav className="hidden items-center gap-5 text-sm font-medium text-slate-600 sm:flex">{navLinks}</nav>
+          {menuButton}
+        </div>
       </div>
+      {mobilePanel}
     </header>
   )
 }
