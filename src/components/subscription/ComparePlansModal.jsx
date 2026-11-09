@@ -169,7 +169,7 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'basic'
               {plans.map((plan) => (
                 <div key={plan.id} className="relative px-3 text-center">
                   {plan.badge && !plan.isLower && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
                       {plan.badge}
                     </span>
                   )}
@@ -178,7 +178,7 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'basic'
                       <Lock size={9} /> Di bawah paket aktif
                     </span>
                   )}
-                  <h3 className="font-extrabold text-slate-900">{plan.name}</h3>
+                  <h3 className="font-extrabold md:mt-8 lg:mt-5 text-slate-900">{plan.name}</h3>
                   <div className="mt-1">
                     <span className="text-xl font-black text-slate-900">{plan.price}</span>
                     <span className="text-xs text-slate-500">/{plan.period}</span>

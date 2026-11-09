@@ -250,11 +250,11 @@ function Builder({ store, setStore }) {
 
       {/* Onboarding singkat — non-blokir; semua fitur builder tetap bisa diakses */}
       {!store.theme?.mode && !onboardDismissed && (
-        <div className="flex flex-wrap items-start gap-2.5 border-b border-brand-100 bg-brand-50/80 px-3 py-2.5 sm:px-4">
+        <div className="flex flex-wrap items-start gap-2.5 border-b border-brand-100 bg-brand-50/80 dark:bg-transparent dark:border-none px-3 py-2.5 sm:px-4">
           <Sparkles size={16} className="mt-0.5 shrink-0 text-brand-700" />
           <p className="me-auto min-w-0 flex-1 text-xs leading-relaxed text-slate-700 sm:text-sm">
             <b className="font-bold text-slate-900">Pertama kali di Web Builder?</b> Pilih desain website favoritmu di
-            Galeri Tema — <b className="font-bold">bisa diganti kapan saja</b> tanpa menghapus isian tokomu, dan tidak wajib dipilih sekarang.
+            Galeri Tema <b className="font-bold">bisa diganti kapan saja</b> tanpa menghapus isian tokomu, dan tidak wajib dipilih sekarang.
           </p>
           <Link to="/builder/tema" className="btn-primary shrink-0 px-3 py-1.5 text-xs font-bold">
             <Palette size={13} /> Pilih Tema
