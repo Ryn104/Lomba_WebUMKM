@@ -10,7 +10,7 @@ export default function PlanStep({ period, setPeriod, onPick, onBack, busy = fal
       <div>
         <h2 className="text-lg font-bold text-slate-900">Pilih paket langganan</h2>
         <p className="text-sm text-slate-500">
-          Semua pendaftaran baru mendapatkan <b>Trial 1 Bulan Gratis</b> dengan fitur Pro. Anda juga bisa langsung mengaktifkan paket Basic (10k), Bisnis (30k), atau Pro (50k).
+          Semua pendaftaran baru mendapatkan <b>Trial 1 Bulan Gratis</b> dengan fitur paket Basic. Anda juga bisa langsung mengaktifkan paket Basic (10k), Bisnis (30k), atau Pro (50k).
         </p>
       </div>
 
