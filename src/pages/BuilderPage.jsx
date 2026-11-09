@@ -224,7 +224,7 @@ function Builder({ store, setStore }) {
             {DEVICE_BUTTONS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                onClick={() => setDevice(id)}
+                onClick={() => { setDevice(id); if (isCompactScreen()) setTab('preview') }}
                 aria-label={label}
                 title={label}
                 aria-pressed={device === id}

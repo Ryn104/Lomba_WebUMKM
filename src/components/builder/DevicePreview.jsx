@@ -49,6 +49,18 @@ export default function DevicePreview({ device = 'desktop', children }) {
   const [box, setBox] = useState({ w: 0, h: 0 })
   const [doc, setDoc] = useState(null)
   const [ready, setReady] = useState(false)
+  // Deteksi HP sungguhan dari lebar layar, bukan lebar panel — supaya pilihan device
+  // tidak diabaikan saat panel preview di desktop sempit.
+  const [phoneScreen, setPhoneScreen] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(`(max-width: ${PHONE_BREAKPOINT - 1}px)`).matches
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${PHONE_BREAKPOINT - 1}px)`)
+    const onChange = (event) => setPhoneScreen(event.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
   // Ukur area yang tersedia untuk preview
   useLayoutEffect(() => {
@@ -106,7 +118,7 @@ export default function DevicePreview({ device = 'desktop', children }) {
     ]).then(() => setReady(true))
   }
 
-  const phone = box.w > 0 && box.w < PHONE_BREAKPOINT
+  const phone = phoneScreen && box.w > 0
   const spec = DEVICES[device] || DEVICES.desktop
   const virtualWidth = phone ? box.w : spec.width
   const scale = box.w ? Math.min(1, box.w / virtualWidth) : 1
