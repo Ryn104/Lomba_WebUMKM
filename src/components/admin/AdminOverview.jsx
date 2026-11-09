@@ -5,7 +5,7 @@ import { Users, Store, ExternalLink, CreditCard, Wallet, UserPlus, Clock } from 
 import { StatCard } from '../ui/Field'
 import { rupiah, formatDate } from '../../lib/utils'
 import { Avatar, ChartCard, PageHeader, PlanBadge, PlanDonut } from './AdminWidgets'
-import { buildSeries, collectPurchases, countByPlan, estimateMRR, getSubscription, jakartaDay } from './adminUtils'
+import { buildSeries, collectPurchases, countByPlan, estimateMRR, getSubscription, bandungDay } from './adminUtils'
 
 export default function AdminOverview({ stores, users }) {
   const data = useMemo(() => {
@@ -13,9 +13,9 @@ export default function AdminOverview({ stores, users }) {
     const counts = countByPlan(stores)
     const series14 = buildSeries(users, (u) => u.created_at, 'day', 14)
     const newThisWeek = series14.slice(-7).reduce((a, b) => a + b.baru, 0)
-    const monthKey = jakartaDay(new Date()).slice(0, 7)
+    const monthKey = bandungDay(new Date()).slice(0, 7)
     const revenueMonth = collectPurchases(stores)
-      .filter((p) => jakartaDay(p.date).startsWith(monthKey))
+      .filter((p) => bandungDay(p.date).startsWith(monthKey))
       .reduce((a, b) => a + b.amount, 0)
     const expiring = stores
       .map((s) => ({ store: s, sub: getSubscription(s) }))

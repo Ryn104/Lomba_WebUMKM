@@ -47,7 +47,7 @@ export default function AdminPurchases({ stores }) {
     <div className="space-y-6">
       <PageHeader
         title="Pembelian Paket"
-        desc="Riwayat pembelian paket Bisnis dan Pro dari seluruh toko."
+        desc="Riwayat pembelian paket Basic, Bisnis, dan Pro dari seluruh toko."
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <Tabs value={range} onChange={setRange} options={RANGE_OPTIONS.map(({ value, label }) => ({ value, label }))} />
@@ -77,7 +77,7 @@ export default function AdminPurchases({ stores }) {
 
       <div className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4">
-          <Tabs value={tab} onChange={setTab} options={[{ value: 'all', label: 'Semua' }, { value: 'bisnis', label: 'Bisnis' }, { value: 'pro', label: 'Pro' }]} />
+          <Tabs value={tab} onChange={setTab} options={[{ value: 'all', label: 'Semua' }, { value: 'basic', label: 'Basic' }, { value: 'bisnis', label: 'Bisnis' }, { value: 'pro', label: 'Pro' }]} />
           <div className="relative w-full max-w-xs">
             <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
             <input className="input pl-9" placeholder="Cari invoice / toko / email…" value={q} onChange={(e) => setQ(e.target.value)} />

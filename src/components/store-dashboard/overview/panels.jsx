@@ -63,7 +63,7 @@ const paymentLabel = (method) => ({ cash: 'Tunai', qris: 'QRIS', transfer: 'Tran
 const methodBadge = {
   cash: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   qris: 'border-brand-200 bg-brand-50 text-brand-800',
-  transfer: 'border-blue-200 bg-blue-50 text-[#1D4ED8]',
+  transfer: 'border-brand-200 bg-brand-50 text-brand-800',
 }
 
 const CardHead = ({ title, desc, action }) => (      <div className="flex flex-wrap items-start justify-between gap-2">

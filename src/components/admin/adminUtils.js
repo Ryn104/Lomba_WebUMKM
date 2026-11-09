@@ -9,15 +9,9 @@ import { PLAN_PRICE } from '../../lib/plans'
 const DAY_MS = 86400000
 
 /** Tanggal (YYYY-MM-DD) menurut zona waktu Jakarta */
-export const jakartaDay = (d) =>
+export const bandungDay = (d) =>
   new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
-/**
- * Baca langganan toko dengan aturan yang sama seperti useSubscription:
- * paket berbayar hanya dianggap aktif jika billingMode valid dan belum kedaluwarsa.
- *
- * state: 'trial' | 'paid' (dibeli) | 'complimentary' (diberikan admin) | 'expired'
- */
 export function getSubscription(store) {
   const raw = store?.theme?.subscription || {}
   const now = Date.now()
@@ -129,7 +123,7 @@ export function groupStoresByOwner(stores) {
  * Hasil: [{ key, label, baru, total }] ; total = akumulasi sampai periode tsb.
  */
 export function buildSeries(items, getDate, mode, length, getValue = () => 1) {
-  const todayKey = jakartaDay(new Date())
+  const todayKey = bandungDay(new Date())
   const keys = []
   if (mode === 'month') {
     const [y, m] = todayKey.split('-').map(Number)
@@ -150,7 +144,7 @@ export function buildSeries(items, getDate, mode, length, getValue = () => 1) {
   items.forEach((item) => {
     const raw = getDate(item)
     if (!raw) return
-    const k = jakartaDay(raw).slice(0, sliceLen)
+    const k = bandungDay(raw).slice(0, sliceLen)
     const v = Number(getValue(item)) || 0
     if (counts.has(k)) counts.set(k, counts.get(k) + v)
     else if (k < keys[0]) baseline += v
@@ -177,6 +171,16 @@ export function periodGrowth(items, getDate, mode, length) {
   return { current, previous, percent, series: series.slice(length) }
 }
 
+const planFromInvoice = (inv) => {
+  const fromField = String(inv.plan || '').toLowerCase()
+  if (['basic', 'bisnis', 'pro'].includes(fromField)) return fromField
+  const text = inv.description || ''
+  if (/\bpro\b/i.test(text)) return 'pro'
+  if (/\bbisnis\b/i.test(text)) return 'bisnis'
+  if (/\bbasic\b/i.test(text)) return 'basic'
+  return 'basic'
+}
+
 /** Semua invoice dari seluruh toko (hanya pembelian nyata, bukan paket pemberian admin) */
 export function collectPurchases(stores) {
   const rows = []
@@ -187,7 +191,7 @@ export function collectPurchases(stores) {
         id: inv.id,
         date: inv.date,
         description: inv.description || '-',
-        plan: /pro/i.test(inv.description || '') ? 'pro' : 'bisnis',
+        plan: planFromInvoice(inv),
         amount: Number(inv.amount) || 0,
         status: inv.status || '-',
         method: inv.method || '-',
@@ -213,11 +217,11 @@ export function resolveRange(value, items, getDate) {
   const p = RANGE_OPTIONS.find((x) => x.value === value) || RANGE_OPTIONS[1]
   if (p.value !== 'all') return { mode: p.mode, length: p.length, label: p.label, lifetime: false }
 
-  const days = items.map(getDate).filter(Boolean).map((d) => jakartaDay(d)).sort()
+  const days = items.map(getDate).filter(Boolean).map((d) => bandungDay(d)).sort()
   if (!days.length) return { mode: 'day', length: 7, label: p.label, lifetime: true }
 
   const first = days[0]
-  const today = jakartaDay(new Date())
+  const today = bandungDay(new Date())
   const spanDays = Math.round((new Date(`${today}T00:00:00Z`) - new Date(`${first}T00:00:00Z`)) / DAY_MS) + 1
   if (spanDays <= 60) return { mode: 'day', length: Math.max(spanDays, 7), label: p.label, lifetime: true }
 
@@ -233,7 +237,7 @@ export function filterBySeries(items, getDate, series, mode) {
   const len = mode === 'month' ? 7 : 10
   return items.filter((item) => {
     const raw = getDate(item)
-    return raw && jakartaDay(raw).slice(0, len) >= startKey
+    return raw && bandungDay(raw).slice(0, len) >= startKey
   })
 }
 
