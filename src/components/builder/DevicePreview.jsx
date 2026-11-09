@@ -126,7 +126,7 @@ export default function DevicePreview({ device = 'desktop', children }) {
 
   const caption = phone
     ? null
-    : `${spec.label} · ${virtualWidth}px${scale < 1 ? ` · ${Math.round(scale * 100)}%` : ''}`
+    : `${spec.label} · ${virtualWidth}px `
 
   return (
     <div className="flex h-full min-h-0 flex-col">
