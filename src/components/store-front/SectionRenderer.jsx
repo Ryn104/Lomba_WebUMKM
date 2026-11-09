@@ -28,12 +28,20 @@ import {
   Wine,
   Store,
 } from "lucide-react";
-import { rupiah, getDiscountedPrice } from "../../lib/utils";
+import { rupiah, getDiscountedPrice, tintHex, shadeHex } from "../../lib/utils";
 import Modal from "../ui/Modal";
 import ProductImage from "../ui/ProductImage";
-import { DEFAULT_LAYOUTS } from "./sectionDefs";
+import { DEFAULT_LAYOUTS, SECTION_TYPES } from "./sectionDefs";
 import { CATEGORY_ICON_MAP } from "./categoryIcons";
 import { SOCIAL_BY_ID, socialUrl } from "./socialPlatforms";
+
+// Latar section mengikuti tema aktif selama pengguna belum mengganti warna section itu sendiri.
+const themedSectionColors = (type, primary) => {
+  if (type === "hero") return { bg: primary, textColor: "#ffffff" };
+  if (type === "contact") return { bg: shadeHex(primary), textColor: "#ffffff" };
+  if (type === "products" || type === "testimonials") return { bg: tintHex(primary), textColor: "#1e293b" };
+  return { bg: "#ffffff", textColor: "#1e293b" };
+};
 
 function WhatsAppIcon({ size = 22 }) {
   return (
@@ -46,14 +54,20 @@ function WhatsAppIcon({ size = 22 }) {
 export default function SectionRenderer({ section, store, products = [], discounts = [], primary, layout: layoutHint }) {
   const c = section.content || {};
   const color = primary || store?.theme?.primary || "#047857";
-  const style = { backgroundColor: c.bg, color: c.textColor };
+  const defaults = SECTION_TYPES[section.type]?.defaults || {};
+  const themed = themedSectionColors(section.type, color);
+  const customBg = c.bg && defaults.bg && String(c.bg).toLowerCase() !== String(defaults.bg).toLowerCase();
+  const customText = c.textColor && defaults.textColor && String(c.textColor).toLowerCase() !== String(defaults.textColor).toLowerCase();
+  const bg = customBg ? c.bg : themed.bg;
+  const textColor = customText ? c.textColor : themed.textColor;
+  const style = { backgroundColor: bg, color: textColor };
   const layout = c.layout || layoutHint || DEFAULT_LAYOUTS[section.type];
 
   switch (section.type) {
     case "hero":
-      return <HeroSection c={c} style={style} color={color} layout={layout} />;
+      return <HeroSection c={c} style={style} bg={bg} textColor={textColor} color={color} layout={layout} />;
     case "about":
-      return <AboutSection c={c} style={style} color={color} layout={layout} />;
+      return <AboutSection c={c} style={style} bg={bg} color={color} layout={layout} />;
     case "products":
       return <ProductsSection c={c} style={style} store={store} products={products} discounts={discounts} color={color} layout={layout} />;
     case "gallery":
@@ -69,7 +83,7 @@ export default function SectionRenderer({ section, store, products = [], discoun
 
 /* ============================ HERO ============================ */
 
-function HeroSection({ c, style, color, layout }) {
+function HeroSection({ c, style, bg, textColor, color, layout }) {
   const image = c.image;
   const textBlock = (alignClass = "") => (
     <>
@@ -79,7 +93,7 @@ function HeroSection({ c, style, color, layout }) {
         <a
           href="#products"
           className={`mt-8 inline-block rounded-lg bg-white px-6 py-3 font-semibold shadow transition hover:opacity-90 ${alignClass}`}
-          style={{ color: c.bg && c.bg !== "#ffffff" ? c.bg : color }}
+          style={{ color: bg && bg !== "#ffffff" ? bg : color }}
         >
           {c.buttonText}
         </a>
@@ -101,7 +115,7 @@ function HeroSection({ c, style, color, layout }) {
   }
 
   if (layout === "asym") {
-    const tint = c.bg || color;
+    const tint = bg;
     return (
       <section id="hero" className="relative overflow-hidden px-6 pb-16 pt-16 sm:pb-20 sm:pt-20">
         <div className="absolute inset-0" style={{ background: tint, opacity: 0.1 }} />
@@ -130,9 +144,9 @@ function HeroSection({ c, style, color, layout }) {
       <section
         id="hero"
         style={{
-          backgroundColor: c.bg,
-          color: c.textColor,
-          backgroundImage: image ? `linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)), url(${c.image})` : `linear-gradient(135deg, ${color}, ${color}bb)`,
+          backgroundColor: bg,
+          color: textColor,
+          backgroundImage: image ? `linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)), url(${c.image})` : `linear-gradient(135deg, ${bg}, ${bg}bb)`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -145,7 +159,7 @@ function HeroSection({ c, style, color, layout }) {
             <a
               href="#products"
               className="mt-8 inline-block rounded-lg bg-white px-6 py-3 font-semibold shadow transition hover:opacity-90"
-              style={{ color: c.bg && c.bg !== "#ffffff" ? c.bg : color }}
+              style={{ color: bg && bg !== "#ffffff" ? bg : color }}
             >
               {c.buttonText}
             </a>
@@ -183,7 +197,7 @@ function HeroPlaceholder({ color, tall = false }) {
 
 /* ============================ ABOUT ============================ */
 
-function AboutSection({ c, style, color, layout }) {
+function AboutSection({ c, style, bg, color, layout }) {
   const img = c.image;
 
   if (layout === "bgimage") {
@@ -194,7 +208,7 @@ function AboutSection({ c, style, color, layout }) {
           style={
             img
               ? { backgroundImage: `linear-gradient(rgba(2,6,23,.68),rgba(2,6,23,.68)), url(${img})`, backgroundSize: "cover", backgroundPosition: "center" }
-              : { background: c.bg && c.bg !== "#ffffff" ? c.bg : color }
+              : { background: bg !== "#ffffff" ? bg : color }
           }
         />
         <div className="relative mx-auto max-w-3xl text-center">

@@ -37,8 +37,8 @@ export function useSubscription(store, setStore) {
     } else if (isTrialActive) {
       status = 'trial'
       billingMode = 'trial'
-      // Selama masa trial 1 bulan, user dapat mencoba fitur lengkap (Pro)
-      plan = value.plan && ['basic', 'bisnis', 'pro'].includes(value.plan) ? value.plan : 'pro'
+      // Selama masa trial 1 bulan, user memakai fitur paket Basic.
+      plan = 'basic'
     } else {
       status = 'expired'
       billingMode = 'expired'
@@ -166,7 +166,7 @@ export function useSubscription(store, setStore) {
     const trialEndsAt = new Date(now + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000).toISOString()
     const nextSub = {
       ...subscription,
-      plan: 'pro',
+      plan: 'basic',
       status: 'trial',
       billingMode: 'trial',
       activatedAt: new Date(now).toISOString(),
@@ -176,7 +176,7 @@ export function useSubscription(store, setStore) {
     }
     try {
       await saveSubscription(nextSub)
-      toast.success('Masa trial 1 bulan berhasil diaktifkan! Nikmati semua fitur Pro.')
+      toast.success('Masa trial 1 bulan berhasil diaktifkan! Nikmati fitur paket Basic.')
       return true
     } catch (error) {
       toast.error(`Trial gagal diaktifkan: ${error.message}`)

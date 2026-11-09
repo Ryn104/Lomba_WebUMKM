@@ -59,7 +59,7 @@ Each registered user owns one store (`1 user = 1 store`) with its own public web
 - **Overview**: product count, monthly income/expense, today's sales, 7-day chart, low-stock list, recent transactions.
 - **Products**: CRUD products, categories, image upload, active toggle, stock, selling/cost price.
 - **Discounts**: percent or nominal discounts, per-product or store-wide, date ranges.
-- **Finance**: income/expense records, monthly summary, category breakdown, CSV export (Pro).
+- **Finance**: income/expense records, monthly summary, category breakdown, CSV export.
 - **Settings**: store name, description, WhatsApp, logo. Slug is immutable after creation.
 - **Subscription management**: active plan, renewal date, payment history/invoices, upgrade/downgrade, usage meters.
 
@@ -71,7 +71,7 @@ Each registered user owns one store (`1 user = 1 store`) with its own public web
 - Global primary color.
 - Save to `store_sections`, publish/unpublish, unsaved-changes indicator.
 - Products and active discounts are pulled automatically into the Products section.
-- Free plan section limit enforced in the builder.
+- Expired accounts are limited to 4 builder sections; active plans are unlimited.
 
 ### POS / Cashier (`/pos`)
 - Product catalog with search and category filter.
@@ -240,15 +240,16 @@ Plans are defined client-side and persisted as JSON under `stores.theme.subscrip
 
 | Plan | Monthly | Yearly (per month) | Key limits |
 |---|---|---|---|
-| **Gratis** | Rp0 | — | 1 website, 10 products, limited sections, platform watermark, no advanced finance |
-| **Bisnis** | Rp79.000 | Rp63.000 | Unlimited products/sections, no watermark, 5 GB media, 500 POS transactions/month |
-| **Pro** | Rp149.000 | Rp119.000 | Everything in Bisnis, advanced finance + CSV export, 20 GB media, unlimited POS |
+| **Basic** | Rp10.000 | Rp8.000 | 10 products, all sections, no watermark, 2 GB media, unlimited POS, CSV export |
+| **Bisnis** | Rp30.000 | Rp24.000 | 30 products, all sections, no watermark, custom domain, 10 GB media, unlimited POS, CSV export |
+| **Pro** | Rp50.000 | Rp40.000 | Everything in Bisnis + advanced finance & profit/loss, 25 GB media, unlimited POS |
 
 Implementation notes:
 - `useSubscription` exposes `plan`, `limits`, `upgrade`, `cancelSubscription`, `dismissPromo`, and invoices.
 - Checkout is simulated in the client (`UpgradeModal`) and records an invoice in the subscription JSON; there is no live payment gateway integration.
 - Admins can grant complimentary plan access through `SubscriptionAdminModal`.
-- Enforcement points: product limit in `Products.jsx`, section limit in `BuilderPage.jsx`, watermark in `StoreFront.jsx`, advanced finance in `Finance.jsx`.
+- New stores start with a 30-day Basic trial; Kasir POS has no monthly quota on any plan.
+- Enforcement points: product limit (Basic 10, Bisnis 30, Pro unlimited) in `Products.jsx`, section limit in `BuilderPage.jsx`, watermark in `StoreFront.jsx`, advanced finance in `Finance.jsx`.
 
 ---
 

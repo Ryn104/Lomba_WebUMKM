@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { Check, Minus, Sparkles, X, Lock } from 'lucide-react'
 import { rupiah } from '../../lib/utils'
-import { planPrice, isLowerPlan } from '../../lib/plans'
+import { planLimits, planPrice, isLowerPlan } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
 import SegmentedControl from '../ui/SegmentedControl'
 
@@ -59,19 +59,24 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'basic'
 
   const plans = [
     buildPlanMeta('basic', 'Paket Basic', 'Untuk UMKM pemula yang baru mulai online', null, false),
-    buildPlanMeta('bisnis', 'Paket Bisnis', 'Produk tidak terbatas, tanpa watermark, custom domain', 'Paling populer', true),
-    buildPlanMeta('pro', 'Paket Pro', 'Laporan keuangan lanjutan, ekspor CSV & POS tanpa batas', 'Fitur lengkap', false),
+    buildPlanMeta('bisnis', 'Paket Bisnis', 'Kuota produk lebih besar, tanpa watermark, custom domain', 'Paling populer', true),
+    buildPlanMeta('pro', 'Paket Pro', 'Laporan keuangan lanjutan & POS tanpa batas', 'Fitur lengkap', false),
   ]
 
+  // Semua nilai diambil dari src/lib/plans.js agar angka tidak disalin ulang di UI.
+  const limitOf = (id) => planLimits(id)
+  const valuesOf = (read) => Object.fromEntries(PLAN_IDS.map((id) => [id, read(limitOf(id))]))
+  const productLimitLabel = (limits) => (limits.maxProducts === Infinity ? 'Tanpa batas' : `${limits.maxProducts} produk`)
+
   const features = [
-    { name: 'Batas produk', values: { basic: '50 produk', bisnis: 'Tanpa batas', pro: 'Tanpa batas' } },
-    { name: 'Section Web Builder', values: { basic: 'Semua section', bisnis: 'Semua section', pro: 'Semua section + template premium' } },
-    { name: 'Watermark platform', values: { basic: 'Tanpa watermark', bisnis: 'Tanpa watermark', pro: 'Tanpa watermark' } },
-    { name: 'Custom domain toko', values: { basic: true, bisnis: true, pro: true } },
-    { name: 'Penyimpanan media & foto', values: { basic: '2 GB', bisnis: '10 GB', pro: '25 GB' } },
-    { name: 'Transaksi Kasir POS / bln', values: { basic: '150 transaksi', bisnis: '500 transaksi', pro: 'Tanpa batas' } },
-    { name: 'Laporan keuangan & laba rugi', values: { basic: false, bisnis: false, pro: true } },
-    { name: 'Ekspor laporan keuangan (CSV)', values: { basic: false, bisnis: false, pro: true } },
+    { name: 'Batas produk', values: valuesOf(productLimitLabel) },
+    { name: 'Section Web Builder', values: valuesOf((limits) => (limits.maxSections === Infinity ? 'Semua section' : `${limits.maxSections} section`)) },
+    { name: 'Watermark platform', values: valuesOf((limits) => (limits.hasWatermark ? 'Ada watermark' : 'Tanpa watermark')) },
+    { name: 'Custom domain toko', values: valuesOf((limits) => limits.hasCustomDomain) },
+    { name: 'Penyimpanan media & foto', values: valuesOf((limits) => `${limits.maxImagesGB} GB`) },
+    { name: 'Transaksi Kasir POS', values: valuesOf(() => 'Tanpa batas') },
+    { name: 'Laporan keuangan & laba rugi', values: valuesOf((limits) => limits.hasAdvancedFinance) },
+    { name: 'Ekspor laporan keuangan (CSV)', values: valuesOf((limits) => limits.hasCsvExport) },
   ]
 
   const selected = plans.find((plan) => plan.id === mobilePlan) || plans[1]

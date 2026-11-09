@@ -10,7 +10,7 @@ export default function DunningBanner({ onRetry, onViewInvoice }) {
         <div>
           <h4 className="font-bold text-sm text-[#92400E]">Pembayaran paket Bisnis gagal</h4>
           <p className="mt-0.5 text-xs text-amber-800">
-            QRIS Anda kedaluwarsa. Perbaiki sebelum 30 Okt 2026 agar paket tidak turun ke Gratis.
+            QRIS Anda kedaluwarsa. Perbaiki sebelum 30 Okt 2026 agar paket tidak dinonaktifkan.
           </p>
         </div>
       </div>

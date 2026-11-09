@@ -135,7 +135,7 @@ export default function SubscriptionPage({ store, setStore }) {
           <div>
             <h2 className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">Pilih paket yang sesuai kebutuhan toko</h2>
             <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
-              Basic untuk pemula, Bisnis untuk tanpa batas, Pro untuk laporan keuangan & POS lengkap.
+              Basic untuk pemula, Bisnis untuk toko berkembang, Pro untuk laporan keuangan lanjutan.
             </p>
           </div>
           <button
@@ -212,7 +212,7 @@ export default function SubscriptionPage({ store, setStore }) {
                   {isPaid
                     ? `Paket ${activePlanName} aktif untuk toko Anda.`
                     : isTrial
-                      ? `Anda sedang menikmati akses fitur lengkap selama 1 bulan gratis (${trialDaysLeft} hari tersisa).`
+                      ? `Anda sedang memakai fitur paket Basic selama masa trial 1 bulan gratis (${trialDaysLeft} hari tersisa).`
                       : 'Masa trial 1 bulan telah selesai. Aktifkan paket pilihan Anda untuk terus berjualan.'}
                 </p>
               </div>
@@ -386,7 +386,7 @@ export default function SubscriptionPage({ store, setStore }) {
               {isPaid
                 ? `Paket ${activePlanName} aktif dengan batas kuota sesuai paket Anda.`
                 : isTrial
-                  ? 'Dalam masa trial 1 bulan, Anda dapat mencoba semua fitur secara leluasa.'
+                  ? 'Dalam masa trial 1 bulan, Anda memakai fitur paket Basic.'
                   : 'Aktifkan paket untuk membuka kembali akses fitur toko Anda.'}
             </p>
           </div>

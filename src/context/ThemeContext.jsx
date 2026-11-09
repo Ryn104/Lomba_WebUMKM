@@ -5,7 +5,7 @@ export const THEME_STORAGE_KEY = 'umkita-theme'
 
 // Halaman platform. Selain ini (/:slug) adalah website toko publik milik UMKM dan selalu tampil terang.
 // Daftar yang sama dipakai oleh skrip anti-kedip di index.html.
-const PLATFORM_PATHS = ['', 'login', 'register', 'lupa-password', 'reset-password', 'admin', 'builder', 'dashboard', 'pos']
+const PLATFORM_PATHS = ['', 'login', 'register', 'lupa-password', 'reset-password', 'admin', 'builder', 'dashboard', 'pos', 'onboarding']
 
 const ThemeContext = createContext({ theme: 'light', isDark: false, setTheme: () => {} })
 
