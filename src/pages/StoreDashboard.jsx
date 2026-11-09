@@ -166,7 +166,7 @@ const storeCss = `
 
 export default function StoreDashboard() {
   const { store, setStore, loading } = useMyStore();
-  const { plan, isTrial, isExpired, isPaid, trialDaysLeft, upgrade } = useSubscription(store, setStore);
+  const { plan, isTrial, isExpired, isPaid, trialDaysLeft, limits, upgrade } = useSubscription(store, setStore);
   const { isDark } = useTheme();
   const location = useLocation();
   const nav = useNavigate();
@@ -207,12 +207,12 @@ export default function StoreDashboard() {
             {isPaid ? <Crown size={13} className="text-brand-500" /> : <Clock size={13} className="text-brand-500" />}
             {isPaid ? `Paket ${plan === "pro" ? "Pro" : plan === "bisnis" ? "Bisnis" : "Basic"}` : isTrial ? "Trial 1 Bulan" : "Trial Berakhir"}
           </span>
-          <span className={w.muted}>{isTrial ? `${trialDaysLeft} hari lagi` : isPaid ? (plan === "basic" ? `${productsCount}/50 produk` : "Tanpa batas") : "Nonaktif"}</span>
+          <span className={w.muted}>{isTrial ? `${trialDaysLeft} hari lagi` : isPaid ? (Number.isFinite(limits.maxProducts) ? `${productsCount}/${limits.maxProducts} produk` : "Tanpa batas") : "Nonaktif"}</span>
         </div>
         <div className={`relative mt-2 h-1.5 w-full overflow-hidden rounded-full ${w.track}`}>
           <div
             className={`h-full rounded-full transition-all duration-500 ${isExpired ? "bg-red-500" : "bg-gradient-to-r from-brand-600 to-brand-400"}`}
-            style={{ width: isPaid && plan === "basic" ? `${Math.min((productsCount / 50) * 100, 100)}%` : "100%" }}
+            style={{ width: isPaid && Number.isFinite(limits.maxProducts) ? `${Math.min((productsCount / limits.maxProducts) * 100, 100)}%` : "100%" }}
           />
         </div>
         {!isPaid && (

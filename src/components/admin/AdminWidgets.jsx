@@ -53,7 +53,7 @@ export function ChartCard({ title, desc, children, className = '' }) {
   )
 }
 
-/** Donut distribusi paket Gratis / Bisnis / Pro */
+/** Donut distribusi paket Basic / Bisnis / Pro */
 export function PlanDonut({ counts }) {
   const data = ['basic', 'bisnis', 'pro'].map((k) => ({ key: k, name: PLAN_LABEL[k], value: counts[k] || 0 }))
   const total = data.reduce((a, b) => a + b.value, 0)

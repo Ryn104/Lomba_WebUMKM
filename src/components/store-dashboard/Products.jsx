@@ -9,6 +9,7 @@ import ImageUpload from "../ui/ImageUpload";
 import MoneyInput from "../ui/MoneyInput";
 import { Field, EmptyState, Spinner } from "../ui/Field";
 import { useSubscription } from "../../hooks/useSubscription";
+import { PLAN_ORDER, planLimits } from "../../lib/plans";
 import UsageNudge from "../subscription/UsageNudge";
 import LimitReachedModal from "../subscription/LimitReachedModal";
 import UpgradeModal from "../subscription/UpgradeModal";
@@ -22,6 +23,8 @@ export default function Products({ store, setStore }) {
   const { plan, isTrial, isExpired, isPaid, limits, upgrade } = useSubscription(store, setStore);
   const maxProducts = limits?.maxProducts ?? Infinity;
   const hasLimit = Number.isFinite(maxProducts);
+  // Paket berikutnya yang menaikkan kuota produk (Basic → Bisnis → Pro)
+  const nextPlanId = PLAN_ORDER.find((id) => planLimits(id).maxProducts > maxProducts) || "pro";
 
   const [products, setProducts] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -52,7 +55,7 @@ export default function Products({ store, setStore }) {
   }, [load]);
 
   const handleAddClick = () => {
-    // Cek batasan 10 produk untuk paket gratis (Mockup 3)
+    // Cek batas produk sesuai paket aktif (Basic 10, Bisnis 30, Pro tanpa batas)
     if (hasLimit && (products?.length || 0) >= maxProducts) {
       setLimitModalOpen(true);
       return;
@@ -153,7 +156,7 @@ export default function Products({ store, setStore }) {
         </div>
       </div>
 
-      {/* Usage Nudge untuk Paket Gratis saat mendekati atau mencapai limit 10 produk (Mockup 3) */}
+      {/* Usage Nudge saat produk mendekati atau mencapai batas paket aktif */}
       {hasLimit && products.length >= Math.floor(maxProducts * 0.8) && <UsageNudge currentCount={products.length} maxCount={maxProducts} onUpgrade={() => setUpgradeOpen(true)} />}
 
       <div className="relative max-w-sm">
@@ -327,14 +330,14 @@ export default function Products({ store, setStore }) {
         </ul>
       </Modal>
 
-      {/* Modal Batas 10 Produk Tercapai (Mockup 3) */}
+      {/* Modal batas produk paket aktif tercapai */}
       <LimitReachedModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} currentCount={products?.length || 0} maxCount={maxProducts} onUpgrade={() => setUpgradeOpen(true)} />
 
       {/* Upgrade Modal */}
       <UpgradeModal
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
-        targetPlan="bisnis"
+        targetPlan={nextPlanId}
         onSuccess={({ targetPlan, period, method, amount }) => upgrade({ targetPlan, period, method, amount })}
       />
       {confirmDialog}

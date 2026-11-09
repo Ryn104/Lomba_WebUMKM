@@ -62,6 +62,7 @@ export default function OnboardingPage() {
 
   // Baca ulang toko agar penanda onboarding tidak menimpa subscription yang baru disimpan.
   const markOnboardingDone = async () => {
+    if (!store?.id) throw new Error("Toko belum siap.");
     const { data: fresh, error } = await supabase.from("stores").select("*").eq("id", store.id).single();
     if (error) throw error;
     const nextTheme = { ...(fresh.theme || {}), onboarding_done: true };
@@ -86,7 +87,8 @@ export default function OnboardingPage() {
 
   const pickPlan = async (planId) => {
     if (planId === "trial" || planId === "gratis") {
-      await startTrial?.();
+      const started = await startTrial?.();
+      if (!started) return;
       await finishWithPlan("Trial 1 Bulan aktif! Selamat berjualan.");
       return;
     }
@@ -141,6 +143,10 @@ export default function OnboardingPage() {
                   profile={profile}
                   store={store}
                   onCreated={(created) => {
+                    if (!created?.id) {
+                      toast.error("Toko gagal dibuat. Coba lagi.");
+                      return;
+                    }
                     setStore(created);
                     setStep(2);
                   }}

@@ -30,7 +30,9 @@ export default function StoreStep({ user, profile, store, onCreated }) {
   const submit = async (event) => {
     event.preventDefault()
     if (readOnly) return undefined
+    if (busy) return undefined
     if (!valid) return toast.error('Lengkapi nama toko, alamat website, dan nomor WhatsApp.')
+    if (!user?.id) return toast.error('Sesi login belum siap. Muat ulang halaman lalu coba lagi.')
     setBusy(true)
 
     try {
@@ -49,8 +51,11 @@ export default function StoreStep({ user, profile, store, onCreated }) {
         .single()
 
       if (error) {
-        throw new Error(error.code === '23505' ? 'Alamat website sudah dipakai, coba yang lain.' : error.message)
+        if (error.code === '23505') throw new Error('Alamat website sudah dipakai, coba yang lain.')
+        if (error.code === '23503') throw new Error('Profil akun belum siap. Muat ulang halaman lalu coba lagi.')
+        throw new Error(error.message || 'Toko gagal dibuat. Coba lagi.')
       }
+      if (!created?.id) throw new Error('Toko gagal dibuat. Coba lagi.')
 
       const rows = defaultSections().map((section) => ({
         store_id: created.id,
