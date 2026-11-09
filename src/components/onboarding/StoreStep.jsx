@@ -144,7 +144,7 @@ export default function StoreStep({ user, profile, store, onCreated }) {
             <span className="shrink-0 bg-slate-100 px-3 py-2 text-sm text-slate-500">{PLATFORM_DOMAIN}/</span>
             <input
               id="onboarding-store-slug"
-              className="w-full px-2 py-2 text-sm text-slate-900 outline-none"
+              className="w-full px-2 py-2 text-sm bg-transparent text-slate-900 outline-none"
               required
               value={slug}
               onChange={(event) => {
