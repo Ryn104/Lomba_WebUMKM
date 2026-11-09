@@ -64,3 +64,23 @@ export function getDiscountedPrice(product, discounts = []) {
   best = Math.min(best, product.price)
   return { final: product.price - best, amount: best, discount: bestDiscount }
 }
+
+const hexToRgb = (hex) => {
+  const value = String(hex || '').replace('#', '')
+  if (!/^[0-9a-f]{6}$/i.test(value)) return null
+  return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16))
+}
+
+// Campur warna hex ke arah target (0..1); dipakai warna turunan tema untuk latar section.
+const mixHex = (hex, target, amount) => {
+  const rgb = hexToRgb(hex) || [4, 120, 87]
+  const mixed = rgb.map((v, i) => Math.round(v * (1 - amount) + target[i] * amount))
+  return `#${mixed.map((v) => v.toString(16).padStart(2, '0')).join('')}`
+}
+
+/** Versi sangat muda dari warna utama, untuk latar section yang mengikuti tema. */
+export const tintHex = (hex, amount = 0.9) => mixHex(hex, [255, 255, 255], amount)
+
+/** Versi gelap dari warna utama, dipakai section kontak agar teks putih tetap terbaca. */
+export const shadeHex = (hex, amount = 0.55) => mixHex(hex, [15, 23, 42], amount)
+

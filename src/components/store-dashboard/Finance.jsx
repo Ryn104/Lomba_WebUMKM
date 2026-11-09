@@ -13,7 +13,7 @@ import {
   Pie,
   Cell,
 } from 'recharts'
-import { Plus, Trash2, TrendingUp, TrendingDown, Scale, Wallet } from 'lucide-react'
+import { Download, Plus, Trash2, TrendingUp, TrendingDown, Scale, Wallet } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { rupiah, formatDate, todayISO } from '../../lib/utils'
 import Modal from '../ui/Modal'
@@ -24,7 +24,7 @@ import { useSubscription } from '../../hooks/useSubscription'
 import LockedFeatureCard from '../subscription/LockedFeatureCard'
 import UpgradeModal from '../subscription/UpgradeModal'
 import AdvancedReport from './finance/AdvancedReport'
-import { EXPENSE_CATS, INCOME_CATS } from './finance/financeUtils'
+import { downloadCsv, EXPENSE_CATS, INCOME_CATS } from './finance/financeUtils'
 
 const PIE = ['#047857', '#10b981', '#059669', '#34d399', '#0d9488', '#0284c7', '#f59e0b', '#64748b']
 
@@ -38,8 +38,11 @@ const compactRupiah = (n) => {
 }
 
 export default function Finance({ store, setStore }) {
-  const { plan, isTrial, upgrade } = useSubscription(store, setStore)
-  const isPro = plan === 'pro' || isTrial
+  const { limits, upgrade } = useSubscription(store, setStore)
+  // Laporan lanjutan hanya untuk paket Pro (trial memakai fitur Basic).
+  const isPro = Boolean(limits.hasAdvancedFinance)
+  // Ekspor CSV tersedia di semua paket; laporan keuangan lanjutan tetap khusus Pro.
+  const canExportCsv = Boolean(limits.hasCsvExport)
 
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'advanced'
   const [upgradeOpen, setUpgradeOpen] = useState(false)
@@ -138,6 +141,26 @@ export default function Finance({ store, setStore }) {
     load()
   }
 
+  // Ekspor data keuangan bulan ini (mengikuti filter tabel), tanpa membuka laporan lanjutan.
+  const exportCsv = () => {
+    const safeName = (store.name || 'toko')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'toko'
+    const csvRows = shown.map((row) => [
+      row.date,
+      row.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      row.category,
+      row.transaction_id ? (receiptMap[row.transaction_id] || 'Transaksi kasir') : (row.note || ''),
+      Number(row.amount) || 0,
+    ])
+    downloadCsv(`keuangan-${safeName}-${month}.csv`, [
+      ['Tanggal', 'Tipe', 'Kategori', 'Catatan', 'Jumlah (Rp)'],
+      ...csvRows,
+    ])
+  }
+
   if (!rows) return <Spinner />
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
 
@@ -155,6 +178,16 @@ export default function Finance({ store, setStore }) {
             onChange={(e) => setMonth(e.target.value)}
             className="input w-auto font-medium"
           />
+          {canExportCsv && (
+            <button
+              type="button"
+              onClick={exportCsv}
+              disabled={shown.length === 0}
+              className="btn-secondary px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download size={15} /> Ekspor CSV
+            </button>
+          )}
           <button className="btn-primary flex-1 justify-center sm:flex-none" onClick={() => setForm({ type: 'expense', category: EXPENSE_CATS[0], amount: '', date: todayISO(), note: '' })}>
             <Plus size={16} /> Catat Keuangan
           </button>
@@ -324,7 +357,7 @@ export default function Finance({ store, setStore }) {
       ) : (
         <LockedFeatureCard
           title="Laporan keuangan lanjutan"
-          desc="Buka laporan laba rugi, produk terlaris, tren penjualan, arus kas, anggaran, dan ekspor CSV dengan Paket Pro."
+          desc="Buka laporan laba rugi, produk terlaris, tren penjualan, arus kas, dan anggaran dengan Paket Pro."
           requiredPlan="Pro"
           onUpgrade={() => {
             setUpgradeOpen(true)

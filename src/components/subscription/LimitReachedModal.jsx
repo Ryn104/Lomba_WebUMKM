@@ -1,14 +1,19 @@
 import { AlertTriangle } from 'lucide-react'
+import { PLAN_ORDER, planLimits, planOf } from '../../lib/plans'
 import ModalLayer from '../ui/ModalLayer'
 
 export default function LimitReachedModal({
   open,
   onClose,
-  currentCount = 50,
-  maxCount = 50,
+  currentCount = 0,
+  maxCount = 10,
   onUpgrade,
 }) {
   if (!open) return null
+
+  const nextPlan = PLAN_ORDER
+    .map((id) => ({ name: planOf(id).name, maxProducts: planLimits(id).maxProducts }))
+    .find((plan) => plan.maxProducts > maxCount)
 
   return (
     <ModalLayer open onClose={onClose} label={`Batas ${maxCount} produk tercapai`}>
@@ -20,7 +25,10 @@ export default function LimitReachedModal({
 
         <h3 className="mt-4 text-lg font-bold text-slate-900">Batas {maxCount} produk tercapai</h3>
         <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-          Paket Anda saat ini memiliki batas {maxCount} produk. Upgrade ke paket Bisnis atau Pro untuk produk tanpa batas, atau nonaktifkan produk lama.
+          Paket Anda saat ini memiliki batas {maxCount} produk.{' '}
+          {nextPlan
+            ? `Upgrade ke paket ${nextPlan.name}${Number.isFinite(nextPlan.maxProducts) ? ` untuk batas ${nextPlan.maxProducts} produk` : ' untuk produk tanpa batas'}, atau nonaktifkan produk lama.`
+            : 'Nonaktifkan produk lama untuk menambah produk baru.'}
         </p>
 
         {/* Progress Bar */}

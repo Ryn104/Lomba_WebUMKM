@@ -10,7 +10,7 @@
         try {
           var theme = localStorage.getItem('umkita-theme') || 'light';
           var segment = location.pathname.split('/')[1] || '';
-          var platform = ['', 'login', 'register', 'lupa-password', 'reset-password', 'admin', 'builder', 'dashboard', 'pos'];
+          var platform = ['', 'login', 'register', 'lupa-password', 'reset-password', 'admin', 'builder', 'dashboard', 'pos', 'onboarding'];
           var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if (dark && platform.indexOf(segment) !== -1) {
             document.documentElement.classList.add('dark');

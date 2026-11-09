@@ -147,9 +147,9 @@ Deskripsikan sebagai model freemium SaaS:
 
 | Paket                | Target                    | Batasan (indikatif)                                                        |
 | -------------------- | ------------------------- | -------------------------------------------------------------------------- |
-| **Gratis**           | UMKM baru                 | 1 website, ≤ 10 produk, watermark brand platform, section terbatas         |
-| **Bisnis**           | UMKM bertumbuh            | Produk unlimited, semua section, custom domain, tanpa watermark            |
-| **Pro / Enterprise** | UMKM besar / multi-cabang | Semua fitur Bisnis + multi-user/staff, laporan lanjutan, prioritas support |
+| **Basic**            | UMKM baru                 | ≤ 10 produk, semua section, tanpa watermark, ekspor CSV                    |
+| **Bisnis**           | UMKM bertumbuh            | ≤ 30 produk, semua section, custom domain, tanpa watermark, ekspor CSV     |
+| **Pro / Enterprise** | UMKM besar / multi-cabang | Produk tanpa batas + multi-user/staff, laporan lanjutan, prioritas support |
 
 **UI/UX yang perlu didesain:**
 

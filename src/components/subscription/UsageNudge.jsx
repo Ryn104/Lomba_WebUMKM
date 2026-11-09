@@ -1,6 +1,11 @@
-export default function UsageNudge({ currentCount = 40, maxCount = 50, onUpgrade }) {
+import { PLAN_ORDER, planLimits, planOf } from '../../lib/plans'
+
+export default function UsageNudge({ currentCount = 0, maxCount = 10, onUpgrade }) {
   const remaining = Math.max(maxCount - currentCount, 0)
   const percent = Math.min(Math.round((currentCount / maxCount) * 100), 100)
+  const nextPlan = PLAN_ORDER
+    .map((id) => ({ name: planOf(id).name, maxProducts: planLimits(id).maxProducts }))
+    .find((plan) => plan.maxProducts > maxCount)
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3.5 sm:flex-row sm:items-center sm:justify-between shadow-sm">
@@ -28,7 +33,11 @@ export default function UsageNudge({ currentCount = 40, maxCount = 50, onUpgrade
           <p className="text-xs font-bold text-slate-900">
             {remaining === 0 ? `Batas ${maxCount} produk telah tercapai` : `Sisa ${remaining} slot produk di paket Anda`}
           </p>
-          <p className="text-[11px] text-slate-500 truncate">Upgrade ke Bisnis atau Pro untuk produk tanpa batas.</p>
+          <p className="text-[11px] text-slate-500 truncate">
+            {nextPlan
+              ? `Upgrade ke ${nextPlan.name}${Number.isFinite(nextPlan.maxProducts) ? ` untuk batas ${nextPlan.maxProducts} produk` : ' untuk produk tanpa batas'}.`
+              : 'Nonaktifkan produk lama untuk menambah produk baru.'}
+          </p>
         </div>
       </div>
 
