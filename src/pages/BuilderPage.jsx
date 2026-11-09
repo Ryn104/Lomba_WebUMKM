@@ -224,7 +224,7 @@ function Builder({ store, setStore }) {
             {DEVICE_BUTTONS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                onClick={() => setDevice(id)}
+                onClick={() => { setDevice(id); if (isCompactScreen()) setTab('preview') }}
                 aria-label={label}
                 title={label}
                 aria-pressed={device === id}
@@ -374,9 +374,8 @@ function Builder({ store, setStore }) {
           {/* Dirender di dalam iframe agar breakpoint (sm/md/lg) mengikuti lebar perangkat yang dipilih */}
           <DevicePreview device={device}>
             <div data-light-zone className="bg-white">
-              <div className="pointer-events-none">
-                <StorefrontHeader store={store} sections={visibleSections} primary={primary} layout={headerLayout} />
-              </div>
+              {/* Header interaktif: dropdown mobile harus bisa diklik; link nav tetap diblok DevicePreview */}
+              <StorefrontHeader store={store} sections={visibleSections} primary={primary} layout={headerLayout} />
               {visibleSections.length === 0 ? (
                 <p className="px-4 py-24 text-center text-slate-400">
                   Belum ada section yang tampil. Tambahkan atau tampilkan section dari daftar Susunan.
