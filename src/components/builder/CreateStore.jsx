@@ -40,7 +40,6 @@ export default function CreateStore({ onCreated }) {
       return toast.error(error.code === '23505' ? 'Alamat toko sudah dipakai, coba yang lain' : error.message)
     }
 
-    // isi section awal supaya langsung ada kerangka website
     const rows = defaultSections().map((s) => ({
       store_id: store.id,
       type: s.type,
@@ -53,7 +52,6 @@ export default function CreateStore({ onCreated }) {
     }))
     await supabase.from('store_sections').insert(rows)
 
-    // Nomor WhatsApp toko = nomor telepon akun (single source of truth)
     await supabase.from('profiles').update({ phone: whatsapp }).eq('id', user.id)
 
     setBusy(false)

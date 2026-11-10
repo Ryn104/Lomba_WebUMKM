@@ -1,8 +1,3 @@
-/**
- * LayoutThumb — sketsa struktur komposisi sebuah layout variant.
- * Dipakai di LayoutPicker (editor builder) dan thumbnail Galeri Tema,
- * sehingga thumbnail selalu mencerminkan bentuk layout yang benar-benar dirender.
- */
 export default function LayoutThumb({ type, layout, color = '#0f766e', soft = '#ecfdf5', text = '#334155', className = '' }) {
   return (
     <div className={`pointer-events-none select-none overflow-hidden ${className}`}>

@@ -7,13 +7,11 @@ export const DEVICES = {
   mobile: { label: 'Mobile', width: 390 },
 }
 
-// Di bawah lebar ini (HP sungguhan) preview mengikuti lebar layar apa adanya
 const PHONE_BREAKPOINT = 640
 
 const SRC_DOC =
   '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0"></body></html>'
 
-// Samakan class/atribut <html> (mis. tema gelap & variabel warna) dengan dokumen utama
 function syncRoot(doc) {
   const src = document.documentElement
   const dst = doc.documentElement
@@ -25,7 +23,6 @@ function syncRoot(doc) {
   })
 }
 
-// Salin semua stylesheet (Tailwind, font, dll.) ke dalam iframe
 function syncHead(doc) {
   doc.head.querySelectorAll('[data-preview-sync]').forEach((n) => n.remove())
   const links = []
@@ -50,7 +47,6 @@ export default function DevicePreview({ device = 'desktop', children }) {
   const [doc, setDoc] = useState(null)
   const [ready, setReady] = useState(false)
 
-  // Ukur area yang tersedia untuk preview
   useLayoutEffect(() => {
     const el = boxRef.current
     if (!el) return undefined
@@ -66,7 +62,6 @@ export default function DevicePreview({ device = 'desktop', children }) {
     return () => ro.disconnect()
   }, [])
 
-  // Jaga style iframe tetap sama dengan dokumen utama (HMR saat dev, ganti tema, font dinamis)
   useEffect(() => {
     if (!doc) return undefined
     let raf = 0
@@ -89,8 +84,6 @@ export default function DevicePreview({ device = 'desktop', children }) {
   const handleLoad = (e) => {
     const d = e.currentTarget.contentDocument
     if (!d) return
-    // Preview hanya tampilan: link & form tidak boleh menavigasi iframe maupun aplikasi.
-    // Fase capture dipakai agar berjalan sebelum handler React (mis. <Link> react-router).
     const block = (ev) => {
       if (ev.type === 'submit' || ev.target?.closest?.('a[href]')) ev.preventDefault()
     }
@@ -99,7 +92,6 @@ export default function DevicePreview({ device = 'desktop', children }) {
     syncRoot(d)
     const links = syncHead(d)
     setDoc(d)
-    // Tampilkan iframe setelah stylesheet siap (maks. 1,5 detik) supaya tidak berkedip tanpa style
     Promise.race([
       Promise.all(links.map(waitLoad)),
       new Promise((resolve) => setTimeout(resolve, 1500)),
@@ -138,7 +130,6 @@ export default function DevicePreview({ device = 'desktop', children }) {
         </div>
       </div>
 
-      {/* Konten dirender ke dalam iframe; event React (klik section) tetap bekerja lewat portal */}
       {doc && createPortal(children, doc.body)}
     </div>
   )

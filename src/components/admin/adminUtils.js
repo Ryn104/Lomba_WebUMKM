@@ -1,23 +1,16 @@
-/** Helper data untuk halaman-halaman Admin Platform */
 
 export const PLAN_LABEL = { basic: 'Basic', bisnis: 'Bisnis', pro: 'Pro', gratis: 'Basic' }
 export const PLAN_COLOR = { basic: '#6366F1', bisnis: '#3B82F6', pro: '#10B981', gratis: '#94A3B8' }
 
-// Harga per bulan — satu sumber dengan useSubscription (src/lib/plans.js)
 import { PLAN_PRICE } from '../../lib/plans'
 
 const DAY_MS = 86400000
 
-/** Tanggal (YYYY-MM-DD) menurut zona waktu Jakarta */
+
 export const jakartaDay = (d) =>
   new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
-/**
- * Baca langganan toko dengan aturan yang sama seperti useSubscription:
- * paket berbayar hanya dianggap aktif jika billingMode valid dan belum kedaluwarsa.
- *
- * state: 'trial' | 'paid' (dibeli) | 'complimentary' (diberikan admin) | 'expired'
- */
+
 export function getSubscription(store) {
   const raw = store?.theme?.subscription || {}
   const now = Date.now()
@@ -72,7 +65,7 @@ export const STATE_LABEL = {
   free: 'Trial Berakhir',
 }
 
-/** Estimasi pendapatan bulanan berulang dari langganan yang benar-benar dibeli */
+
 export function estimateMRR(stores) {
   return stores.reduce((sum, store) => {
     const sub = getSubscription(store)
@@ -81,7 +74,7 @@ export function estimateMRR(stores) {
   }, 0)
 }
 
-/** Hitung jumlah toko per paket efektif */
+
 export function countByPlan(stores) {
   const result = { basic: 0, bisnis: 0, pro: 0 }
   stores.forEach((store) => {
@@ -92,10 +85,7 @@ export function countByPlan(stores) {
   return result
 }
 
-/**
- * Status pengguna berdasarkan profil + toko miliknya.
- * tone: success | warning | danger | info | neutral
- */
+
 export function getUserStatus(profile, ownedStores = []) {
   if (profile.role === 'admin') return { key: 'admin', label: 'Admin', tone: 'info' }
   if (ownedStores.length === 0) return { key: 'no-store', label: 'Belum buat toko', tone: 'neutral' }
@@ -113,7 +103,6 @@ export const USER_STATUS_FILTERS = [
   { value: 'admin', label: 'Admin' },
 ]
 
-/** Kelompokkan toko berdasarkan pemilik */
 export function groupStoresByOwner(stores) {
   const map = new Map()
   stores.forEach((s) => {
@@ -123,11 +112,7 @@ export function groupStoresByOwner(stores) {
   return map
 }
 
-/**
- * Deret waktu pendaftaran.
- * mode 'day' -> N hari terakhir, mode 'month' -> N bulan terakhir (zona Jakarta).
- * Hasil: [{ key, label, baru, total }] ; total = akumulasi sampai periode tsb.
- */
+
 export function buildSeries(items, getDate, mode, length, getValue = () => 1) {
   const todayKey = jakartaDay(new Date())
   const keys = []
@@ -168,7 +153,6 @@ export function buildSeries(items, getDate, mode, length, getValue = () => 1) {
   })
 }
 
-/** Pertumbuhan periode ini dibanding periode sebelumnya (panjang sama) */
 export function periodGrowth(items, getDate, mode, length) {
   const series = buildSeries(items, getDate, mode, length * 2)
   const previous = series.slice(0, length).reduce((a, b) => a + b.baru, 0)
@@ -177,7 +161,6 @@ export function periodGrowth(items, getDate, mode, length) {
   return { current, previous, percent, series: series.slice(length) }
 }
 
-/** Semua invoice dari seluruh toko (hanya pembelian nyata, bukan paket pemberian admin) */
 export function collectPurchases(stores) {
   const rows = []
   stores.forEach((store) => {
@@ -201,7 +184,6 @@ export function collectPurchases(stores) {
   return rows.sort((a, b) => new Date(b.date) - new Date(a.date))
 }
 
-/** Pilihan rentang waktu yang dipakai bersama oleh halaman Grafik Pendaftar & Pembelian Paket */
 export const RANGE_OPTIONS = [
   { value: '7', label: '7 hari', mode: 'day', length: 7 },
   { value: '30', label: '30 hari', mode: 'day', length: 30 },
@@ -226,7 +208,6 @@ export function resolveRange(value, items, getDate) {
   return { mode: 'month', length: (y2 - y1) * 12 + (m2 - m1) + 1, label: p.label, lifetime: true }
 }
 
-/** Ambil item yang tanggalnya berada di dalam rentang deret waktu */
 export function filterBySeries(items, getDate, series, mode) {
   if (!series.length) return items
   const startKey = series[0].key
@@ -237,7 +218,6 @@ export function filterBySeries(items, getDate, series, mode) {
   })
 }
 
-/** Unduh array-of-object sebagai CSV (BOM agar Excel membaca UTF-8) */
 export function downloadCSV(filename, rows) {
   if (!rows.length) return
   const headers = Object.keys(rows[0])
@@ -252,5 +232,4 @@ export function downloadCSV(filename, rows) {
   URL.revokeObjectURL(url)
 }
 
-/** Paginasi sederhana di sisi klien */
 export const PAGE_SIZE = 15

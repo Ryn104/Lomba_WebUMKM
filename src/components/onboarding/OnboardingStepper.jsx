@@ -4,7 +4,6 @@ const STEPS = [
   { id: 3, label: 'Selesai' },
 ]
 
-/** Indikator progres wizard onboarding (mobile-first). */
 export default function OnboardingStepper({ step = 1 }) {
   const percent = ((step - 1) / (STEPS.length - 1)) * 100
 

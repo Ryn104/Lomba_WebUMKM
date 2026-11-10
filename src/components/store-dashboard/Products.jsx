@@ -23,7 +23,6 @@ export default function Products({ store, setStore }) {
   const { plan, isTrial, isExpired, isPaid, limits, upgrade } = useSubscription(store, setStore);
   const maxProducts = limits?.maxProducts ?? Infinity;
   const hasLimit = Number.isFinite(maxProducts);
-  // Paket berikutnya yang menaikkan kuota produk (Basic → Bisnis → Pro)
   const nextPlanId = PLAN_ORDER.find((id) => planLimits(id).maxProducts > maxProducts) || "pro";
 
   const [products, setProducts] = useState(null);

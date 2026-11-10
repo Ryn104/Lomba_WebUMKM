@@ -35,7 +35,6 @@ import { DEFAULT_LAYOUTS, SECTION_TYPES } from "./sectionDefs";
 import { CATEGORY_ICON_MAP } from "./categoryIcons";
 import { SOCIAL_BY_ID, socialUrl } from "./socialPlatforms";
 
-// Latar section mengikuti tema aktif selama pengguna belum mengganti warna section itu sendiri.
 const themedSectionColors = (type, primary) => {
   if (type === "hero") return { bg: primary, textColor: "#ffffff" };
   if (type === "contact") return { bg: shadeHex(primary), textColor: "#ffffff" };

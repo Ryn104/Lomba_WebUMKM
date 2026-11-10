@@ -5,10 +5,7 @@ import { supabase, PLATFORM_DOMAIN } from '../../lib/supabase'
 import { RESERVED_SLUGS, sanitizePhone, slugify } from '../../lib/utils'
 import { defaultSections, SECTION_TYPES } from '../store-front/sectionDefs'
 
-/**
- * Langkah 1 onboarding: buat nama toko + alamat website.
- * Toko langsung disimpan agar tidak hilang bila pengguna menutup tab.
- */
+
 export default function StoreStep({ user, profile, store, onCreated }) {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')

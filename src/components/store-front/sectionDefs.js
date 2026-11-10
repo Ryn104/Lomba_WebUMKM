@@ -1,9 +1,5 @@
 import { Sparkles, Info, ShoppingBag, Images, MessageSquareQuote, Phone } from 'lucide-react'
 
-/**
- * Metadata Layout Variant per section (tersimpan di content.layout).
- * Urutan = urutan tampil di LayoutPicker builder.
- */
 export const LAYOUT_OPTIONS = {
   hero: [
     { id: 'split', label: 'Split Hero' },

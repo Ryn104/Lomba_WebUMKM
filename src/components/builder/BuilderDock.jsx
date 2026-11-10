@@ -1,7 +1,5 @@
 import { useTheme } from '../../context/ThemeContext'
 
-// Bentuk dock: bar penuh dengan lekukan setengah lingkaran di tengah (sama seperti DashboardLayout).
-// Sisi kiri/kanan melebar mengikuti layar, bagian tengah (lekukan) berukuran tetap 120x64px.
 const NOTCH_SVG =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 64'%3E%3Cpath d='M0 0H13Q23 0 23 7A37 37 0 0 0 97 7Q97 0 107 0H120V64H0Z'/%3E%3C/svg%3E\")"
 const MASK_IMAGE = `linear-gradient(#000,#000), linear-gradient(#000,#000), ${NOTCH_SVG}`
@@ -23,7 +21,6 @@ const THEMES = {
   light: { dockFill: 'bg-white/75', dockIdle: 'text-[#64748B]', dockBorder: 'text-slate-900/10' },
 }
 
-// Item dock (kiri / kanan): hanya ikon, aktif = kotak membulat hijau lembut dengan ikon hijau
 const DockItem = ({ tab, active, onClick, t }) => {
   const Icon = tab.icon
   return (
@@ -46,10 +43,6 @@ const DockItem = ({ tab, active, onClick, t }) => {
   )
 }
 
-/**
- * Dock navigasi mobile untuk Web Builder.
- * tabs = [kiri, tengah (tombol mengambang), kanan]
- */
 export default function BuilderDock({ tabs, active, onChange }) {
   const { isDark } = useTheme()
   const t = isDark ? THEMES.dark : THEMES.light
@@ -63,18 +56,15 @@ export default function BuilderDock({ tabs, active, onChange }) {
       className="fixed inset-x-3 z-50 h-16 lg:hidden"
       style={{ bottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
     >
-      {/* Bayangan: lapisan tipis berbentuk dock, drop-shadow mengikuti lekukan */}
       <div className="pointer-events-none absolute inset-0" style={{ filter: 'drop-shadow(0 8px 14px rgb(2 6 23))' }}>
         <div className="absolute inset-0 rounded-[26px] bg-slate-900/[0.14]" style={MASK_STYLE} />
       </div>
 
-      {/* Glass: bentuk bar + lekukan (mask) dengan blur */}
       <div
         className={`pointer-events-none absolute inset-0 rounded-[26px] backdrop-blur-2xl backdrop-saturate-150 ${t.dockFill}`}
         style={MASK_STYLE}
       />
 
-      {/* Border tipis: sisi kiri & kanan memakai border biasa, bagian tengah (lekukan) digambar SVG */}
       <div className={`pointer-events-none absolute inset-0 flex ${t.dockBorder}`} aria-hidden="true">
         <div className="w-[calc(50%-60px)] rounded-l-[26px] border-y border-l border-current" />
         <svg className="h-full w-[120px] shrink-0" viewBox="0 0 120 64" fill="none" stroke="currentColor" strokeWidth="1">
@@ -83,7 +73,6 @@ export default function BuilderDock({ tabs, active, onChange }) {
         <div className="flex-1 rounded-r-[26px] border-y border-r border-current" />
       </div>
 
-      {/* Ikon: 1 kiri, ruang kosong untuk tombol, 1 kanan */}
       <div className="relative z-10 flex h-full items-center px-1">
         <div className="flex flex-1 items-center">
           <DockItem tab={left} active={active === left.id} onClick={() => onChange(left.id)} t={t} />
@@ -94,7 +83,6 @@ export default function BuilderDock({ tabs, active, onChange }) {
         </div>
       </div>
 
-      {/* Tombol tengah mengambang di dalam lekukan (Preview) */}
       <div className="absolute left-1/2 top-[-30px] z-10 h-[74px] w-[74px] -translate-x-1/2">
         <button
           type="button"

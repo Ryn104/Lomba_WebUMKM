@@ -3,7 +3,6 @@ import PlanCards from '../subscription/PlanCards'
 import SegmentedControl from '../ui/SegmentedControl'
 import { YEARLY_SAVING_LABEL } from '../../lib/plans'
 
-/** Langkah 2 onboarding: pilih paket (Basic/Bisnis/Pro) atau mulai dengan Trial 1 Bulan. */
 export default function PlanStep({ period, setPeriod, onPick, onBack, busy = false }) {
   return (
     <div className="space-y-5">

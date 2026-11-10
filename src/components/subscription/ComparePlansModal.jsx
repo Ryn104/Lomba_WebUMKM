@@ -36,7 +36,7 @@ export default function ComparePlansModal({ open, onClose, currentPlan = 'basic'
 
   if (!open) return null
 
-  const buildPlanMeta = (id, name, desc, badge = null, highlight = false) => {
+  const buildPlanMeta = (id, name, desc, badge = null, highlight = false) => {  
     const isCurrent = currentPlan === id
     const isLower = isLowerPlan(currentPlan, id)
     return {

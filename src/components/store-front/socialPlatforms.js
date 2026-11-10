@@ -18,7 +18,6 @@ export const SOCIAL_PLATFORMS = [
 
 export const SOCIAL_BY_ID = Object.fromEntries(SOCIAL_PLATFORMS.map((p) => [p.id, p]))
 
-// Menerima username (@nama / nama), link tanpa https, atau link penuh
 export const socialUrl = (platform, value) => {
   const v = (value || '').trim()
   if (!v) return null

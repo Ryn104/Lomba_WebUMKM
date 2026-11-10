@@ -56,7 +56,6 @@ export default function Overview({ store, isPaid, plan }) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Sapaan + tanggal hari ini */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="break-words text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
@@ -69,7 +68,6 @@ export default function Overview({ store, isPaid, plan }) {
         </span>
       </div>
 
-      {/* Peringatan draft (mobile; di desktop sudah ada kartu status di rail kanan) */}
       {!store.is_published && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-[#FEF3C7] p-4 xl:hidden">
           <p className="text-xs text-[#92400E] sm:text-sm">
@@ -82,9 +80,7 @@ export default function Overview({ store, isPaid, plan }) {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        {/* Kolom utama */}
         <div className="space-y-4 sm:space-y-6">
-          {/* Aksi cepat di atas untuk mobile; di desktop pindah ke rail kanan */}
           <div className="xl:hidden">
             <QuickActionsCard />
           </div>
@@ -144,7 +140,6 @@ export default function Overview({ store, isPaid, plan }) {
           {showGrowthBanner && <GrowthBanner />}
         </div>
 
-        {/* Rail kanan */}
         <aside className="space-y-4 sm:space-y-6">
           <div className="hidden xl:block">
             <QuickActionsCard />

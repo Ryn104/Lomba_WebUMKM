@@ -26,7 +26,6 @@ export function StateBadge({ state }) {
   return <Badge tone={tone}>{STATE_LABEL[state] || '-'}</Badge>
 }
 
-/** Judul halaman: eyebrow hijau kecil + judul tebal, gaya yang sama dengan section di landing page */
 export function PageHeader({ eyebrow = 'Admin', title, desc, actions }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
@@ -53,7 +52,6 @@ export function ChartCard({ title, desc, children, className = '' }) {
   )
 }
 
-/** Donut distribusi paket Basic / Bisnis / Pro */
 export function PlanDonut({ counts }) {
   const data = ['basic', 'bisnis', 'pro'].map((k) => ({ key: k, name: PLAN_LABEL[k], value: counts[k] || 0 }))
   const total = data.reduce((a, b) => a + b.value, 0)
@@ -85,7 +83,6 @@ export function PlanDonut({ counts }) {
   )
 }
 
-/** Tab pilihan berbentuk pill (rentang waktu / filter); tab aktif berwarna hijau brand */
 export function Tabs({ value, onChange, options }) {
   return (
     <div className="inline-flex flex-wrap gap-1 rounded-full border border-slate-500/20 bg-slate-500/10 p-1">

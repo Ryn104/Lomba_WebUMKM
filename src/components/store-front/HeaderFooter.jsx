@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Store as StoreIcon, MessageCircle, MapPin, Phone } from 'lucide-react'
 
-/** Section nav yang dipakai storefront, preview builder, dan preview galeri — selalu sama. */
 function navItemsFor(sections = []) {
   return [
     { id: 'about', label: 'Tentang', href: '#about' },
@@ -12,7 +11,6 @@ function navItemsFor(sections = []) {
   ].filter((item) => sections.some((s) => s.type === item.id))
 }
 
-/** Header storefront dengan tiga layout variant: split (default), centered, minimal. */
 export function StorefrontHeader({ store, sections = [], primary, layout = 'split' }) {
   const nav = navItemsFor(sections)
   const wa = (store.whatsapp || '').replace(/\D/g, '')
@@ -68,7 +66,6 @@ export function StorefrontHeader({ store, sections = [], primary, layout = 'spli
     )
   }
 
-  // split (default)
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -79,12 +76,12 @@ export function StorefrontHeader({ store, sections = [], primary, layout = 'spli
   )
 }
 
-/** Footer storefront dengan tiga layout variant: minimal (default), multi, branded. */
 export function StorefrontFooter({ store, sections = [], primary, layout = 'minimal', hasWatermark = false }) {
   const year = new Date().getFullYear()
   const wa = (store.whatsapp || '').replace(/\D/g, '')
+  const address = sections.find((s) => s.type === 'contact')?.content?.address
   const contact = [
-    { icon: MapPin, value: store.description, hidden: !store.description },
+    { icon: MapPin, value: address, hidden: !address },
     { icon: Phone, value: store.whatsapp, hidden: !store.whatsapp },
   ].filter((x) => !x.hidden)
 
@@ -168,7 +165,6 @@ export function StorefrontFooter({ store, sections = [], primary, layout = 'mini
     )
   }
 
-  // minimal (default)
   return (
     <footer className="bg-slate-900 py-6 text-center text-xs text-slate-400">
       © {year} {store.name}
