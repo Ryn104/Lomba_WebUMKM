@@ -25,14 +25,11 @@ const links = [
   { to: "/dashboard/langganan", label: "Langganan", icon: CreditCard },
 ];
 
-// Fitur khusus dengan layout halaman sendiri (tanpa sidebar dashboard)
 const specialLinks = [
   { to: "/pos", label: "Kasir (POS)", icon: ReceiptText },
   { to: "/builder", label: "Web Builder", icon: Blocks },
 ];
 
-// Gaya bersama untuk seluruh halaman dashboard toko (Ringkasan, Produk, Diskon, Keuangan, dst.).
-// Semuanya dibatasi pada .store-scope sehingga halaman lain tidak terpengaruh.
 const storeCss = `
 @keyframes sd-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes sd-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 18px) scale(1.08); } }
@@ -188,8 +185,6 @@ export default function StoreDashboard() {
   }, [store?.id]);
 
   if (loading) return <Spinner full />;
-  // Pengguna baru (belum punya toko) menyelesaikan wizard onboarding,
-  // bukan formulir CreateStore di dalam dashboard.
   if (!store) return <Navigate to="/onboarding" replace />;
 
   // Warna widget mengikuti tema sidebar (terang / gelap)
@@ -207,7 +202,9 @@ export default function StoreDashboard() {
             {isPaid ? <Crown size={13} className="text-brand-500" /> : <Clock size={13} className="text-brand-500" />}
             {isPaid ? `Paket ${plan === "pro" ? "Pro" : plan === "bisnis" ? "Bisnis" : "Basic"}` : isTrial ? "Trial 1 Bulan" : "Trial Berakhir"}
           </span>
-          <span className={w.muted}>{isTrial ? `${trialDaysLeft} hari lagi` : isPaid ? (Number.isFinite(limits.maxProducts) ? `${productsCount}/${limits.maxProducts} produk` : "Tanpa batas") : "Nonaktif"}</span>
+          <span className={w.muted}>
+            {isTrial ? `${trialDaysLeft} hari lagi` : isPaid ? (Number.isFinite(limits.maxProducts) ? `${productsCount}/${limits.maxProducts} produk` : "Tanpa batas") : "Nonaktif"}
+          </span>
         </div>
         <div className={`relative mt-2 h-1.5 w-full overflow-hidden rounded-full ${w.track}`}>
           <div
@@ -233,9 +230,9 @@ export default function StoreDashboard() {
       ? "border-[#BBF7D0] bg-[#DCFCE7] text-[#166534]"
       : plan === "bisnis"
         ? "border-[#FDE68A] bg-[#FEF3C7] text-[#92400E]"
-        : "border-slate-300 bg-[#F1F5F9] text-[#334155]" 
+        : "border-slate-300 bg-[#F1F5F9] text-[#334155]"
     : isTrial
-      ? "border-red-300 bg-[#FEE2E2] text-[#991B1B]" 
+      ? "border-red-300 bg-[#FEE2E2] text-[#991B1B]"
       : "border-[#FECACA] bg-[#FEE2E2] text-[#991B1B]";
 
   const planLabel = isPaid ? (plan === "pro" ? "Pro" : plan === "bisnis" ? "Bisnis" : "Basic") : isTrial ? `Trial (${trialDaysLeft} hr)` : "Trial Berakhir";
@@ -271,9 +268,7 @@ export default function StoreDashboard() {
           </div>
         }
       >
-        {/* Latar halaman (titik + cahaya) dipasang di DashboardLayout agar menutupi seluruh area */}
         <div className="store-scope relative isolate min-h-full w-full max-w-[120rem]">
-          {/* key = path, jadi tiap pindah menu konten muncul dengan animasi halus */}
           <div key={location.pathname} className="sd-stagger">
             <Routes>
               <Route index element={<Overview store={store} setStore={setStore} isPaid={isPaid} plan={plan} />} />

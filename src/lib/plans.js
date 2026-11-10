@@ -1,4 +1,3 @@
-/** Satu sumber kebenaran untuk paket langganan: harga, batas kuota, dan daftar fitur. */
 export const PLAN_ORDER = ['basic', 'bisnis', 'pro']
 
 export const YEARLY_SAVING_LABEL = 'Hemat 20%'
@@ -12,7 +11,6 @@ export const PLAN_TIER = {
 
 export const planTierOf = (plan = 'basic') => PLAN_TIER[plan] ?? 0
 
-/** Memeriksa apakah targetPlan berada di bawah currentPlan yang sedang aktif */
 export const isLowerPlan = (currentPlan, targetPlan) => {
   if (!currentPlan || !targetPlan) return false
   const currentTier = planTierOf(currentPlan)

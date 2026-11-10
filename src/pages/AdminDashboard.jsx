@@ -25,7 +25,6 @@ const links = [
   { to: "/admin/pertumbuhan", label: "Grafik Pendaftar", icon: TrendingUp },
 ];
 
-// Animasi halus yang sama gayanya dengan landing page
 const adminCss = `
 @keyframes ad-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes ad-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 18px) scale(1.08); } }
@@ -141,7 +140,6 @@ export default function AdminDashboard() {
     if (deletingAccount) return;
     setDeletingAccount(true);
     try {
-      // Fungsi ini juga memvalidasi (bukan akun sendiri / bukan admin) sebelum ada yang dihapus
       const { data: files, error: listError } = await supabase.rpc("admin_list_user_files", { target: profile.id });
       if (listError) throw listError;
 
@@ -216,7 +214,6 @@ export default function AdminDashboard() {
     >
       <style>{adminCss}</style>
 
-      {/* Latar konten: pola titik tipis + cahaya hijau lembut, sama seperti hero landing page */}
       <div className="ad-scope relative isolate min-h-full">
         <div className="pointer-events-none absolute inset-0 -z-10 [background-image:radial-gradient(rgba(148,163,184,0.22)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_55%)]" />
         <div className="ad-drift pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
@@ -226,7 +223,6 @@ export default function AdminDashboard() {
             <Spinner />
           </div>
         ) : (
-          // key = path, jadi tiap pindah menu konten muncul dengan animasi halus
           <div key={location.pathname} className="ad-stagger ad-page-in">
             <Routes>
               <Route index element={<AdminOverview stores={stores} users={users} />} />

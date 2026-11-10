@@ -15,7 +15,6 @@ import StoreStep from "../components/onboarding/StoreStep";
 import PlanStep from "../components/onboarding/PlanStep";
 import UpgradeModal from "../components/subscription/UpgradeModal";
 
-// Animasi sama dengan landing page: muncul naik pelan, cahaya latar bergerak lembut
 const animationCss = `
 @keyframes lp-fade-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 @keyframes lp-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 24px) scale(1.1); } }
@@ -27,7 +26,6 @@ const animationCss = `
 }
 `;
 
-/** Wizard onboarding 3 langkah setelah registrasi (email OTP maupun Google). */
 export default function OnboardingPage() {
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === "admin";
@@ -41,7 +39,6 @@ export default function OnboardingPage() {
   const [finishing, setFinishing] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  // Redirect guard
   useEffect(() => {
     if (loading) return;
     if (isAdmin) {
@@ -60,7 +57,6 @@ export default function OnboardingPage() {
     if (step === 1) setStep(2);
   }, [loading, isAdmin, store, finished, step, nav]);
 
-  // Baca ulang toko agar penanda onboarding tidak menimpa subscription yang baru disimpan.
   const markOnboardingDone = async () => {
     if (!store?.id) throw new Error("Toko belum siap.");
     const { data: fresh, error } = await supabase.from("stores").select("*").eq("id", store.id).single();
@@ -116,7 +112,6 @@ export default function OnboardingPage() {
         <ThemeIconButton className="btn-secondary !rounded-full" />
       </div>
 
-      {/* Latar titik + cahaya, sama seperti hero landing page */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(148,163,184,0.28)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="lp-drift pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[56rem] -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />

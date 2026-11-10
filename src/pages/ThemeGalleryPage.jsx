@@ -1,119 +1,108 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Check, Crown, Eye, Monitor, Palette, Smartphone, Sparkles, Tablet } from 'lucide-react'
-import toast from 'react-hot-toast'
-import { supabase } from '../lib/supabase'
-import { useMyStore } from '../hooks/useMyStore'
-import { Spinner } from '../components/ui/Field'
-import CreateStore from '../components/builder/CreateStore'
-import DevicePreview from '../components/builder/DevicePreview'
-import SectionRenderer from '../components/store-front/SectionRenderer'
-import LayoutThumb from '../components/store-front/layoutThumbs'
-import { StorefrontFooter, StorefrontHeader } from '../components/store-front/HeaderFooter'
-import { BUILDER_THEMES, findActiveTheme } from '../components/builder/themes'
-import { useConfirm } from '../../src/components/ui/ConfirmModal'     
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Check, Crown, Eye, Monitor, Palette, Smartphone, Sparkles, Tablet } from "lucide-react";
+import toast from "react-hot-toast";
+import { supabase } from "../lib/supabase";
+import { useMyStore } from "../hooks/useMyStore";
+import { Spinner } from "../components/ui/Field";
+import CreateStore from "../components/builder/CreateStore";
+import DevicePreview from "../components/builder/DevicePreview";
+import SectionRenderer from "../components/store-front/SectionRenderer";
+import LayoutThumb from "../components/store-front/layoutThumbs";
+import { StorefrontFooter, StorefrontHeader } from "../components/store-front/HeaderFooter";
+import { BUILDER_THEMES, findActiveTheme } from "../components/builder/themes";
+import { useConfirm } from "../../src/components/ui/ConfirmModal";
 
-// Animasi masuk kartu tema. Tanpa fill akhir, jadi efek hover (terangkat) tetap berfungsi.
 const galleryCss = `
 @keyframes tg-in { from { opacity: 0; transform: translateY(18px); } }
 @keyframes tg-drift { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-46%, 18px) scale(1.08); } }
 .tg-in { animation: tg-in .6s cubic-bezier(.2,.7,.2,1) backwards; }
 .tg-drift { animation: tg-drift 12s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .tg-in, .tg-drift { animation: none; } }
-`
+`;
 
-// Pilihan ukuran preview (lebar virtual tiap perangkat ada di DevicePreview)
 const DEVICE_BUTTONS = [
-  { id: 'desktop', label: 'Tampilan desktop', icon: Monitor },
-  { id: 'tablet', label: 'Tampilan tablet', icon: Tablet },
-  { id: 'mobile', label: 'Tampilan mobile', icon: Smartphone },
-]
+  { id: "desktop", label: "Tampilan desktop", icon: Monitor },
+  { id: "tablet", label: "Tampilan tablet", icon: Tablet },
+  { id: "mobile", label: "Tampilan mobile", icon: Smartphone },
+];
 
 export default function ThemeGalleryPage() {
-  const { store, setStore, loading, reload } = useMyStore()
-  if (loading) return <Spinner full />
-  if (!store) return <CreateStore onCreated={reload} />
-  return <Gallery store={store} setStore={setStore} />
+  const { store, setStore, loading, reload } = useMyStore();
+  if (loading) return <Spinner full />;
+  if (!store) return <CreateStore onCreated={reload} />;
+  return <Gallery store={store} setStore={setStore} />;
 }
 
 function Gallery({ store, setStore }) {
-  const [previewTheme, setPreviewTheme] = useState(null)
-  const [device, setDevice] = useState('desktop')
-  const [applying, setApplying] = useState(false)
-  const [data, setData] = useState({ sections: [], products: [], discounts: [], loading: true })
-  const [askConfirm, confirmDialog] = useConfirm() 
+  const [previewTheme, setPreviewTheme] = useState(null);
+  const [device, setDevice] = useState("desktop");
+  const [applying, setApplying] = useState(false);
+  const [data, setData] = useState({ sections: [], products: [], discounts: [], loading: true });
+  const [askConfirm, confirmDialog] = useConfirm();
 
-  // Preview memakai data toko milik pengguna sendiri, bukan data demo.
   useEffect(() => {
-    let alive = true
-    ;(async () => {
+    let alive = true;
+    (async () => {
       const [sec, prod, disc] = await Promise.all([
-        supabase.from('store_sections').select('*').eq('store_id', store.id).eq('is_visible', true).order('position'),
-        supabase.from('products').select('*').eq('store_id', store.id).eq('is_active', true).order('created_at', { ascending: false }),
-        supabase.from('discounts').select('*').eq('store_id', store.id).eq('is_active', true),
-      ])
-      if (!alive) return
-      setData({ sections: sec.data || [], products: prod.data || [], discounts: disc.data || [], loading: false })
-    })()
-    return () => { alive = false }
-  }, [store.id])
+        supabase.from("store_sections").select("*").eq("store_id", store.id).eq("is_visible", true).order("position"),
+        supabase.from("products").select("*").eq("store_id", store.id).eq("is_active", true).order("created_at", { ascending: false }),
+        supabase.from("discounts").select("*").eq("store_id", store.id).eq("is_active", true),
+      ]);
+      if (!alive) return;
+      setData({ sections: sec.data || [], products: prod.data || [], discounts: disc.data || [], loading: false });
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [store.id]);
 
-  const activeTheme = useMemo(() => findActiveTheme(store), [store])
+  const activeTheme = useMemo(() => findActiveTheme(store), [store]);
 
-  /**
-   * Terapkan tema kategori: set identitas visual (primary/font/mode) DAN
-   * tulis kombinasi layout default tema ke SETIAP section (content.layout).
-   * Konten section digeser dengan spread — tidak ada data yang hilang/dibuat ulang.
-   */
   const applyTheme = async (theme) => {
-    if (applying) return
+    if (applying) return;
     if (activeTheme && activeTheme.id !== theme.id) {
       const ok = await askConfirm({
         title: `Ganti tema menjadi “${theme.name}”?`,
-        message: 'Layout khas tema ini akan diterapkan pada semua section.',
-        detail: 'Teks, gambar, dan datamu tetap tersimpan, hanya tampilannya yang disesuaikan.',
-        confirmLabel: 'Ganti tema',
-        tone: 'info',
-      })
-      if (!ok) return
+        message: "Layout khas tema ini akan diterapkan pada semua section.",
+        detail: "Teks, gambar, dan datamu tetap tersimpan, hanya tampilannya yang disesuaikan.",
+        confirmLabel: "Ganti tema",
+        tone: "info",
+      });
+      if (!ok) return;
     }
-    setApplying(true)
+    setApplying(true);
     try {
-      // 1) theme baru + hapus pilihan header/footer kustom (ikut default tema)
-      const { headerLayout: _h, footerLayout: _f, ...restTheme } = store.theme || {}
-      const nextTheme = { ...restTheme, primary: theme.primary, font: theme.font, mode: theme.id }
-      const { data: updated, error: themeError } = await supabase
-        .from('stores').update({ theme: nextTheme }).eq('id', store.id).select().single()
-      if (themeError) throw themeError
-      setStore(updated)
+      const { headerLayout: _h, footerLayout: _f, ...restTheme } = store.theme || {};
+      const nextTheme = { ...restTheme, primary: theme.primary, font: theme.font, mode: theme.id };
+      const { data: updated, error: themeError } = await supabase.from("stores").update({ theme: nextTheme }).eq("id", store.id).select().single();
+      if (themeError) throw themeError;
+      setStore(updated);
 
-      // 2) peta layout tema -> semua section milik pengguna (semua, termasuk yang disembunyikan)
-      const { data: allSections, error: secError } = await supabase
-        .from('store_sections').select('id, content, type').eq('store_id', store.id)
-      if (secError) throw secError
+      const { data: allSections, error: secError } = await supabase.from("store_sections").select("id, content, type").eq("store_id", store.id);
+      if (secError) throw secError;
       await Promise.all(
         (allSections || []).map((row) =>
           supabase
-            .from('store_sections')
+            .from("store_sections")
             .update({ content: { ...(row.content || {}), layout: theme.layouts[row.type] } })
-            .eq('id', row.id)
-        )
-      )
+            .eq("id", row.id),
+        ),
+      );
 
-      setPreviewTheme(null)
-      toast.success(`Tema "${theme.name}" diterapkan! Layout khas tema sudah dipadukan ke section tokomu.`)
+      setPreviewTheme(null);
+      toast.success(`Tema "${theme.name}" diterapkan! Layout khas tema sudah dipadukan ke section tokomu.`);
     } catch (err) {
-      toast.error('Gagal menerapkan tema: ' + err.message)
+      toast.error("Gagal menerapkan tema: " + err.message);
     } finally {
-      setApplying(false)
+      setApplying(false);
     }
-  }
+  };
 
   return (
     <>
       <style>{galleryCss}</style>
       <div className="app-bg relative isolate min-h-screen overflow-hidden bg-slate-50">
-        {/* Dekorasi latar: pola titik tipis + cahaya hijau lembut, sama seperti hero landing page */}
         <div className="pointer-events-none absolute inset-0 -z-10 [background-image:radial-gradient(rgba(148,163,184,0.25)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_60%)]" />
         <div className="tg-drift pointer-events-none absolute left-1/2 top-0 -z-10 h-80 w-[48rem] -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />
 
@@ -128,12 +117,11 @@ function Gallery({ store, setStore }) {
               <Palette size={13} className="text-brand-600" /> Galeri Tema
             </span>
             <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">
-              Temukan Tampilan{' '}
-              <span className="bg-gradient-to-r from-brand-600 to-sky-400 bg-clip-text text-transparent">Website Impianmu</span>
+              Temukan Tampilan <span className="bg-gradient-to-r from-brand-600 to-sky-400 bg-clip-text text-transparent">Website Impianmu</span>
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-              Setiap kategori bisnis punya karakter desain sendiri — struktur section, komposisi layout, dan dalamnya
-              warna &amp; tipografi. Pratinjau dengan datamu sendiri, terapkan kapan saja. Konten tokomu tetap tersimpan.
+              Setiap kategori bisnis punya karakter desain sendiri — struktur section, komposisi layout, dan dalamnya warna &amp; tipografi. Pratinjau dengan datamu sendiri,
+              terapkan kapan saja. Konten tokomu tetap tersimpan.
             </p>
           </header>
 
@@ -147,15 +135,18 @@ function Gallery({ store, setStore }) {
                 storeName={store.name}
                 active={activeTheme?.id === theme.id}
                 busy={applying}
-                onPreview={() => { setPreviewTheme(theme); setDevice('desktop') }}
+                onPreview={() => {
+                  setPreviewTheme(theme);
+                  setDevice("desktop");
+                }}
                 onApply={() => applyTheme(theme)}
               />
             ))}
           </div>
 
           <p className="mx-auto mt-8 max-w-3xl rounded-2xl border border-slate-500/20 bg-slate-500/10 px-4 py-3 text-center text-xs leading-relaxed text-slate-500">
-            Semua tema bawaan gratis sesuai hak akses paketmu. Setelah tema diterapkan, kamu tetap bebas mengganti layar
-            (layout) tiap section lewat <b>Ubah Layout</b> di editor Web Builder.
+            Semua tema bawaan gratis sesuai hak akses paketmu. Setelah tema diterapkan, kamu tetap bebas mengganti layar (layout) tiap section lewat <b>Ubah Layout</b> di editor
+            Web Builder.
           </p>
         </div>
       </div>
@@ -174,9 +165,9 @@ function Gallery({ store, setStore }) {
           applying={applying}
         />
       )}
-      {confirmDialog}   
+      {confirmDialog}
     </>
-  )
+  );
 }
 
 function ThemeCard({ theme, storeName, active, busy, onPreview, onApply, index = 0 }) {
@@ -184,7 +175,7 @@ function ThemeCard({ theme, storeName, active, busy, onPreview, onApply, index =
     <article
       style={{ animationDelay: `${index * 80}ms` }}
       className={`tg-in group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl ${
-        active ? 'border-brand-600 ring-2 ring-brand-500/30' : 'border-slate-200 hover:border-brand-500/40'
+        active ? "border-brand-600 ring-2 ring-brand-500/30" : "border-slate-200 hover:border-brand-500/40"
       }`}
     >
       <div className="relative overflow-hidden">
@@ -213,65 +204,51 @@ function ThemeCard({ theme, storeName, active, busy, onPreview, onApply, index =
             disabled={active || busy}
             className="btn-primary !rounded-full justify-center px-2 py-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {active ? 'Sedang Digunakan' : 'Gunakan Tema'}
+            {active ? "Sedang Digunakan" : "Gunakan Tema"}
           </button>
         </div>
       </div>
     </article>
-  )
+  );
 }
 
-/**
- * Thumbnail tema: disusun dari LayoutThumb nyata sesuai kombinasi layout karakter
- * tema (header, hero, produk, galeri, footer) — bukan gambar dekoratif acak.
- */
 function ThemeThumb({ theme, storeName }) {
-  const { primary, soft, layouts } = theme
-  const fontFamily = `${theme.font}, Inter, sans-serif`
+  const { primary, soft, layouts } = theme;
+  const fontFamily = `${theme.font}, Inter, sans-serif`;
   return (
     <div className="aspect-[4/3] w-full select-none overflow-hidden bg-white">
-      {/* header sesuai layout header tema */}
       <div className="border-b border-slate-100">
         <LayoutThumb type="header" layout={layouts.header} color={primary} soft={soft} text="#475569" className="h-8" />
       </div>
-      {/* nama toko + hero sesuai layout hero tema */}
       <div className="px-3 pt-2">
         <p className="truncate text-[10px] font-bold text-slate-500" style={{ fontFamily }}>
           {storeName.length > 22 ? `${storeName.slice(0, 22)}…` : storeName}
         </p>
       </div>
       <LayoutThumb type="hero" layout={layouts.hero} color={primary} soft={soft} text="#475569" className="mx-3 mt-1.5 h-20 rounded-md border border-slate-100" />
-      {/* produk sesuai layout produk tema */}
+
       <LayoutThumb type="products" layout={layouts.products} color={primary} soft={soft} text="#475569" className="mx-3 mt-1.5 h-16 rounded-md border border-slate-100" />
-      {/* footer sesuai layout footer tema */}
+
       <LayoutThumb type="footer" layout={layouts.footer} color={primary} soft={soft} text="#94a3b8" className="mt-2 h-8" />
     </div>
-  )
+  );
 }
 
-/** Preview fullscreen: seluruh website dengan kombinasi layout tema, tanpa menyimpan apa pun. */
 function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, applying }) {
-  const { sections, products, discounts, loading } = data
+  const { sections, products, discounts, loading } = data;
 
-  const sub = store.theme?.subscription || {}
-  const now = Date.now()
-  const hasActiveSubscription = ['active', 'complimentary'].includes(sub.billingMode)
-    && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > now)
-  const trialEndMs = sub.trialEndsAt
-    ? new Date(sub.trialEndsAt).getTime()
-    : (store.created_at ? new Date(store.created_at).getTime() + 30 * 24 * 60 * 60 * 1000 : 0)
-  const isTrialActive = !hasActiveSubscription && trialEndMs > now
-  const hasWatermark = !hasActiveSubscription && !isTrialActive
+  const sub = store.theme?.subscription || {};
+  const now = Date.now();
+  const hasActiveSubscription = ["active", "complimentary"].includes(sub.billingMode) && (!sub.renewsAt || new Date(sub.renewsAt).getTime() > now);
+  const trialEndMs = sub.trialEndsAt ? new Date(sub.trialEndsAt).getTime() : store.created_at ? new Date(store.created_at).getTime() + 30 * 24 * 60 * 60 * 1000 : 0;
+  const isTrialActive = !hasActiveSubscription && trialEndMs > now;
+  const hasWatermark = !hasActiveSubscription && !isTrialActive;
 
-  const visibleSections = sections.filter((s) => s.is_visible)
-  // Preview harus sama persis dengan hasil "Gunakan Tema": applyTheme menimpa content.layout SEMUA section
-  // dengan layout tema. Karena itu layout tema yang dipakai di sini. Layout tersimpan di section hanya
-  // menjadi cadangan kalau tema tidak punya layout untuk tipe section tersebut.
+  const visibleSections = sections.filter((s) => s.is_visible);
   const themed = (s) => {
-    const layout = theme.layouts[s.type] || s.content?.layout
-    // content.layout ikut ditimpa agar preview benar apa pun prioritas yang dipakai SectionRenderer
-    return { layout, section: { ...s, content: { ...(s.content || {}), layout } } }
-  }
+    const layout = theme.layouts[s.type] || s.content?.layout;
+    return { layout, section: { ...s, content: { ...(s.content || {}), layout } } };
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-slate-200">
@@ -287,7 +264,6 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
           <p className="hidden text-[11px] text-slate-500 sm:block">Memakai data tokomu sendiri — tidak mengubah tema aktif maupun konten tersimpan.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {/* Di HP, preview otomatis mengikuti lebar layar, jadi pilihan perangkat disembunyikan */}
           <div className="hidden rounded-full border border-slate-500/20 bg-slate-500/10 p-0.5 sm:flex">
             {DEVICE_BUTTONS.map(({ id, label, icon: Icon }) => (
               <button
@@ -297,14 +273,14 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
                 aria-pressed={device === id}
                 aria-label={label}
                 title={label}
-                className={`rounded-full p-1.5 transition ${device === id ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`rounded-full p-1.5 transition ${device === id ? "bg-brand-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
               >
                 <Icon size={16} />
               </button>
             ))}
           </div>
           <button type="button" onClick={onApply} disabled={applying} className="btn-primary !rounded-full px-4 py-2 text-xs font-bold shadow-sm sm:text-sm">
-            <Crown size={16} /> {applying ? 'Menerapkan…' : 'Gunakan Tema Ini'}
+            <Crown size={16} /> {applying ? "Menerapkan…" : "Gunakan Tema Ini"}
           </button>
         </div>
       </div>
@@ -325,10 +301,8 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
                   </div>
                 ) : (
                   visibleSections.map((s) => {
-                    const { layout, section } = themed(s)
-                    return (
-                      <SectionRenderer key={s.id} section={section} store={store} products={products} discounts={discounts} primary={theme.primary} layout={layout} />
-                    )
+                    const { layout, section } = themed(s);
+                    return <SectionRenderer key={s.id} section={section} store={store} products={products} discounts={discounts} primary={theme.primary} layout={layout} />;
                   })
                 )}
                 <StorefrontFooter store={store} sections={visibleSections} primary={theme.primary} layout={theme.layouts.footer} hasWatermark={hasWatermark} />
@@ -338,5 +312,5 @@ function ThemePreview({ theme, store, data, device, onDevice, onClose, onApply, 
         </DevicePreview>
       </main>
     </div>
-  )
+  );
 }

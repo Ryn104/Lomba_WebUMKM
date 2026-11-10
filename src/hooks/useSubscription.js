@@ -3,9 +3,6 @@ import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
 import { planLimits, planPrice, planOf, TRIAL_DURATION_DAYS, isLowerPlan } from '../lib/plans'
 
-/**
- * Subscription selection, trial tracking, payment method, and receipts stored on the store record.
- */
 export function useSubscription(store, setStore) {
   const normalizeSubscription = useCallback((value = {}) => {
     const now = Date.now()
@@ -71,12 +68,10 @@ export function useSubscription(store, setStore) {
 
   const [subscription, setSubState] = useState(getInitialSubscription)
 
-  // Sinkronkan data server saat user berpindah toko atau data theme berubah.
   useEffect(() => {
     setSubState(normalizeSubscription(store?.theme?.subscription || { promoDismissed: false }))
   }, [store?.id, store?.theme?.subscription, normalizeSubscription])
 
-  // Tulis ke Supabase terlebih dahulu agar UI tidak mengaku berhasil jika penyimpanan gagal.
   const saveSubscription = useCallback(
     async (nextSub) => {
       if (!store?.id) throw new Error('Toko belum siap. Muat ulang halaman lalu coba lagi.')
@@ -98,7 +93,6 @@ export function useSubscription(store, setStore) {
   )
 
   const plan = subscription.plan || 'basic'
-  // Batasan kuota paket berasal dari konstanta paket (src/lib/plans.js).
   const limits = useMemo(() => planLimits(plan), [plan])
 
   // Simpan aktivasi paket dan catatan pembayaran setelah konfirmasi checkout.

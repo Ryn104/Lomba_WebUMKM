@@ -24,7 +24,6 @@ const METHODS = [
   { id: 'transfer', label: 'Transfer', icon: Landmark },
 ]
 
-// Input jumlah langsung di keranjang: bisa diketik, bukan hanya menekan tombol tambah berulang.
 function QtyInput({ qty, max, onChange, label }) {
   const [draft, setDraft] = useState(String(qty))
 
@@ -56,7 +55,6 @@ function QtyInput({ qty, max, onChange, label }) {
   )
 }
 
-// Bottom sheet mobile: terpasang dulu (mounted), lalu digeser naik (shown). Saat ditutup, geser turun baru dilepas.
 function useSheet() {
   const [mounted, setMounted] = useState(false)
   const [shown, setShown] = useState(false)
@@ -92,7 +90,7 @@ function POS({ store }) {
   const [categories, setCategories] = useState([])
   const [cat, setCat] = useState('all')
   const [q, setQ] = useState('')
-  const [cart, setCart] = useState([]) // [{product, qty}]
+  const [cart, setCart] = useState([]) 
   const [method, setMethod] = useState('cash')
   const [paid, setPaid] = useState('')
   const [busy, setBusy] = useState(false)
@@ -114,10 +112,8 @@ function POS({ store }) {
 
   useEffect(() => { load() }, [load])
 
-  // Keranjang kosong -> tutup bottom sheet (mobile)
   useEffect(() => {
     if (cart.length === 0 && sheet.mounted) sheet.close()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart.length])
 
   const filtered = products.filter(
@@ -148,7 +144,6 @@ function POS({ store }) {
         .filter((i) => i.qty > 0)
     )
 
-  // Isi jumlah langsung dari input keranjang (selalu dibatasi stok produk)
   const setQtyValue = (id, value) =>
     setCart((c) =>
       c.map((i) => {
@@ -203,12 +198,11 @@ function POS({ store }) {
     setCart([])
     setPaid('')
     sheet.close()
-    load() // refresh stok
+    load() 
   }
 
   if (loading) return <Spinner full />
 
-  /* ---------- Potongan UI yang dipakai bersama (panel desktop & bottom sheet mobile) ---------- */
 
   const itemsList =
     lines.length === 0 ? (
@@ -348,7 +342,6 @@ function POS({ store }) {
           ))}
         </div>
 
-        {/* pb-28 di mobile memberi ruang untuk bar keranjang di bawah */}
         <div className="flex-1 overflow-y-auto p-3 pb-28 sm:p-4 lg:pb-4">
           {filtered.length === 0 ? (
             <EmptyState title="Produk tidak ditemukan" desc="Tambahkan produk di Dashboard › Produk." />

@@ -148,11 +148,6 @@
   }
 }
 
-/* =====================================================================
-   DARK MODE
-   Aktif saat <html class="dark">. Hanya untuk halaman platform:
-   website toko publik (/:slug) dan preview builder (data-light-zone) tetap terang.
-   ===================================================================== */
 html.dark {
   color-scheme: dark;
   --d-page: #0b1220;

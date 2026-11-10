@@ -28,8 +28,7 @@ const navLinks = [
   { href: "#mulai", label: "Mulai" },
 ];
 
-/* ---------- Animasi ---------- */
-
+/*  Animasi  */
 const animationCss = `
 @keyframes lp-fade-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 @keyframes lp-fade-down { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
@@ -51,7 +50,6 @@ const animationCss = `
 
 const heroWords = ["dalam hitungan menit.", "tanpa coding.", "dengan drag & drop.", "lengkap dengan kasir."];
 
-// Efek mengetik -> jeda -> menghapus -> mengetik kata berikutnya (berputar)
 function useTypewriter(words, { type = 70, del = 38, hold = 1700, gap = 350 } = {}) {
   const [text, setText] = useState("");
   useEffect(() => {
@@ -117,7 +115,6 @@ function useInView(threshold = 0.15) {
   return [ref, inView];
 }
 
-// Elemen muncul halus (fade + geser + skala) saat masuk viewport
 function Reveal({ children, delay = 0, y = 28, scale = 1, className = "" }) {
   const [ref, inView] = useInView();
   return (
@@ -135,7 +132,6 @@ function Reveal({ children, delay = 0, y = 28, scale = 1, className = "" }) {
   );
 }
 
-// Bar progres scroll di bagian paling atas halaman
 function ScrollProgress() {
   const barRef = useRef(null);
   useEffect(() => {
@@ -161,7 +157,7 @@ function ScrollProgress() {
   return <div ref={barRef} className="fixed left-0 top-0 z-50 h-[3px] w-full origin-left bg-gradient-to-r from-brand-500 to-sky-400" style={{ transform: "scaleX(0)" }} />;
 }
 
-/* ---------- Komponen ---------- */
+/*  Komponen  */
 
 function Navbar({ user, isAdmin }) {
   const [scrolled, setScrolled] = useState(false);
@@ -225,7 +221,6 @@ function Navbar({ user, isAdmin }) {
 function HeroMockup() {
   const tiltRef = useRef(null);
 
-  // Mockup miring ke belakang saat awal, lalu menegak & membesar mengikuti scroll
   useEffect(() => {
     const el = tiltRef.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -290,7 +285,6 @@ function HeroMockup() {
         </div>
       </div>
 
-      {/* Kartu mengambang di luar tepi mockup, bergerak naik-turun perlahan */}
       <div className="absolute left-0 top-20 hidden -translate-x-[88%] lg:block">
         <div className="lp-float rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
           <div className="flex items-center gap-2.5">
@@ -325,7 +319,6 @@ function Step({ index, title, desc }) {
   const [ref, inView] = useInView(0.3);
   return (
     <li ref={ref} className="pt-0">
-      {/* garis yang "menggambar" dirinya saat terlihat */}
       <div className="relative h-px w-full bg-slate-200">
         <span
           className="absolute inset-y-0 left-0 bg-brand-500"
