@@ -93,6 +93,11 @@ npm run dev
 ---
 
 ## Setup Akun Admin Platform
+akun admin yang tersedia:
+
+akun admin
+id: umkita.id@gmail.com
+pw: admin123
 
 1. Daftar akun lewat `/register`.
 2. Di SQL Editor, naikkan role:
