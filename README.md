@@ -1,3 +1,8 @@
+
+# Project Title
+
+A brief description of what this project does and who it's for
+
 # UMKM Web Builder
 
 ![Landing Page Overview](landing.png)
@@ -95,9 +100,8 @@ npm run dev
 ## Setup Akun Admin Platform
 akun admin yang tersedia:
 
-akun admin
-id: umkita.id@gmail.com
-pw: admin123
+- id: umkita.id@gmail.com
+- pw: admin123
 
 1. Daftar akun lewat `/register`.
 2. Di SQL Editor, naikkan role:
